@@ -1,51 +1,28 @@
 from datetime import time
+import re
 from typing import Tuple
+import unicodedata
 from pptx import Presentation
-from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.enum.shapes import MSO_SHAPE_TYPE, MSO_AUTO_SHAPE_TYPE
 from pptx.enum.shapes import MSO_SHAPE
 import json
 
 
 #TECH-6
 
-def has_d2c_beige_circle(file_path: str) -> bool:
-    """
-    Détecte la forme circulaire beige caractéristique du template D2C
-    (visible en arrière-plan de la première slide). Marqueur visuel
-    fiable, indépendant de la langue du CV.
-    """
-    try:
-        prs = Presentation(file_path)
-    except Exception:
-        return False
+def is_tech6_format(raw_text: str) -> bool:
+    """Détecte le format TECH-6."""
+    text = re.sub(r"\s+", " ", raw_text.lower())
 
-    def check_shape(shape):
-        is_circle = (
-            shape.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE
-            and hasattr(shape, "auto_shape_type")
-            and shape.auto_shape_type == MSO_SHAPE.OVAL
-        )
-        if is_circle and shape.fill.type is not None:
-            try:
-                rgb = shape.fill.fore_color.rgb
-                # Beige approximatif : R et G hauts, B plus bas
-                r, g, b = rgb[0:2], rgb[2:4], rgb[4:6]
-                r, g, b = int(r, 16), int(g, 16), int(b, 16)
-                if r > 200 and g > 180 and b < 200 and r >= b:
-                    return True
-            except Exception:
-                pass
+    tech6_markers = [
+        "tech-6",
+        "références professionnelles pertinentes pour la mission",
+        "nom de l'employeur, titre professionnel/poste",
+        "tech 6",
+        "résumé des activités réalisées en rapport avec la mission"
+    ]
 
-        if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
-            return any(check_shape(s) for s in shape.shapes)
-
-        return False
-
-    for slide in prs.slides:
-        for shape in slide.shapes:
-            if check_shape(shape):
-                return True
-    return False
+    return any(marker.lower().strip() in text for marker in tech6_markers)
 
 def build_prompt_tech6(raw_text: str, folder_name: str) -> str:
     return f"""Extract the following fields from this CV text as JSON only, no other text, no markdown code fences.
@@ -105,7 +82,7 @@ def build_prompt_tech6_general(raw_text: str, folder_name: str) -> str:
 }}
 
 This is a World Bank / EU standardized consultant CV (TECH-6 format). Extract ONLY the fields listed above — ignore the detailed mission/experience list entirely, it is handled separately.
-
+If a year value equals 1111, treat it as a placeholder for missing data and omit it (do not include it as a valid date)
 IMPORTANT for name: if missing or reduced to initials, use this name instead, from the folder: "{folder_name}"
 
 CV text:
@@ -119,34 +96,94 @@ def build_prompt_tech6_missions(missions_text: str) -> str:
 }}
 
 This is an excerpt from a World Bank / EU consultant CV, listing individual missions. Extract EVERY mission listed — do not skip or summarize any entry.
-
+If a year value equals 1111, treat it as a placeholder for missing data and omit it (do not include it as a valid date)
 Text excerpt:
 {missions_text}"""
 
 #D2C
 #TODO: Improve detection of D2C
+
+def has_d2c_beige_circle(file_path: str) -> bool:
+    """
+    Détecte la forme circulaire beige caractéristique du template D2C
+    (visible en arrière-plan de la première slide).
+    """
+    try:
+        prs = Presentation(file_path)
+    except Exception:
+        return False
+
+    TARGET = (239, 234, 220)  # #EFEADC
+    TOLERANCE = 10
+
+    def is_target_color(rgb):
+        r, g, b = rgb
+        return (
+            abs(r - TARGET[0]) <= TOLERANCE
+            and abs(g - TARGET[1]) <= TOLERANCE
+            and abs(b - TARGET[2]) <= TOLERANCE
+        )
+
+    def check_shape(shape):
+        # Vérifier si c'est un cercle/ovale
+        is_circle = (
+            shape.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE
+            and hasattr(shape, "auto_shape_type")
+            and shape.auto_shape_type == MSO_AUTO_SHAPE_TYPE.OVAL
+        )
+
+        if is_circle and shape.fill.type is not None:
+            try:
+                rgb = shape.fill.fore_color.rgb
+
+                if rgb is not None:
+                    r, g, b = rgb[0], rgb[1], rgb[2]
+                   
+
+                    if is_target_color((r, g, b)):  
+                        return True
+
+            except Exception as e:
+                print(f"Erreur lecture couleur : {e}")
+
+        # Vérifier récursivement les groupes
+        if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+            return any(check_shape(s) for s in shape.shapes)
+
+        return False
+
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if check_shape(shape):
+                return True
+
+    return False
+
+
 def is_d2c_format(raw_text: str, file_path: str = None) -> bool:
-    
     markers = [
         "expériences récentes",
         "recent experience",
-        "Key experiences",
-        "key experience",
         "recent experiences",
+        "key experiences",
+        "key experience",
         "compétences fonctionnelles",
         "functional skills",
-        "functionnal skills"
-
+        "functionnal skills",
+        "responsabilties",
     ]
+
     text_lower = raw_text.lower()
-    text_match = any(marker in text_lower for marker in markers)
-
-    if text_match:
-        return True
-
-    
+    # Détection par cercle beige dans le PPTX
     if file_path and file_path.lower().endswith(".pptx"):
-        return has_d2c_beige_circle(file_path)
+        try:
+            if has_d2c_beige_circle(file_path):
+                return True
+        except Exception:
+            pass
+    # Détection par texte
+    if any(marker in text_lower for marker in markers):
+        return True
 
     return False
 
@@ -186,7 +223,11 @@ This CV follows a fixed company template, in reading order (plain text only, no 
    - The other lists short category names each followed by ONE descriptive sentence (not a list of names). Extract each as a separate entry in "functional_skills" (category = short name, description = the sentence after it).
 7.Some lines under the technical skills section mention MULTIPLE tool/technology/platform names within a single descriptive sentence, rather than one name per line. Extract EVERY concrete name mentioned in each sentence into "skills" — do not extract only the first name mentioned, and do not skip names embedded mid-sentence alongside a description of what was done with them.
 8. Detailed professional experience, one block per mission: client company, role and dates, mission title, context, a responsibilities section (→ responsibilities, one entry per category with bullets merged), a deliverables section (→ deliverables, one string per item), a technical environment section (→ technologies, flat list merging all sub-groups like databases/languages/OS/tools/methodologies).
-
+9. CRITICAL STRING ESCAPING:
+   - All string values MUST start and end with standard double quotes ("). 
+   - Inside any string, if you need to use an apostrophe (like d'évaluation) or quotes, do NOT break the string wrapping. 
+   - Absolutely NEVER mix single quotes (') and double quotes (") to open/close JSON keys or values.
+   - Replace any raw line breaks inside string descriptions with a space.
 IMPORTANT for name: if the name found in the CV text is missing or reduced to initials/an abbreviation, use this name instead, taken from the folder this file was found in: "{folder_name}"
 
 CV text:
@@ -238,7 +279,81 @@ Extract EVERY mission in this excerpt.
 Text excerpt:
 {missions_text}"""
 
+#REste
+def build_prompt_generic_chunk(raw_text: str, folder_name: str) -> str:
+    return f"""Extract CV fields as JSON only. Do not wrap the response in markdown code fences (like ```json). 
+Ensure your output is strictly valid JSON syntax. Never leave trailing commas.
 
+Expected JSON Template Structure:
+{{
+  "name": "full candidate name or null",
+  "summary": "professional summary paragraph or null",
+  "expertise_areas": [
+    {{"name": "Area Name"}}
+  ],
+  "functional_skills": [
+    {{"name": "Skill Name"}}
+  ],
+  "countries_worked": ["Country 1", "Country 2"],
+  "professional_affiliations": ["Affiliation 1"],
+  "skills": ["Skill 1", "Skill 2"],
+  "education": [
+    {{
+      "degree": "Degree Name or null", 
+      "field_of_study": "Field or null", 
+      "institution": "Institution Name or null", 
+      "years": "Years or null"
+    }}
+  ],
+  "certifications": [
+    {{
+      "name": "Certification Name", 
+      "issuer": "Issuer Name or null", 
+      "year": "Year or null"
+    }}
+  ],
+  "languages": [
+    {{
+      "language": "Language", 
+      "level": "Level or null"
+    }}
+  ],
+  "experience": [
+    {{
+      "title": "Job Title or null",
+      "company": "Company Name or null",
+      "dates": "Dates or null",
+      "description": "Job description or null",
+      "responsibilities": [
+        {{"category": "Category or null", "description": "Responsibility detail"}}
+      ],
+      "deliverables": ["Deliverable 1"],
+      "technologies": ["Tech 1", "Tech 2"]
+    }}
+  ],
+  "projects": [
+    {{
+      "name": "Project Name", 
+      "description": "Project description", 
+      "technologies": ["Tech 1"]
+    }}
+  ]
+}}
+
+Rules:
+1. ONLY extract data explicitly found in the text.
+2. For flat string arrays like "skills", "countries_worked", "professional_affiliations", "deliverables", and "technologies", output a flat list of strings (e.g., ["Python", "SQL"]). NEVER output dictionaries inside these arrays.
+3. If a section or field has no data in the text, DO NOT invent empty objects with null fields. Set the array to a completely empty list [] (e.g., "expertise_areas": []).
+4. Do not confuse the structure of "responsibilities" (which has category/description) with "expertise_areas" or "functional_skills" (which only have "name").
+5. If the candidate's name is completely missing, use: "{folder_name}".
+6. CRITICAL: Avoid trailing commas and ensure proper closing of all brackets.
+7. CRITICAL STRING ESCAPING:
+   - All string values MUST start and end with standard double quotes ("). 
+   - Inside any string, if you need to use an apostrophe (like d'évaluation) or quotes, do NOT break the string wrapping. 
+   - Absolutely NEVER mix single quotes (') and double quotes (") to open/close JSON keys or values.
+   - Replace any raw line breaks inside string descriptions with a space.
+CV Text Chunk:
+{raw_text}"""
 #=====
 def build_prompt_generic(raw_text: str, folder_name: str) -> str:
     return f"""Extract the following fields from this CV text as JSON only, no other text, no markdown code fences.
@@ -278,7 +393,7 @@ Guidelines:
 - "experience": one entry per job/role held, in reverse chronological order if apparent. If the CV describes distinct assignments/missions in detail (client, context, responsibilities, deliverables, technologies used), extract those details into "responsibilities", "deliverables", "technologies" for that entry. If a role has no further detail, leave those sub-fields empty.
 - "projects": distinct personal, academic, or professional projects that are NOT tied to a formal employment entry (e.g. side projects, academic projects, freelance work not listed as a job).
 - "countries_worked" / "professional_affiliations": only fill if explicitly mentioned; otherwise leave empty — do not infer these from job locations unless the CV states them as a dedicated list.
-
+- If a year value equals 1111, treat it as a placeholder for missing data and omit it (do not include it as a valid date)
 IMPORTANT: only extract information that is actually present in the text. Do not invent, assume, or fill in plausible-sounding values for missing information — use null or an empty list instead.
 
 IMPORTANT for name: if the name found in the CV text is missing or reduced to initials/an abbreviation, use this name instead, taken from the folder this file was found in: "{folder_name}"
@@ -292,12 +407,18 @@ def resolve_candidate_name(extracted_name: str, folder_name: str) -> str:
         return folder_name.strip()
     return extracted_name.strip()
 
-def build_prompt(raw_text: str, folder_name: str) -> str:
-    if "tech-6" in raw_text.lower() or "tech 6" in raw_text.lower():
+def normalize(text: str) -> str:
+    text = unicodedata.normalize("NFKC", text)
+    text = text.replace("'", "'").replace("'", "'")
+    text = re.sub(r"\s+", " ", text)  # collapse tous les whitespaces (espaces, \n, \t) en un seul espace
+    return text.lower().strip()
+
+def build_prompt(raw_text: str, folder_name: str, file_path: str = None) -> str:
+    if is_tech6_format(raw_text):
         print("Using TECH-6 prompt")
         return build_prompt_tech6(raw_text, folder_name)
-
-    if is_d2c_format(raw_text):
+     
+    if is_d2c_format(raw_text,file_path):
         print("Using D2C prompt")
         return build_prompt_D2C(raw_text, folder_name)
 

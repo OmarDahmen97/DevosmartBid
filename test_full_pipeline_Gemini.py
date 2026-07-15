@@ -5,9 +5,7 @@ from app.extraction.pdf_extractor import extract_pdf_text
 from app.extraction.docx_extractor import extract_docx_text
 from app.extraction.pptx_extractor import extract_pptx_text
 from app.extraction.contact_parser import extract_contact_info, validate_email_matches_name
-#choice between Gemini3.1-flash-lite and Groq llama-3.3-70b-versatile
-from app.extraction.llm_extractor import extract_structured_sections
-#from app.extraction.llm_extractor_gemini import extract_structured_sections
+from app.extraction.llm_extractor_gemini import extract_structured_sections
 from app.extraction.local_llm_extractor import extract_structured_sections_local
 from app.ingestion.folder_walker import find_cv_files, find_cv_files_external
 from app.schema import CVSchema

@@ -18,11 +18,11 @@ class ExpertiseArea(BaseModel):
     description: Optional[str] = None     
 
 class Responsibility(BaseModel):
-    category: str
+    category: Optional[str]=None
     description: Optional[str]
 
 class Experience(BaseModel):
-    title: str
+    title: Optional[str]="Position not specified"
     company: Optional[str] = None
     dates: Optional[str] = None
     description: Optional[str] = None

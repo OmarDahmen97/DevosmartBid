@@ -1,6 +1,5 @@
 
-from datetime import time
-from groq import Groq, RateLimitError
+from google import genai
 import time
 import json
 import re
@@ -23,14 +22,78 @@ from app.extraction.prompt_builder import (
 
 
 load_dotenv()
-Groq_key = os.getenv("GROQ_API_KEY6")
-client = Groq(api_key=Groq_key)
-
-
+Gemini_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=Gemini_key)
 
 
 
 CHUNKING_THRESHOLD = 5000
+
+
+def _extract_first_json(text: str):
+    """Extrait le premier objet/tableau JSON valide d'un texte, en ignorant
+    tout contenu parasite avant ou après (ex: texte superflu, 'Extra data')."""
+    text = text.strip()
+    decoder = json.JSONDecoder()
+    try:
+        return decoder.raw_decode(text)[0]
+    except json.JSONDecodeError:
+        pass
+
+    for opener, closer in (("{", "}"), ("[", "]")):
+        idx = text.find(opener)
+        if idx == -1:
+            continue
+        depth = 0
+        in_str = False
+        esc = False
+        for i in range(idx, len(text)):
+            ch = text[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+            else:
+                if ch == '"':
+                    in_str = True
+                elif ch == opener:
+                    depth += 1
+                elif ch == closer:
+                    depth -= 1
+                    if depth == 0:
+                        try:
+                            return json.loads(text[idx:i + 1])
+                        except json.JSONDecodeError:
+                            break
+    raise ValueError("Aucun JSON valide trouvé dans la réponse du modèle")
+
+
+def _parse_response(response, key: str | None = None) -> dict:
+    """Parse la réponse JSON du modèle Gemini de façon robuste.
+
+    Le modèle renvoie parfois un tableau JSON au premier niveau au lieu d'un
+    objet, ou ajoute du texte parasite avant/après le JSON, ou des balises
+    Markdown. Si `key` est fourni (ex: "missions"/"experience"), un tableau
+    renvoyé directement est encapsulé sous cette clé. Sinon on renvoie le
+    premier élément dict du tableau ou un dict vide.
+    """
+    text = (response.text or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```[^\n]*\n?", "", text)
+        text = re.sub(r"\n?```\s*$", "", text)
+        text = text.strip()
+
+    data = _extract_first_json(text)
+    if isinstance(data, list):
+        if key is not None:
+            return {key: data}
+        if data and isinstance(data[0], dict):
+            return data[0]
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 #TECH-6
@@ -115,13 +178,15 @@ Text excerpt:
 
 def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = "") -> dict:
     prompt_general = build_prompt_tech6_general(raw_text, folder_name)
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt_general}],
-        response_format={"type": "json_object"},
-        max_tokens=2000
-    )
-    general_data = json.loads(response.choices[0].message.content)
+    response = client.models.generate_content(
+    model="gemini-3.1-flash-lite",
+    contents=prompt_general,
+    config={
+        "response_mime_type": "application/json",
+        "max_output_tokens": 2000
+    }
+)
+    general_data = _parse_response(response)
 
     all_projects = []
 
@@ -129,13 +194,15 @@ def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = 
 
     for chunk in mission_chunks:
         prompt_missions = build_prompt_tech6_missions(chunk)
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt_missions}],
-            response_format={"type": "json_object"},
-            max_tokens=4000
-        )
-        chunk_data = json.loads(response.choices[0].message.content)
+        response = client.models.generate_content(
+        model="gemini-3.1-flash-lite",
+        contents=prompt_missions,
+        config={
+            "response_mime_type": "application/json",
+            "max_output_tokens": 4000
+    }
+)
+        chunk_data = _parse_response(response, key="missions")
 
         for mission in chunk_data.get("missions", []):
             activities = mission.get("activities")
@@ -178,26 +245,30 @@ def split_d2c_missions(raw_text: str, chunk_size: int = 1) -> list[str]:
 
 def extract_structured_sections_d2c_chunked(raw_text: str, folder_name: str = "") -> dict:
     prompt_general = build_prompt_D2C_general(raw_text, folder_name)
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt_general}],
-        response_format={"type": "json_object"},
-        max_tokens=3000
-    )
-    general_data = json.loads(response.choices[0].message.content)
+    response = client.models.generate_content(
+    model="gemini-3.1-flash-lite",
+    contents=prompt_general,
+    config={
+        "response_mime_type": "application/json",
+        "max_output_tokens": 3000
+    }
+)
+    general_data = _parse_response(response)
 
     all_experience = []
     mission_chunks = split_d2c_missions(raw_text)
 
     for chunk in mission_chunks:
         prompt_missions = build_prompt_D2C_missions(chunk)
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt_missions}],
-            response_format={"type": "json_object"},
-            max_tokens=4000
-        )
-        chunk_data = json.loads(response.choices[0].message.content)
+        response = client.models.generate_content(
+    model="gemini-3.1-flash-lite",
+    contents=prompt_missions,
+    config={
+        "response_mime_type": "application/json",
+        "max_output_tokens": 4000
+    }
+)
+        chunk_data = _parse_response(response, key="experience")
         all_experience.extend(chunk_data.get("experience", []))
         time.sleep(2)
 
@@ -302,14 +373,16 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
         prompt = build_prompt_generic_chunk(chunk_text, folder_name)
         
         try:
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"},
-                max_tokens=1500  # On baisse aussi le max_tokens de sortie attendu
-            )
+            response = client.models.generate_content(
+    model="gemini-3.1-flash-lite",
+    contents=prompt,
+    config={
+        "response_mime_type": "application/json",
+        "max_output_tokens": 1500
+    }
+)
             
-            chunk_data = json.loads(response.choices[0].message.content)
+            chunk_data = _parse_response(response)
             extracted_chunks_json.append(chunk_data)
             
         except Exception as e:
@@ -350,17 +423,18 @@ def extract_structured_sections(raw_text: str,file_path, folder_name: str = "", 
     for attempt in range(max_retries):
         try:
             prompt = build_prompt(raw_text, folder_name,file_path)
-            response = client.chat.completions.create(
-                # model="llama-3.3-70b-versatile",
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"},
-                max_tokens=16000
-            )
-            data = json.loads(response.choices[0].message.content)
+            response = client.models.generate_content(
+    model="gemini-3.1-flash-lite",
+    contents=prompt,
+    config={
+        "response_mime_type": "application/json",
+        "max_output_tokens": 16000
+    }
+)
+            data = _parse_response(response)
             data["name"] = resolve_candidate_name(data.get("name", ""), folder_name)
             return data
-        except RateLimitError:
+        except Exception:
             if attempt == max_retries - 1:
                 raise
             time.sleep(2 ** attempt)
