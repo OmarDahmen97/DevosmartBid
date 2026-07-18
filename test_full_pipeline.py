@@ -5,9 +5,9 @@ from app.extraction.pdf_extractor import extract_pdf_text
 from app.extraction.docx_extractor import extract_docx_text
 from app.extraction.pptx_extractor import extract_pptx_text
 from app.extraction.contact_parser import extract_contact_info, validate_email_matches_name
-#choice between Gemini3.1-flash-lite and Groq llama-3.3-70b-versatile
-from app.extraction.llm_extractor import extract_structured_sections
-#from app.extraction.llm_extractor_gemini import extract_structured_sections
+#choice between Gemini3.1-flash-lite and Groq llama-3.3-70b-versatile 
+#from app.extraction.llm_extractor import extract_structured_sections ; print("Groq")
+from app.extraction.llm_extractor_gemini import extract_structured_sections ; print("Gemini")
 from app.extraction.local_llm_extractor import extract_structured_sections_local
 from app.ingestion.folder_walker import find_cv_files, find_cv_files_external
 from app.schema import CVSchema
@@ -94,7 +94,7 @@ SAMPLES_DIR = "data/samples"
 results = find_cv_files('data/D2C Pôle Consulting-20260708T092849Z-3-001')
 
 # --- CV Externe (TECH-6, générique) ---
-#results = [(path, "") for path in find_cv_files_external('data/CV-20260708T092409Z-3-001/CV/EX- Devoteamers')]
+#results = [(path, "") for path in find_cv_files_external('data/CV-20260708T092409Z-3-001/CV/CV Externe')]
 i=0
 for path, folder_name in results:
     """if i>=1:
