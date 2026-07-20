@@ -150,7 +150,7 @@ def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = 
 
         time.sleep(2)
 
-    general_data["experience"] = []  # ce format TECH-6 traite tout comme des missions/projects, pas d'experience séparée
+    general_data["experience"] = []  
     general_data["projects"] = all_projects
     general_data["name"] = resolve_candidate_name(general_data.get("name", ""), folder_name)
     general_data.setdefault("summary", None)

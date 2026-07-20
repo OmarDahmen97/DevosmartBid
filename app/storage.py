@@ -24,7 +24,8 @@ def find_existing_by_raw_text(raw_text: str):
                 return v["version_number"]
     return None
 
-def save_cv(cv_schema, raw_text: str):
+def save_cv(cv_schema, Eng_raw_text: str,original_raw_text: str = None):
+    raw_text=Eng_raw_text
     field, value = get_dedup_key(cv_schema)
     existing = None
     
@@ -56,6 +57,8 @@ def save_cv(cv_schema, raw_text: str):
                 }
 
     # 4. Création de la version
+    if  original_raw_text:
+        raw_text=original_raw_text
     version_number = (existing["versions"][-1]["version_number"] + 1) if existing else 1
     version_doc = {
         "version_number": version_number,
@@ -66,7 +69,7 @@ def save_cv(cv_schema, raw_text: str):
 
     # 5. ÉCRITURE DANS MONGODB 
     if existing:
-        # Correction critique : On cible via le _id unique du document trouvé !
+        
         candidates.update_one(
             {"_id": existing["_id"]}, 
             {"$push": {"versions": version_doc}}

@@ -12,6 +12,11 @@ from app.extraction.local_llm_extractor import extract_structured_sections_local
 from app.ingestion.folder_walker import find_cv_files, find_cv_files_external
 from app.schema import CVSchema
 from app.storage import save_cv , find_existing_by_raw_text
+from deep_translator import GoogleTranslator
+from langdetect import detect
+import deepl
+
+deepl_key = os.getenv("DEEPL_API_KEY")
 
 def adapt_data_to_schema(data: dict) -> dict:
     """
@@ -119,13 +124,22 @@ for path, folder_name in results:
             else extract_docx_text(path) if fmt == "docx"
             else extract_pptx_text(path)
         )
+        
+        
 
         existing_version = find_existing_by_raw_text(text)
         if existing_version is not None:
             print(f"DUPLICATE (skipped LLM) — v{existing_version}")
             continue
-        
-        #Grok
+        language = detect(text)
+        translator = deepl.Translator(deepl_key)
+        original_text=None
+        if language == "fr":
+            original_text=text
+            result = translator.translate_text(text, target_lang="EN-US")
+            text = result.text
+            
+        #API
         data = {**extract_contact_info(text), **extract_structured_sections(text,path,folder_name)}
         #Local LLM
         #data = {**extract_contact_info(text), **extract_structured_sections_local(text,folder_name,path)}
@@ -133,7 +147,7 @@ for path, folder_name in results:
         if not validate_email_matches_name(data.get("email"), data.get("name", "")):
             data["email"] = None
         cv = CVSchema(**data)
-        result = save_cv(cv, text)
+        result = save_cv(cv, text,original_text)
         print(f"{result['status'].upper()} — email: {result['email']} — name:  {result['name']}, v{result['version']}")
     except Exception as e:
         print(f"FAILED: {type(e).__name__}: {e}")

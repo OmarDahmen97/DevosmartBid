@@ -15,6 +15,20 @@ class VectorStore:
             metadata={"hnsw:space": "cosine"},
         )
 
+
+    def delete_candidate_chunks(self, candidate_id: str, version_number: int = None) -> None:
+        """
+        Delete all chunks for a candidate (optionally scoped to one version) before re-indexing,
+        to avoid leaving orphaned chunks from a previous chunking configuration (e.g. different
+        part_index counts after a max_tokens change).
+        """
+        conditions = [{"candidate_id": candidate_id}]
+        if version_number is not None:
+            conditions.append({"version_number": version_number})
+        where_filter = conditions[0] if len(conditions) == 1 else {"$and": conditions}
+
+        self.collection.delete(where=where_filter)    
+
     def index_chunks(self, chunks: list[dict]) -> None:
         """
         Upsert a list of embedded chunks (output of embedder.embed_chunks) into the collection.
@@ -48,6 +62,84 @@ class VectorStore:
             n_results=top_k,
             where=where_filter,
         )
+    
+    def search_section(
+    self,
+    query_embedding: list[float],
+    chunk_types: str | list[str],
+    candidate_id: str = None,
+    version_number: int = None,  # NEW — temporary filter to test single-version search
+    distance_threshold: float = 0.6,
+    min_results: int = 1,
+    max_results: int = 5,
+    ) -> list[dict]:
+        """
+        Search the best matching chunks of a given chunk_type.
+        ...
+        """
+        if isinstance(chunk_types, str):
+            chunk_types = [chunk_types]
+
+        type_condition = (
+            {"chunk_type": chunk_types[0]} if len(chunk_types) == 1
+            else {"chunk_type": {"$in": chunk_types}}
+        )
+
+        conditions = [type_condition]
+        if candidate_id:
+            conditions.append({"candidate_id": candidate_id})
+        if version_number is not None:
+            conditions.append({"version_number": version_number})
+        where_filter = conditions[0] if len(conditions) == 1 else {"$and": conditions}
+
+        pool_size = max(max_results * 3, min_results * 3)
+
+        raw = self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=pool_size,
+            where=where_filter,
+        )
+
+        combined = [
+            {"id": raw["ids"][0][i], "distance": raw["distances"][0][i],
+            "metadata": raw["metadatas"][0][i], "text": raw["documents"][0][i]}
+            for i in range(len(raw["ids"][0]))
+        ]
+        combined.sort(key=lambda x: x["distance"])
+
+        passing = [r for r in combined if r["distance"] <= distance_threshold]
+
+        if len(passing) < min_results:
+            return combined[:min_results]
+
+        return passing[:max_results]
+    
+    def search_multiple_sections(
+        self,
+        query_embedding: list[float],
+        chunk_types: list[str],
+        candidate_id: str = None,
+        distance_threshold: float = 0.6,
+        min_results: int = 1,
+        max_results: int = 1,
+    ) -> list[dict]:
+        """
+        Run one independent search_section call per chunk_type, guaranteeing
+        coverage of every requested type (unlike passing a list directly to
+        search_section, which merges them into a single ranked search).
+        """
+        all_results = []
+        for chunk_type in chunk_types:
+            results = self.search_section(
+                query_embedding,
+                chunk_types=chunk_type,
+                candidate_id=candidate_id,
+                distance_threshold=distance_threshold,
+                min_results=min_results,
+                max_results=max_results,
+            )
+            all_results.extend(results)
+        return all_results
 
     @staticmethod
     def _build_id(metadata: dict) -> str:

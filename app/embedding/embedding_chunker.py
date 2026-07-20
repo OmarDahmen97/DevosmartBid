@@ -10,6 +10,33 @@ into text chunks ready for embedding and storage in ChromaDB.
 #max_length = model.max_seq_length
 
 
+DEFAULT_MAX_TOKENS = 118
+HARD_CAP_TOKENS = 120  # safety margin below the model's 128 max_seq_length
+
+MAX_TOKENS_BY_TYPE = {
+    "summary": 118,                  
+    "skills": 100,                   
+    "education": 80,                 
+    "languages": 50,                 
+    "expertise_areas": 118,          
+    "functional_skills": 118,        
+    "certifications": 50,            
+    "countries_worked": 40,          
+    "professional_affiliations": 40, 
+    "experience": 118,               
+    "project": 100,                  
+}
+
+
+def resolve_max_tokens(chunk_type: str, max_tokens_by_type: dict) -> int:
+    """
+    Resolve the max_tokens value for a given chunk_type, falling back to the
+    default if not specified, and always capped at HARD_CAP_TOKENS regardless
+    of configuration, to stay safely under the model's max_seq_length.
+    """
+    requested = max_tokens_by_type.get(chunk_type, DEFAULT_MAX_TOKENS)
+    return min(requested, HARD_CAP_TOKENS)
+
 
 def serialize_category_description_list(items: list[dict]) -> str:
     """Join a list of {category, description} dicts into one readable string."""
@@ -83,13 +110,17 @@ def split_text_by_tokens(text: str, tokenizer, max_tokens: int, overlap: int = 2
     if len(tokens) <= max_tokens:
         return [text]
 
+    # scale overlap proportionally to max_tokens, capped by the fixed overlap
+    # requested, to avoid degenerate windows on very small max_tokens
+    safe_overlap = min(overlap, max_tokens // 3)  # at most 1/3 of the window
+
     chunks = []
     start = 0
     while start < len(tokens):
         end = start + max_tokens
         chunk_tokens = tokens[start:end]
         chunks.append(tokenizer.decode(chunk_tokens, skip_special_tokens=True))
-        start += max_tokens - overlap
+        start += max_tokens - safe_overlap
 
     return chunks
 
@@ -103,6 +134,7 @@ def build_experience_chunks(
     max_tokens: int = 118,
 ) -> list[dict]:
     """Build one chunk per individual experience entry, splitting further if too long."""
+
     chunks = []
 
     for experience_index, exp in enumerate(experience_list):
@@ -178,15 +210,16 @@ def build_section_chunks(
     candidate_name: str,
     version_number: int,
     tokenizer,
-    max_tokens: int = 118,
+    max_tokens_by_type: dict = None,
 ) -> list[dict]:
-    """Build one chunk per section: skills,certifications, education, languages, expertise_areas, functional_skills, countries_worked, professional_affiliations."""
+    """Build one chunk per section, using a per-type max_tokens (capped) if provided."""
     chunks = []
+    max_tokens_by_type = max_tokens_by_type or MAX_TOKENS_BY_TYPE
 
     section_serializers = {
         "summary": lambda d: d.get("summary") or "",
         "skills": lambda d: serialize_string_list(d.get("skills", [])),
-        "certifications": lambda d: serialize_certifications_list(d.get("certifications",[])),
+        "certifications": lambda d: serialize_certifications_list(d.get("certifications", [])),
         "countries_worked": lambda d: serialize_string_list(d.get("countries_worked", [])),
         "professional_affiliations": lambda d: serialize_string_list(d.get("professional_affiliations", [])),
         "education": lambda d: serialize_education_list(d.get("education", [])),
@@ -200,6 +233,7 @@ def build_section_chunks(
         if not text:
             continue
 
+        max_tokens = resolve_max_tokens(section_name, max_tokens_by_type)
         sub_texts = split_text_by_tokens(text, tokenizer, max_tokens=max_tokens)
 
         for part_index, sub_text in enumerate(sub_texts):
@@ -264,9 +298,11 @@ def build_chunks_for_version(
     candidate_doc: dict,
     version: dict,
     tokenizer,
-    max_tokens: int = 118,
+    max_tokens_by_type: dict = None,
 ) -> list[dict]:
     """Orchestrate all chunk builders for a single CV version, return the full list of chunks."""
+    max_tokens_by_type = max_tokens_by_type or MAX_TOKENS_BY_TYPE
+
     candidate_id = str(candidate_doc["_id"])
     candidate_name = candidate_doc.get("name")
     version_number = version.get("version_number")
@@ -280,7 +316,7 @@ def build_chunks_for_version(
         candidate_name=candidate_name,
         version_number=version_number,
         tokenizer=tokenizer,
-        max_tokens=max_tokens,
+        max_tokens_by_type=max_tokens_by_type,
     ))
 
     all_chunks.extend(build_experience_chunks(
@@ -289,7 +325,7 @@ def build_chunks_for_version(
         candidate_name=candidate_name,
         version_number=version_number,
         tokenizer=tokenizer,
-        max_tokens=max_tokens,
+        max_tokens=resolve_max_tokens("experience", max_tokens_by_type),
     ))
 
     all_chunks.extend(build_project_chunks(
@@ -298,7 +334,7 @@ def build_chunks_for_version(
         candidate_name=candidate_name,
         version_number=version_number,
         tokenizer=tokenizer,
-        max_tokens=max_tokens,
+        max_tokens=resolve_max_tokens("project", max_tokens_by_type),
     ))
 
     return all_chunks
