@@ -329,26 +329,37 @@ client = MongoClient(mongo_uri)
 db = client["cv_platform"]
 candidates = db["candidates"]
 
-candidate = candidates.find_one({"normalized_name": "yasmine goubantini"})
-version = candidate["versions"][1]
-experiences = version["structured"]["experience"]
-projects=version["structured"]["projects"]
-candidate_id = str(candidate["_id"])
+
 
 
 embedder = Embedder()
 store = VectorStore()
-store.delete_candidate_chunks(candidate_id, version_number=version["version_number"])
-chunks = build_chunks_for_version(candidate, version, tokenizer=embedder.model.tokenizer)
-enriched = embedder.embed_chunks(chunks)
-store.index_chunks(enriched)
+
+
+
+
 
 mission_text = """
 We are seeking a Senior Enterprise Architect to drive the design and deployment of a large-scale, cloud-based Business Intelligence (BI) platform.
 In this role, you will define the target architecture for multi-source data integration, implement robust ETL/ELT pipelines, and deploy BI tools (Power BI) across business teams. You will also oversee the migration to a cloud infrastructure (Azure or AWS), automate deployment workflows using CI/CD practices, and ensure data governance within a strict regulatory environment.
 A proven track record in coaching and mentoring technical teams is highly desirable, as well as a strong command of MLOps challenges to industrialize data models.
 """
-query_vec = embedder.model.encode([mission_text])[0].tolist()
+mission_text2="""Le projet « Étude pour le Data Center et le Cloud pour l’Afrique » a été mené par le Smart Africa Secretariat entre août 2022 et février 2024. Il avait pour objectif principal l’élaboration d’une étude de faisabilité et d’un schéma directeur (Blueprint) pour le développement de centres de données mutualisés (multi-tenant) et de services Cloud à l’échelle du continent africain. Le projet visait à réduire les coûts d’accès aux contenus et à la bande passante, tout en soutenant les États membres de Smart Africa dans la mise en place de politiques, stratégies, cadres juridiques et réglementaires favorables au développement durable de ces infrastructures.
+Description des services effectivement rendus par votre personnel dans le cadre de la mission :
+●	Réalisation de l’étude de faisabilité pour le déploiement et l’exploitation de centres de données et de services Cloud à l’échelle régionale.
+●	Élaboration du Blueprint stratégique, incluant des recommandations concrètes pour la mise en œuvre.
+●	Contribution à la définition de politiques et stratégies nationales, avec des orientations pratiques et adaptées aux spécificités africaines.
+●	Appui à la mobilisation des ressources auprès des États membres, du secteur privé et des partenaires techniques et financiers.
+●	Fourniture d’une expertise multidisciplinaire couvrant les domaines de l’infrastructure, de la sécurité des systèmes d’information, du droit, des aspects environnementaux et sociaux, ainsi que des analyses financières.
+"""
+mission_text3="""Sur les ressources en eau : la baisse des précipitations, l’augmentation des températures, l’augmentation de l’intensité et de la fréquence des périodes sèches et l’augmentation de l’évapotranspiration ont un impact direct sur les ressources en eaux : les sols s’assèchent et les stocks d’eaux de surfaces et souterraines diminuent, ce qui implique une baisse globale des ressources en eaux.
+
+-Sur l’agriculture et les écosystèmes :   les rendements des cultures irriguées et pluviales sont menacés suite à la diminution des ressources en eau. L’augmentation des périodes de sècheresse induirait une recrudescence des incendies de forêt ayant pour conséquence, une dégradation et perte accrue de la biodiversité. La réduction des ressources fourragères naturelles impacterait la durabilité du pastoralisme. Les zones humides se verraient également menacées par l’augmentation des phénomènes de salinisation et d’eutrophisation.
+
+-Sur les littoraux : l’élévation du niveau de la mer menace plus de 3000 hectares de zones urbaines et industrielles. Certaines pratiques de pêche se voient également menacées. L’élévation du niveau de la mer, ainsi que la hausse des températures et l’augmentation de la salinité des eaux amplifierait également la dégradation des habitats écologiques situés sur les côtes Tunisiennes.
+
+-Sur le tourisme : les changements climatiques, et notamment l’augmentation des températures, induiraient une modification des saisons et des régions propices au tourisme."""
+query_vec = embedder.model.encode([mission_text.strip()])[0].tolist()
 
 """section_types = [
     "summary", "skills", "education", "languages",
@@ -405,53 +416,131 @@ print_matched_cv(candidates, candidate_id, version["version_number"], matched_me
 
 
 from app.generation.mongo_resolver import resolve_list_section_matches, resolve_chunk_to_mongo_source
+import json
+from app.generation.cv_json_builder import (
+    build_matched_cv_json,
+    is_candidate_relevant,
+    distance_to_score,
+    MIN_RELEVANCE_SCORE,
+)
+from app.generation.mongo_resolver import resolve_list_section_matches, resolve_chunk_to_mongo_source
 
-# list-type sections (resolved via text-overlap matching)
+
+def distance_to_score(distance: float) -> float:
+    """Convert a cosine distance (0 = identical, up to 2 = opposite) into a
+    0-100% similarity score, easier to read than a raw distance value."""
+    similarity = 1 - distance  # cosine distance -> cosine similarity
+    return round(max(0, similarity) * 100, 1)
+
+
+import json
+from app.generation.cv_json_builder import build_matched_cv_json
+
 LIST_TYPE_SECTIONS = ["expertise_areas", "functional_skills", "education", "languages", "certifications"]
-
-# simple-value sections (resolved by taking the raw Mongo field directly)
 SIMPLE_TYPE_SECTIONS = ["summary", "skills", "countries_worked", "professional_affiliations"]
 
-for chunk_type in LIST_TYPE_SECTIONS:
+all_candidates_cursor = candidates.find({}, {"name": 1, "_id": 1, "versions": 1})
+
+relevant_candidates_results = []  # keep track of every candidate that passed Pass A
+
+for candidate in all_candidates_cursor:
+    candidate_id = str(candidate["_id"])
+    versions = candidate.get("versions", [])
+    if not versions:
+        continue
+
+
+    version = versions[0]  # or pick the best version per your own logic later
+    version_number = version["version_number"]
+    store.delete_candidate_chunks(candidate_id, version_number=version["version_number"])
+    chunks = build_chunks_for_version(candidate, version, tokenizer=embedder.model.tokenizer)
+    enriched = embedder.embed_chunks(chunks)
+    store.index_chunks(enriched)
+    print("=" * 80)
+    print(f"CANDIDAT : {candidate.get('name')}  (version {version_number})")
+    print("=" * 80)
+
+    # --- Passe A : pertinence globale ---
+    relevant = is_candidate_relevant(store, candidate_id, version_number, query_vec)
+    print(f"[PASSE A] Candidat jugé pertinent : {relevant} (seuil minimal : {MIN_RELEVANCE_SCORE}%)")
+
+    if not relevant:
+        print("→ Candidat ignoré : non pertinent pour cette mission.\n")
+        continue
+
+    # --- Passe B détaillée, section par section ---
+    print("\n" + "-" * 80)
+    print("[PASSE B] Détail par section")
+    print("-" * 80)
+
+    for chunk_type in LIST_TYPE_SECTIONS:
+        res = store.search_section(
+            query_vec, chunk_types=chunk_type, candidate_id=candidate_id, version_number=version_number,
+            distance_threshold=0.7, min_results=1, max_results=1
+        )
+        print(f"\n=== {chunk_type.upper()} ===")
+        seen_items = set()
+        for r in res:
+            score = distance_to_score(r["distance"])
+            matched_items = resolve_list_section_matches(candidates, r["metadata"], r["text"])
+            print(f"Chunk text (score: {score}%):", r["text"])
+            printed_count = 0
+            for item in matched_items:
+                key = str(item)
+                if key in seen_items:
+                    continue
+                seen_items.add(key)
+                print(" →", item)
+                printed_count += 1
+            print(f"Matched {printed_count} unique item(s) (out of {len(matched_items)} found)")
+
+    for chunk_type in SIMPLE_TYPE_SECTIONS:
+        res = store.search_section(
+            query_vec, chunk_types=chunk_type, candidate_id=candidate_id, version_number=version_number,
+            distance_threshold=0.7, min_results=1, max_results=1
+        )
+        print(f"\n=== {chunk_type.upper()} ===")
+        for r in res:
+            score = distance_to_score(r["distance"])
+            value = resolve_chunk_to_mongo_source(candidates, r["metadata"])
+            print(f"Chunk text (score: {score}%):", r["text"])
+            print("Resolved value:", value)
+
     res = store.search_section(
-        query_vec, chunk_types=chunk_type, candidate_id=candidate_id, version_number=version["version_number"],
-        distance_threshold=0.7, min_results=1, max_results=1
+        query_vec, chunk_types=["experience", "project"], candidate_id=candidate_id, version_number=version_number,
+        distance_threshold=0.6, min_results=2, max_results=6
     )
-    print(f"\n=== {chunk_type.upper()} ===")
+    print(f"\n=== EXPERIENCE + PROJECT ===")
+    seen_indices = set()
     for r in res:
-        matched_items = resolve_list_section_matches(candidates, r["metadata"], r["text"])
-        print("Chunk text:", r["text"])
-        print(f"Matched {len(matched_items)} item(s):")
-        for item in matched_items:
-            print(" →", item)
+        metadata = r["metadata"]
+        c_type = metadata["chunk_type"]
+        idx = metadata.get("experience_index") if c_type == "experience" else metadata.get("project_index")
+        key = (c_type, idx)
+        if key in seen_indices:
+            continue
+        seen_indices.add(key)
 
-for chunk_type in SIMPLE_TYPE_SECTIONS:
-    res = store.search_section(
-        query_vec, chunk_types=chunk_type, candidate_id=candidate_id, version_number=version["version_number"],
-        distance_threshold=0.7, min_results=1, max_results=1
-    )
-    print(f"\n=== {chunk_type.upper()} ===")
-    for r in res:
-        value = resolve_chunk_to_mongo_source(candidates, r["metadata"])
-        print("Chunk text:", r["text"])
-        print("Resolved value:", value)
+        score = distance_to_score(r["distance"])
+        item = resolve_chunk_to_mongo_source(candidates, metadata)
+        print(f"Chunk text (score: {score}%):", r["text"][:150])
+        print("Resolved item:", item)
+        print("---")
 
-# experience + project — searched together, resolved by exact index
-res = store.search_section(
-    query_vec, chunk_types=["experience", "project"], candidate_id=candidate_id, version_number=version["version_number"],
-    distance_threshold=0.6, min_results=2, max_results=6
-)
-print(f"\n=== EXPERIENCE + PROJECT ===")
-for r in res:
-    item = resolve_chunk_to_mongo_source(candidates, r["metadata"])
-    print("Chunk text:", r["text"][:150])
-    print("Resolved item:", item)
-    print("---")
+    # --- JSON final assemblé ---
+    print("\n" + "=" * 80)
+    print("[JSON FINAL] via build_matched_cv_json")
+    print("=" * 80)
+    final_json = build_matched_cv_json(store, candidates, candidate_id, version_number, query_vec)
+    print(json.dumps(final_json, indent=2, ensure_ascii=False))
+    print("=" * 80 + "\n")
 
-print('=' * 50)
+    relevant_candidates_results.append({
+        "candidate_id": candidate_id,
+        "candidate_name": candidate.get("name"),
+        "cv_json": final_json,
+    })
 
-"""from app.generation.cv_json_builder import build_matched_cv_json
-import json
-
-final_json = build_matched_cv_json(store, candidates, candidate_id, version["version_number"], query_vec)
-print(json.dumps(final_json, indent=2, ensure_ascii=False))"""
+print(f"\n{'#' * 80}")
+print(f"TOTAL : {len(relevant_candidates_results)} candidat(s) pertinent(s) sur {candidates.count_documents({})}")
+print(f"{'#' * 80}")

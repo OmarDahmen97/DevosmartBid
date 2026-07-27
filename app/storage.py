@@ -35,14 +35,24 @@ def save_cv(cv_schema, Eng_raw_text: str,original_raw_text: str = None):
         
     # 2. Recherche par similarité de nom si non trouvé
     if not existing and cv_schema.name:
-        current_name_normalized = cv_schema.name.lower().strip()   
+        current_name_normalized = cv_schema.name.lower().strip()
         first_letter = current_name_normalized[0] if current_name_normalized else ""
+
+        # Inversion prénom/nom
+        parts = current_name_normalized.split()
+        reversed_name = " ".join(reversed(parts)) if len(parts) > 1 else current_name_normalized
+
         potential_candidates = candidates.find({
             "normalized_name": {"$regex": f"^{first_letter}"}
         })
+
         for candidate in potential_candidates:
             existing_name = candidate.get("normalized_name", "")
-            if fuzz.ratio(current_name_normalized, existing_name) >= 95:
+
+            score_normal = fuzz.ratio(current_name_normalized, existing_name)
+            score_reversed = fuzz.ratio(reversed_name, existing_name)
+
+            if max(score_normal, score_reversed) >= 95:
                 existing = candidate
                 break
 
