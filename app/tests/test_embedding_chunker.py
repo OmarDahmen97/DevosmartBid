@@ -415,33 +415,17 @@ matched_metadatas.extend(res)
 print_matched_cv(candidates, candidate_id, version["version_number"], matched_metadatas)"""
 
 
-from app.generation.mongo_resolver import resolve_list_section_matches, resolve_chunk_to_mongo_source
 import json
 from app.generation.cv_json_builder import (
     build_matched_cv_json,
-    is_candidate_relevant,
-    distance_to_score,
+    is_candidate_relevant_v2,
     MIN_RELEVANCE_SCORE,
+    PASS_A_SECTION_THRESHOLDS,
 )
-from app.generation.mongo_resolver import resolve_list_section_matches, resolve_chunk_to_mongo_source
-
-
-def distance_to_score(distance: float) -> float:
-    """Convert a cosine distance (0 = identical, up to 2 = opposite) into a
-    0-100% similarity score, easier to read than a raw distance value."""
-    similarity = 1 - distance  # cosine distance -> cosine similarity
-    return round(max(0, similarity) * 100, 1)
-
-
-import json
-from app.generation.cv_json_builder import build_matched_cv_json
-
-LIST_TYPE_SECTIONS = ["expertise_areas", "functional_skills", "education", "languages", "certifications"]
-SIMPLE_TYPE_SECTIONS = ["summary", "skills", "countries_worked", "professional_affiliations"]
 
 all_candidates_cursor = candidates.find({}, {"name": 1, "_id": 1, "versions": 1})
 
-relevant_candidates_results = []  # keep track of every candidate that passed Pass A
+relevant_candidates_results = []
 
 for candidate in all_candidates_cursor:
     candidate_id = str(candidate["_id"])
@@ -449,85 +433,39 @@ for candidate in all_candidates_cursor:
     if not versions:
         continue
 
-
-    version = versions[0]  # or pick the best version per your own logic later
+    version = versions[0]
     version_number = version["version_number"]
-    store.delete_candidate_chunks(candidate_id, version_number=version["version_number"])
+
+    store.delete_candidate_chunks(candidate_id, version_number=version_number)
     chunks = build_chunks_for_version(candidate, version, tokenizer=embedder.model.tokenizer)
     enriched = embedder.embed_chunks(chunks)
     store.index_chunks(enriched)
+
     print("=" * 80)
     print(f"CANDIDAT : {candidate.get('name')}  (version {version_number})")
     print("=" * 80)
 
-    # --- Passe A : pertinence globale ---
-    relevant = is_candidate_relevant(store, candidate_id, version_number, query_vec)
-    print(f"[PASSE A] Candidat jugé pertinent : {relevant} (seuil minimal : {MIN_RELEVANCE_SCORE}%)")
+    # --- Passe A : pertinence globale (summary + experience + project uniquement) ---
+    relevant, avg_score = is_candidate_relevant_v2(
+        store=store,
+        query_vec=query_vec,
+        candidate_id=candidate_id,
+        version_number=version_number,
+        min_score=MIN_RELEVANCE_SCORE,
+        section_thresholds=PASS_A_SECTION_THRESHOLDS,
+    )
+    print(f"[PASSE A] Candidat jugé pertinent : {relevant} (score moyen: {avg_score}%, seuil: {MIN_RELEVANCE_SCORE}%)")
 
     if not relevant:
         print("→ Candidat ignoré : non pertinent pour cette mission.\n")
         continue
 
-    # --- Passe B détaillée, section par section ---
-    print("\n" + "-" * 80)
-    print("[PASSE B] Détail par section")
-    print("-" * 80)
-
-    for chunk_type in LIST_TYPE_SECTIONS:
-        res = store.search_section(
-            query_vec, chunk_types=chunk_type, candidate_id=candidate_id, version_number=version_number,
-            distance_threshold=0.7, min_results=1, max_results=1
-        )
-        print(f"\n=== {chunk_type.upper()} ===")
-        seen_items = set()
-        for r in res:
-            score = distance_to_score(r["distance"])
-            matched_items = resolve_list_section_matches(candidates, r["metadata"], r["text"])
-            print(f"Chunk text (score: {score}%):", r["text"])
-            printed_count = 0
-            for item in matched_items:
-                key = str(item)
-                if key in seen_items:
-                    continue
-                seen_items.add(key)
-                print(" →", item)
-                printed_count += 1
-            print(f"Matched {printed_count} unique item(s) (out of {len(matched_items)} found)")
-
-    for chunk_type in SIMPLE_TYPE_SECTIONS:
-        res = store.search_section(
-            query_vec, chunk_types=chunk_type, candidate_id=candidate_id, version_number=version_number,
-            distance_threshold=0.7, min_results=1, max_results=1
-        )
-        print(f"\n=== {chunk_type.upper()} ===")
-        for r in res:
-            score = distance_to_score(r["distance"])
-            value = resolve_chunk_to_mongo_source(candidates, r["metadata"])
-            print(f"Chunk text (score: {score}%):", r["text"])
-            print("Resolved value:", value)
-
-    res = store.search_section(
-        query_vec, chunk_types=["experience", "project"], candidate_id=candidate_id, version_number=version_number,
-        distance_threshold=0.6, min_results=2, max_results=6
-    )
-    print(f"\n=== EXPERIENCE + PROJECT ===")
-    seen_indices = set()
-    for r in res:
-        metadata = r["metadata"]
-        c_type = metadata["chunk_type"]
-        idx = metadata.get("experience_index") if c_type == "experience" else metadata.get("project_index")
-        key = (c_type, idx)
-        if key in seen_indices:
-            continue
-        seen_indices.add(key)
-
-        score = distance_to_score(r["distance"])
-        item = resolve_chunk_to_mongo_source(candidates, metadata)
-        print(f"Chunk text (score: {score}%):", r["text"][:150])
-        print("Resolved item:", item)
-        print("---")
-
-    # --- JSON final assemblé ---
+    # --- JSON final : sections statiques incluses telles quelles, experience/project filtrés sémantiquement ---
+    # NOTE : build_matched_cv_json refait maintenant lui-même l'appel à is_candidate_relevant_v2
+    # en interne (Pass A gate intégré). L'appel ci-dessus est donc redondant avec celui-ci --
+    # gardé pour le logging détaillé (afficher avg_score), mais ça double le nombre de
+    # recherches Chroma par candidat. Si la perf devient un problème, retire le bloc
+    # "Passe A" ci-dessus et vérifie juste `if not final_json:` après l'appel suivant.
     print("\n" + "=" * 80)
     print("[JSON FINAL] via build_matched_cv_json")
     print("=" * 80)

@@ -3,9 +3,17 @@ from app.generation.mongo_resolver import (
     resolve_list_section_matches,
 )
 
+from bson import ObjectId
 
 
-MIN_RELEVANCE_SCORE = 40.0  # en %, seuil minimal pour considérer un candidat pertinent pour la mission
+MIN_RELEVANCE_SCORE = 60.0  # en %, seuil minimal Pass A (calibré via grid search)
+
+# Thresholds par section pour le garde-fou Pass A (is_candidate_relevant_v2)
+PASS_A_SECTION_THRESHOLDS = {
+    "summary": 0.6,
+    "experience": 0.35,
+    "project": 0.5,  # pas optimisé (aucun cas positif dans le ground truth)
+}
 
 
 def distance_to_score(distance: float) -> float:
@@ -14,87 +22,48 @@ def distance_to_score(distance: float) -> float:
     return round(max(0, similarity) * 100, 1)
 
 
-def is_candidate_relevant(
+def is_candidate_relevant_v2(
     store,
-    candidate_id: str,
-    version_number: int,
-    query_vec: list[float],
-    min_score: float = 35.0,
-    min_critical_sections: int = 1,
-) -> bool:
-    """
-    Garde-fou Passe A : vérifie si le candidat est globalement pertinent pour la mission.
-    
-    Corrections par rapport à l'ancienne version :
-    - Appels search_section SEPARES par chunk_type (pas de liste mélangée qui brouille les scores)
-    - Utilise le MAX par section critique, pas la MOYENNE globale
-    - Un candidat hors-sujet avec des micro-matchs partout ne passera plus le filtre
-    """
-    critical_sections = ["summary", "skills", "expertise_areas", "experience","projet"]
-    
+    query_vec,
+    candidate_id,
+    version_number,
+    min_score: float = MIN_RELEVANCE_SCORE,
+    section_thresholds: dict = None,
+):
+    critical_sections = ["summary", "experience", "project"]  # skills/expertise_areas retirés
+
+    if section_thresholds is None:
+        section_thresholds = PASS_A_SECTION_THRESHOLDS
+
     best_scores = []
-    has_any_result = False
-    
     for section in critical_sections:
-        # BUG CORRIGE : un seul chunk_type par appel
+        threshold = section_thresholds.get(section, 0.8)
         res = store.search_section(
-            query_vec,
-            chunk_types=section,
-            candidate_id=candidate_id,
-            version_number=version_number,
-            distance_threshold=2.0,   # large : on laisse le score décider après
-            min_results=1,
-            max_results=3,
+            query_vec, chunk_types=section, candidate_id=candidate_id,
+            version_number=version_number, distance_threshold=threshold,
+            min_results=0, max_results=3,
         )
-        
         if res:
-            has_any_result = True
-            best_score = max(distance_to_score(r["distance"]) for r in res)
-            best_scores.append(best_score)
-        else:
-            best_scores.append(0.0)
-    
-    if not has_any_result:
-        return False
-    
-    # CRITERE 1 (principal) : au moins N sections critiques dépassent le seuil
-    # Un vrai match a typiquement summary ET skills qui matchent fort
-    sections_above_threshold = sum(1 for s in best_scores if s >= min_score)
-    if sections_above_threshold >= min_critical_sections:
-        return True
-    
-    # CRITERE 2 (fallback conservateur) : moyenne très élevée sur les sections critiques
-    # Pour les profils transverses qui matchent partout un peu (ex: consultant senior généraliste)
+            best_scores.append(max(distance_to_score(r["distance"]) for r in res))
+        # sinon : section vide, non ajoutée -> ne tire pas la moyenne vers le bas
+
+    if not best_scores:
+        return False, 0.0
+
+    sections_above = sum(1 for s in best_scores if s >= min_score)
     avg_score = sum(best_scores) / len(best_scores)
-    return avg_score >= (min_score + 15)   # seuil plus strict : 50 si min_score=35
-
-def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_number: int, query_vec: list[float]) -> dict:
-    """
-    Orchestrate the full retrieval + resolution pipeline for one candidate.
-    Returns an empty dict if the candidate is not relevant enough for this mission (Pass A gate).
-    """
-    if not is_candidate_relevant(store, candidate_id, version_number, query_vec):
-        return {}
-
-    result = {}
-
-
+    return sections_above >= 1 and avg_score >= (min_score * 0.5), avg_score
 
 
 # Search configuration per section chunk_type, calibrated empirically.
-# Sections that resolve via exact index (experience/project) or plain
-# value (summary, skills, countries_worked, professional_affiliations)
-# vs. sections that resolve via text-overlap matching (the LIST_TYPE ones)
-# are all searched the same way — only the resolution step differs.
-# Dans app/generation/cv_json_builder.py
 SEARCH_CONFIG = {
-    "summary": {"distance_threshold": 0.5, "min_results": 1, "max_results": 1},
+    "summary": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
     "skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 1},
     "functional_skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 1},
     "expertise_areas": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
-    "experience": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
-    "project": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
-    
+    "experience": {"distance_threshold": 0.35, "min_results": 1, "max_results": 1},
+    "project": {"distance_threshold": 0.5, "min_results": 1, "max_results": 1},
+
     # OPTIONNELLES : min_results=0
     "education": {"distance_threshold": 0.7, "min_results": 0, "max_results": 1},
     "languages": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
@@ -103,8 +72,11 @@ SEARCH_CONFIG = {
     "professional_affiliations": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
 }
 
-# experience/project handled separately: searched together, multiple results expected
-WORK_SEARCH_CONFIG = {"distance_threshold": 0.6, "min_results": 2, "max_results": 6}
+# experience et project cherchés SEPAREMENT (pas de liste fusionnée), chacun
+# avec son propre threshold calibré. min_results/max_results restent communs
+# pour l'instant (pas de signal du grid search pour les différencier).
+EXPERIENCE_SEARCH_CONFIG = {"distance_threshold": 0.35, "min_results": 2, "max_results": 6}
+PROJECT_SEARCH_CONFIG = {"distance_threshold": 0.5, "min_results": 2, "max_results": 6}
 
 # chunk_types resolved via exact index (no text-matching needed)
 INDEXED_TYPES = {"experience", "project"}
@@ -115,73 +87,71 @@ LIST_TYPES = {"expertise_areas", "functional_skills", "education", "languages", 
 
 def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_number: int, query_vec: list[float]) -> dict:
     """
-    Orchestrate the full retrieval + resolution pipeline for one candidate:
-    - search each section type in Chroma with its calibrated parameters
-    - resolve matched chunks back to their exact Mongo source data
-    - assemble a clean structured JSON, ready for CV template rendering
+    Static sections (summary, skills, education, etc.) are included wholesale
+    from Mongo — no semantic filtering. Only experience/project go through
+    Chroma search, since that's the only part of a CV that should adapt to
+    the target mission.
 
-    No LLM involved: Chroma decides relevance, Mongo provides the exact data.
+    NOTE: no relevance gate here on purpose. This function is called both for
+    single-CV-upload flows (user wants a JSON regardless of match quality) and
+    for batch scans across the whole candidate base (where the caller applies
+    is_candidate_relevant_v2 itself beforehand and skips irrelevant candidates).
+    Keeping the gate out of this function keeps both use cases correct without
+    a mode flag.
     """
+    candidate = mongo_collection.find_one({"_id": ObjectId(candidate_id)})
+    if not candidate:
+        return {}
+
+    version = next((v for v in candidate["versions"] if v["version_number"] == version_number), None)
+    if not version:
+        return {}
+
+    structured = version["structured"]
     result = {}
 
-    # 1. simple/list sections
-    for chunk_type, params in SEARCH_CONFIG.items():
-        res = store.search_section(
-            query_vec, chunk_types=chunk_type, candidate_id=candidate_id,version_number=version_number, **params
-        )
-        if not res:
-            continue
+    STATIC_SECTIONS = [
+        "summary", "skills", "expertise_areas", "functional_skills",
+        "education", "languages", "certifications",
+        "countries_worked", "professional_affiliations",
+    ]
+    for section in STATIC_SECTIONS:
+        value = structured.get(section)
+        if value:
+            result[section] = value
 
-        if chunk_type in LIST_TYPES:
-            # merge matched items across all returned chunks for this type, deduplicated by content
-            all_items = []
-            seen = set()
-            for r in res:
-                items = resolve_list_section_matches(mongo_collection, r["metadata"], r["text"])
-                for item in items:
-                    key = str(item)  # simple dedup key
-                    if key not in seen:
-                        seen.add(key)
-                        all_items.append(item)
-            if all_items:
-                result[chunk_type] = all_items
-        else:
-            # simple value sections (summary, skills, countries_worked, professional_affiliations)
-            value = resolve_chunk_to_mongo_source(mongo_collection, res[0]["metadata"])
-            if value:
-                result[chunk_type] = value
-
-    # 2. experience + project, searched together, resolved by exact index
-    work_res = store.search_section(
-        query_vec, chunk_types=["experience", "project"], candidate_id=candidate_id,version_number=version_number, **WORK_SEARCH_CONFIG
+    # experience + project : recherches séparées, thresholds différents
+    experience_res = store.search_section(
+        query_vec, chunk_types="experience", candidate_id=candidate_id,
+        version_number=version_number, **EXPERIENCE_SEARCH_CONFIG
+    )
+    project_res = store.search_section(
+        query_vec, chunk_types="project", candidate_id=candidate_id,
+        version_number=version_number, **PROJECT_SEARCH_CONFIG
     )
 
-    experiences = []
-    projects = []
-    seen_experience_indices = set()
-    seen_project_indices = set()
+    experiences, projects = [], []
+    seen_experience_indices, seen_project_indices = set(), set()
 
-    for r in work_res:
+    for r in experience_res:
         metadata = r["metadata"]
-        chunk_type = metadata["chunk_type"]
+        idx = metadata["experience_index"]
+        if idx in seen_experience_indices:
+            continue
+        seen_experience_indices.add(idx)
+        item = resolve_chunk_to_mongo_source(mongo_collection, metadata)
+        if item:
+            experiences.append(item)
 
-        if chunk_type == "experience":
-            idx = metadata["experience_index"]
-            if idx in seen_experience_indices:
-                continue
-            seen_experience_indices.add(idx)
-            item = resolve_chunk_to_mongo_source(mongo_collection, metadata)
-            if item:
-                experiences.append(item)
-
-        elif chunk_type == "project":
-            idx = metadata["project_index"]
-            if idx in seen_project_indices:
-                continue
-            seen_project_indices.add(idx)
-            item = resolve_chunk_to_mongo_source(mongo_collection, metadata)
-            if item:
-                projects.append(item)
+    for r in project_res:
+        metadata = r["metadata"]
+        idx = metadata["project_index"]
+        if idx in seen_project_indices:
+            continue
+        seen_project_indices.add(idx)
+        item = resolve_chunk_to_mongo_source(mongo_collection, metadata)
+        if item:
+            projects.append(item)
 
     if experiences:
         result["experience"] = experiences

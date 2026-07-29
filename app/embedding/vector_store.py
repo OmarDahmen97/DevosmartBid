@@ -69,7 +69,7 @@ class VectorStore:
     chunk_types: str | list[str],
     candidate_id: str = None,
     version_number: int = None,  # NEW — temporary filter to test single-version search
-    distance_threshold: float = 0.6,
+    distance_threshold: float = 0.4,
     min_results: int = 1,
     max_results: int = 5,
     ) -> list[dict]:
@@ -119,7 +119,7 @@ class VectorStore:
         query_embedding: list[float],
         chunk_types: list[str],
         candidate_id: str = None,
-        distance_threshold: float = 0.6,
+        distance_threshold: float = 0.3,
         min_results: int = 1,
         max_results: int = 1,
     ) -> list[dict]:

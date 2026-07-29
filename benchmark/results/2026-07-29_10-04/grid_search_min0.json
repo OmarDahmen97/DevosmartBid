@@ -1,0 +1,2858 @@
+[
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.034,
+          "correct": 1,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.97,
+          "correct": 164,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.368,
+          "correct": 7,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.762,
+        "recall": 0.246,
+        "f1": 0.372,
+        "details": {
+          "tp": 16,
+          "fp": 5,
+          "fn": 49
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.034,
+          "correct": 1,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.97,
+          "correct": 164,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.368,
+          "correct": 7,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.762,
+        "recall": 0.246,
+        "f1": 0.372,
+        "details": {
+          "tp": 16,
+          "fp": 5,
+          "fn": 49
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.034,
+          "correct": 1,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.97,
+          "correct": 164,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.368,
+          "correct": 7,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.762,
+        "recall": 0.246,
+        "f1": 0.372,
+        "details": {
+          "tp": 16,
+          "fp": 5,
+          "fn": 49
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.034,
+          "correct": 1,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.97,
+          "correct": 164,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.368,
+          "correct": 7,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.762,
+        "recall": 0.246,
+        "f1": 0.372,
+        "details": {
+          "tp": 16,
+          "fp": 5,
+          "fn": 49
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.053,
+          "correct": 1,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.235,
+          "correct": 4,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 1.0,
+        "recall": 0.077,
+        "f1": 0.143,
+        "details": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 60
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 14,
+          "fp": 73,
+          "fn": 7,
+          "vn": 140,
+          "precision": 0.161,
+          "recall": 0.667,
+          "f1": 0.259
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.517,
+          "correct": 15,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.651,
+          "correct": 110,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.842,
+          "correct": 16,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.433,
+        "recall": 0.692,
+        "f1": 0.533,
+        "details": {
+          "tp": 45,
+          "fp": 59,
+          "fn": 20
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 14,
+          "fp": 73,
+          "fn": 7,
+          "vn": 140,
+          "precision": 0.161,
+          "recall": 0.667,
+          "f1": 0.259
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.517,
+          "correct": 15,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.651,
+          "correct": 110,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.842,
+          "correct": 16,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.433,
+        "recall": 0.692,
+        "f1": 0.533,
+        "details": {
+          "tp": 45,
+          "fp": 59,
+          "fn": 20
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 14,
+          "fp": 73,
+          "fn": 7,
+          "vn": 140,
+          "precision": 0.161,
+          "recall": 0.667,
+          "f1": 0.259
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.517,
+          "correct": 15,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.651,
+          "correct": 110,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.842,
+          "correct": 16,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.433,
+        "recall": 0.692,
+        "f1": 0.533,
+        "details": {
+          "tp": 45,
+          "fp": 59,
+          "fn": 20
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 14,
+          "fp": 73,
+          "fn": 7,
+          "vn": 140,
+          "precision": 0.161,
+          "recall": 0.667,
+          "f1": 0.259
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.241,
+          "correct": 7,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.923,
+          "correct": 156,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.579,
+          "correct": 11,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.529,
+          "correct": 9,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.675,
+        "recall": 0.415,
+        "f1": 0.514,
+        "details": {
+          "tp": 27,
+          "fp": 13,
+          "fn": 38
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 14,
+          "fp": 73,
+          "fn": 7,
+          "vn": 140,
+          "precision": 0.161,
+          "recall": 0.667,
+          "f1": 0.259
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.053,
+          "correct": 1,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.235,
+          "correct": 4,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 1.0,
+        "recall": 0.077,
+        "f1": 0.143,
+        "details": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 60
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 14,
+          "fp": 73,
+          "fn": 7,
+          "vn": 140,
+          "precision": 0.161,
+          "recall": 0.667,
+          "f1": 0.259
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 14,
+          "fp": 73,
+          "fn": 7,
+          "vn": 140,
+          "precision": 0.161,
+          "recall": 0.667,
+          "f1": 0.259
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 15,
+          "fp": 17,
+          "fn": 50,
+          "vn": 152,
+          "precision": 0.469,
+          "recall": 0.231,
+          "f1": 0.309
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 154,
+          "fn": 4,
+          "vn": 59,
+          "precision": 0.099,
+          "recall": 0.81,
+          "f1": 0.177
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.897,
+          "correct": 26,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.231,
+          "correct": 39,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.947,
+          "correct": 18,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.319,
+        "recall": 0.938,
+        "f1": 0.477,
+        "details": {
+          "tp": 61,
+          "fp": 130,
+          "fn": 4
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 15,
+          "fp": 17,
+          "fn": 50,
+          "vn": 152,
+          "precision": 0.469,
+          "recall": 0.231,
+          "f1": 0.309
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 154,
+          "fn": 4,
+          "vn": 59,
+          "precision": 0.099,
+          "recall": 0.81,
+          "f1": 0.177
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.862,
+          "correct": 25,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.32,
+          "correct": 54,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.947,
+          "correct": 18,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.343,
+        "recall": 0.923,
+        "f1": 0.5,
+        "details": {
+          "tp": 60,
+          "fp": 115,
+          "fn": 5
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 15,
+          "fp": 17,
+          "fn": 50,
+          "vn": 152,
+          "precision": 0.469,
+          "recall": 0.231,
+          "f1": 0.309
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 154,
+          "fn": 4,
+          "vn": 59,
+          "precision": 0.099,
+          "recall": 0.81,
+          "f1": 0.177
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.517,
+          "correct": 15,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.609,
+          "correct": 103,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.842,
+          "correct": 16,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.411,
+        "recall": 0.708,
+        "f1": 0.52,
+        "details": {
+          "tp": 46,
+          "fp": 66,
+          "fn": 19
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 15,
+          "fp": 17,
+          "fn": 50,
+          "vn": 152,
+          "precision": 0.469,
+          "recall": 0.231,
+          "f1": 0.309
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 154,
+          "fn": 4,
+          "vn": 59,
+          "precision": 0.099,
+          "recall": 0.81,
+          "f1": 0.177
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.276,
+          "correct": 8,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.852,
+          "correct": 144,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.632,
+          "correct": 12,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.647,
+          "correct": 11,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.554,
+        "recall": 0.477,
+        "f1": 0.512,
+        "details": {
+          "tp": 31,
+          "fp": 25,
+          "fn": 34
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 15,
+          "fp": 17,
+          "fn": 50,
+          "vn": 152,
+          "precision": 0.469,
+          "recall": 0.231,
+          "f1": 0.309
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 154,
+          "fn": 4,
+          "vn": 59,
+          "precision": 0.099,
+          "recall": 0.81,
+          "f1": 0.177
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.241,
+          "correct": 7,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.899,
+          "correct": 152,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.211,
+          "correct": 4,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.528,
+        "recall": 0.292,
+        "f1": 0.376,
+        "details": {
+          "tp": 19,
+          "fp": 17,
+          "fn": 46
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 15,
+          "fp": 17,
+          "fn": 50,
+          "vn": 152,
+          "precision": 0.469,
+          "recall": 0.231,
+          "f1": 0.309
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 154,
+          "fn": 4,
+          "vn": 59,
+          "precision": 0.099,
+          "recall": 0.81,
+          "f1": 0.177
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.241,
+          "correct": 7,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.905,
+          "correct": 153,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.158,
+          "correct": 3,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.353,
+          "correct": 6,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0.5,
+        "recall": 0.246,
+        "f1": 0.33,
+        "details": {
+          "tp": 16,
+          "fp": 16,
+          "fn": 49
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 15,
+          "fp": 17,
+          "fn": 50,
+          "vn": 152,
+          "precision": 0.469,
+          "recall": 0.231,
+          "f1": 0.309
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 154,
+          "fn": 4,
+          "vn": 59,
+          "precision": 0.099,
+          "recall": 0.81,
+          "f1": 0.177
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.241,
+          "correct": 7,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.935,
+          "correct": 158,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.158,
+          "correct": 3,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.294,
+          "correct": 5,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0.577,
+        "recall": 0.231,
+        "f1": 0.33,
+        "details": {
+          "tp": 15,
+          "fp": 11,
+          "fn": 50
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 28,
+          "fp": 74,
+          "fn": 37,
+          "vn": 95,
+          "precision": 0.275,
+          "recall": 0.431,
+          "f1": 0.335
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 194,
+          "fn": 4,
+          "vn": 19,
+          "precision": 0.081,
+          "recall": 0.81,
+          "f1": 0.147
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 1.0,
+          "correct": 29,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.053,
+          "correct": 9,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.947,
+          "correct": 18,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.286,
+        "recall": 0.985,
+        "f1": 0.443,
+        "details": {
+          "tp": 64,
+          "fp": 160,
+          "fn": 1
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 28,
+          "fp": 74,
+          "fn": 37,
+          "vn": 95,
+          "precision": 0.275,
+          "recall": 0.431,
+          "f1": 0.335
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 194,
+          "fn": 4,
+          "vn": 19,
+          "precision": 0.081,
+          "recall": 0.81,
+          "f1": 0.147
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.897,
+          "correct": 26,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.254,
+          "correct": 43,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.947,
+          "correct": 18,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.326,
+        "recall": 0.938,
+        "f1": 0.484,
+        "details": {
+          "tp": 61,
+          "fp": 126,
+          "fn": 4
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 28,
+          "fp": 74,
+          "fn": 37,
+          "vn": 95,
+          "precision": 0.275,
+          "recall": 0.431,
+          "f1": 0.335
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 194,
+          "fn": 4,
+          "vn": 19,
+          "precision": 0.081,
+          "recall": 0.81,
+          "f1": 0.147
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.621,
+          "correct": 18,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.426,
+          "correct": 72,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.895,
+          "correct": 17,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.941,
+          "correct": 16,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.345,
+        "recall": 0.785,
+        "f1": 0.479,
+        "details": {
+          "tp": 51,
+          "fp": 97,
+          "fn": 14
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 28,
+          "fp": 74,
+          "fn": 37,
+          "vn": 95,
+          "precision": 0.275,
+          "recall": 0.431,
+          "f1": 0.335
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 194,
+          "fn": 4,
+          "vn": 19,
+          "precision": 0.081,
+          "recall": 0.81,
+          "f1": 0.147
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.448,
+          "correct": 13,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.55,
+          "correct": 93,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.737,
+          "correct": 14,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.706,
+          "correct": 12,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.339,
+        "recall": 0.6,
+        "f1": 0.433,
+        "details": {
+          "tp": 39,
+          "fp": 76,
+          "fn": 26
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 28,
+          "fp": 74,
+          "fn": 37,
+          "vn": 95,
+          "precision": 0.275,
+          "recall": 0.431,
+          "f1": 0.335
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 194,
+          "fn": 4,
+          "vn": 19,
+          "precision": 0.081,
+          "recall": 0.81,
+          "f1": 0.147
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.448,
+          "correct": 13,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.604,
+          "correct": 102,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.421,
+          "correct": 8,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.588,
+          "correct": 10,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.316,
+        "recall": 0.477,
+        "f1": 0.38,
+        "details": {
+          "tp": 31,
+          "fp": 67,
+          "fn": 34
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 28,
+          "fp": 74,
+          "fn": 37,
+          "vn": 95,
+          "precision": 0.275,
+          "recall": 0.431,
+          "f1": 0.335
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 194,
+          "fn": 4,
+          "vn": 19,
+          "precision": 0.081,
+          "recall": 0.81,
+          "f1": 0.147
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.379,
+          "correct": 11,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.657,
+          "correct": 111,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.368,
+          "correct": 7,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.588,
+          "correct": 10,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0.326,
+        "recall": 0.431,
+        "f1": 0.371,
+        "details": {
+          "tp": 28,
+          "fp": 58,
+          "fn": 37
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 28,
+          "fp": 74,
+          "fn": 37,
+          "vn": 95,
+          "precision": 0.275,
+          "recall": 0.431,
+          "f1": 0.335
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 194,
+          "fn": 4,
+          "vn": 19,
+          "precision": 0.081,
+          "recall": 0.81,
+          "f1": 0.147
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.345,
+          "correct": 10,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.781,
+          "correct": 132,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.316,
+          "correct": 6,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0.393,
+        "recall": 0.369,
+        "f1": 0.381,
+        "details": {
+          "tp": 24,
+          "fp": 37,
+          "fn": 41
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 38,
+          "fp": 134,
+          "fn": 27,
+          "vn": 35,
+          "precision": 0.221,
+          "recall": 0.585,
+          "f1": 0.321
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 1.0,
+          "correct": 29,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.047,
+          "correct": 8,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.947,
+          "correct": 18,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.284,
+        "recall": 0.985,
+        "f1": 0.441,
+        "details": {
+          "tp": 64,
+          "fp": 161,
+          "fn": 1
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 38,
+          "fp": 134,
+          "fn": 27,
+          "vn": 35,
+          "precision": 0.221,
+          "recall": 0.585,
+          "f1": 0.321
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.897,
+          "correct": 26,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.142,
+          "correct": 24,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.947,
+          "correct": 18,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.296,
+        "recall": 0.938,
+        "f1": 0.45,
+        "details": {
+          "tp": 61,
+          "fp": 145,
+          "fn": 4
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 38,
+          "fp": 134,
+          "fn": 27,
+          "vn": 35,
+          "precision": 0.221,
+          "recall": 0.585,
+          "f1": 0.321
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.793,
+          "correct": 23,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.183,
+          "correct": 31,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.947,
+          "correct": 18,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.941,
+          "correct": 16,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.292,
+        "recall": 0.877,
+        "f1": 0.438,
+        "details": {
+          "tp": 57,
+          "fp": 138,
+          "fn": 8
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 38,
+          "fp": 134,
+          "fn": 27,
+          "vn": 35,
+          "precision": 0.221,
+          "recall": 0.585,
+          "f1": 0.321
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.759,
+          "correct": 22,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.201,
+          "correct": 34,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.842,
+          "correct": 16,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.278,
+        "recall": 0.8,
+        "f1": 0.413,
+        "details": {
+          "tp": 52,
+          "fp": 135,
+          "fn": 13
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 38,
+          "fp": 134,
+          "fn": 27,
+          "vn": 35,
+          "precision": 0.221,
+          "recall": 0.585,
+          "f1": 0.321
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.759,
+          "correct": 22,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.308,
+          "correct": 52,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.579,
+          "correct": 11,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.287,
+        "recall": 0.723,
+        "f1": 0.41,
+        "details": {
+          "tp": 47,
+          "fp": 117,
+          "fn": 18
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 38,
+          "fp": 134,
+          "fn": 27,
+          "vn": 35,
+          "precision": 0.221,
+          "recall": 0.585,
+          "f1": 0.321
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.69,
+          "correct": 20,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.456,
+          "correct": 77,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0.324,
+        "recall": 0.677,
+        "f1": 0.438,
+        "details": {
+          "tp": 44,
+          "fp": 92,
+          "fn": 21
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 38,
+          "fp": 134,
+          "fn": 27,
+          "vn": 35,
+          "precision": 0.221,
+          "recall": 0.585,
+          "f1": 0.321
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.483,
+          "correct": 14,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.669,
+          "correct": 113,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.421,
+          "correct": 8,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.706,
+          "correct": 12,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0.378,
+        "recall": 0.523,
+        "f1": 0.439,
+        "details": {
+          "tp": 34,
+          "fp": 56,
+          "fn": 31
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 161,
+          "fn": 23,
+          "vn": 8,
+          "precision": 0.207,
+          "recall": 0.646,
+          "f1": 0.313
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 1.0,
+          "correct": 29,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 1.0,
+          "correct": 19,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.278,
+        "recall": 1.0,
+        "f1": 0.435,
+        "details": {
+          "tp": 65,
+          "fp": 169,
+          "fn": 0
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 161,
+          "fn": 23,
+          "vn": 8,
+          "precision": 0.207,
+          "recall": 0.646,
+          "f1": 0.313
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 1.0,
+          "correct": 29,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.012,
+          "correct": 2,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 1.0,
+          "correct": 19,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.28,
+        "recall": 1.0,
+        "f1": 0.438,
+        "details": {
+          "tp": 65,
+          "fp": 167,
+          "fn": 0
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 161,
+          "fn": 23,
+          "vn": 8,
+          "precision": 0.207,
+          "recall": 0.646,
+          "f1": 0.313
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.966,
+          "correct": 28,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.041,
+          "correct": 7,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 1.0,
+          "correct": 19,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 1.0,
+          "correct": 17,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.283,
+        "recall": 0.985,
+        "f1": 0.44,
+        "details": {
+          "tp": 64,
+          "fp": 162,
+          "fn": 1
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 161,
+          "fn": 23,
+          "vn": 8,
+          "precision": 0.207,
+          "recall": 0.646,
+          "f1": 0.313
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.931,
+          "correct": 27,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.089,
+          "correct": 15,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.842,
+          "correct": 16,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.274,
+        "recall": 0.892,
+        "f1": 0.419,
+        "details": {
+          "tp": 58,
+          "fp": 154,
+          "fn": 7
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 161,
+          "fn": 23,
+          "vn": 8,
+          "precision": 0.207,
+          "recall": 0.646,
+          "f1": 0.313
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.828,
+          "correct": 24,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.26,
+          "correct": 44,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.579,
+          "correct": 11,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.286,
+        "recall": 0.769,
+        "f1": 0.417,
+        "details": {
+          "tp": 50,
+          "fp": 125,
+          "fn": 15
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 161,
+          "fn": 23,
+          "vn": 8,
+          "precision": 0.207,
+          "recall": 0.646,
+          "f1": 0.313
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.724,
+          "correct": 21,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.456,
+          "correct": 77,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0.333,
+        "recall": 0.708,
+        "f1": 0.453,
+        "details": {
+          "tp": 46,
+          "fp": 92,
+          "fn": 19
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 161,
+          "fn": 23,
+          "vn": 8,
+          "precision": 0.207,
+          "recall": 0.646,
+          "f1": 0.313
+        },
+        "experience": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 4,
+          "vn": 16,
+          "precision": 0.079,
+          "recall": 0.81,
+          "f1": 0.145
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.483,
+          "correct": 14,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.669,
+          "correct": 113,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.421,
+          "correct": 8,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.706,
+          "correct": 12,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0.378,
+        "recall": 0.523,
+        "f1": 0.439,
+        "details": {
+          "tp": 34,
+          "fp": 56,
+          "fn": 31
+        }
+      }
+    }
+  }
+]

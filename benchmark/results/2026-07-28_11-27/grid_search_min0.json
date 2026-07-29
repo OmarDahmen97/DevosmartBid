@@ -1,0 +1,5882 @@
+[
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 14,
+          "vn": 220,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 23,
+          "vn": 211,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 9,
+          "vn": 225,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.053,
+          "correct": 1,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.235,
+          "correct": 4,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 1.0,
+        "recall": 0.077,
+        "f1": 0.143,
+        "details": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 60
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 14,
+          "vn": 220,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 23,
+          "vn": 211,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 9,
+          "vn": 225,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 14,
+          "vn": 220,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 23,
+          "vn": 211,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 9,
+          "vn": 225,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 14,
+          "vn": 220,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 23,
+          "vn": 211,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 9,
+          "vn": 225,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 14,
+          "vn": 220,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 23,
+          "vn": 211,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 9,
+          "vn": 225,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 14,
+          "vn": 220,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 23,
+          "vn": 211,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 9,
+          "vn": 225,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.3,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 14,
+          "vn": 220,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 23,
+          "vn": 211,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "experience": {
+          "vp": 10,
+          "fp": 6,
+          "fn": 11,
+          "vn": 207,
+          "precision": 0.625,
+          "recall": 0.476,
+          "f1": 0.541
+        },
+        "project": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 0,
+          "vn": 229,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 9,
+          "vn": 225,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 14,
+          "vn": 215,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 4,
+          "fp": 16,
+          "fn": 19,
+          "vn": 195,
+          "precision": 0.2,
+          "recall": 0.174,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 16,
+          "fp": 73,
+          "fn": 5,
+          "vn": 140,
+          "precision": 0.18,
+          "recall": 0.762,
+          "f1": 0.291
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 2,
+          "fn": 0,
+          "vn": 232,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 3,
+          "fn": 9,
+          "vn": 222,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.138,
+          "correct": 4,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.953,
+          "correct": 161,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.158,
+          "correct": 3,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.235,
+          "correct": 4,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.579,
+        "recall": 0.169,
+        "f1": 0.262,
+        "details": {
+          "tp": 11,
+          "fp": 8,
+          "fn": 54
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 14,
+          "vn": 215,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 4,
+          "fp": 16,
+          "fn": 19,
+          "vn": 195,
+          "precision": 0.2,
+          "recall": 0.174,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 16,
+          "fp": 73,
+          "fn": 5,
+          "vn": 140,
+          "precision": 0.18,
+          "recall": 0.762,
+          "f1": 0.291
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 2,
+          "fn": 0,
+          "vn": 232,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 3,
+          "fn": 9,
+          "vn": 222,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.138,
+          "correct": 4,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.953,
+          "correct": 161,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.105,
+          "correct": 2,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.118,
+          "correct": 2,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.5,
+        "recall": 0.123,
+        "f1": 0.198,
+        "details": {
+          "tp": 8,
+          "fp": 8,
+          "fn": 57
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 14,
+          "vn": 215,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 4,
+          "fp": 16,
+          "fn": 19,
+          "vn": 195,
+          "precision": 0.2,
+          "recall": 0.174,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 16,
+          "fp": 73,
+          "fn": 5,
+          "vn": 140,
+          "precision": 0.18,
+          "recall": 0.762,
+          "f1": 0.291
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 2,
+          "fn": 0,
+          "vn": 232,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 3,
+          "fn": 9,
+          "vn": 222,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.138,
+          "correct": 4,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.953,
+          "correct": 161,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.105,
+          "correct": 2,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.118,
+          "correct": 2,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.5,
+        "recall": 0.123,
+        "f1": 0.198,
+        "details": {
+          "tp": 8,
+          "fp": 8,
+          "fn": 57
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 14,
+          "vn": 215,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 4,
+          "fp": 16,
+          "fn": 19,
+          "vn": 195,
+          "precision": 0.2,
+          "recall": 0.174,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 16,
+          "fp": 73,
+          "fn": 5,
+          "vn": 140,
+          "precision": 0.18,
+          "recall": 0.762,
+          "f1": 0.291
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 2,
+          "fn": 0,
+          "vn": 232,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 3,
+          "fn": 9,
+          "vn": 222,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.138,
+          "correct": 4,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.953,
+          "correct": 161,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.105,
+          "correct": 2,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.118,
+          "correct": 2,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.5,
+        "recall": 0.123,
+        "f1": 0.198,
+        "details": {
+          "tp": 8,
+          "fp": 8,
+          "fn": 57
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 14,
+          "vn": 215,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 4,
+          "fp": 16,
+          "fn": 19,
+          "vn": 195,
+          "precision": 0.2,
+          "recall": 0.174,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 16,
+          "fp": 73,
+          "fn": 5,
+          "vn": 140,
+          "precision": 0.18,
+          "recall": 0.762,
+          "f1": 0.291
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 2,
+          "fn": 0,
+          "vn": 232,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 3,
+          "fn": 9,
+          "vn": 222,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.103,
+          "correct": 3,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.953,
+          "correct": 161,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.105,
+          "correct": 2,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.118,
+          "correct": 2,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.467,
+        "recall": 0.108,
+        "f1": 0.175,
+        "details": {
+          "tp": 7,
+          "fp": 8,
+          "fn": 58
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 14,
+          "vn": 215,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 4,
+          "fp": 16,
+          "fn": 19,
+          "vn": 195,
+          "precision": 0.2,
+          "recall": 0.174,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 16,
+          "fp": 73,
+          "fn": 5,
+          "vn": 140,
+          "precision": 0.18,
+          "recall": 0.762,
+          "f1": 0.291
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 2,
+          "fn": 0,
+          "vn": 232,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 3,
+          "fn": 9,
+          "vn": 222,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.034,
+          "correct": 1,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.053,
+          "correct": 1,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.059,
+          "correct": 1,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 1.0,
+        "recall": 0.046,
+        "f1": 0.088,
+        "details": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 62
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.4,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "skills": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 65,
+          "vn": 169,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "functional_skills": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 14,
+          "vn": 215,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "expertise_areas": {
+          "vp": 4,
+          "fp": 16,
+          "fn": 19,
+          "vn": 195,
+          "precision": 0.2,
+          "recall": 0.174,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 16,
+          "fp": 73,
+          "fn": 5,
+          "vn": 140,
+          "precision": 0.18,
+          "recall": 0.762,
+          "f1": 0.291
+        },
+        "project": {
+          "vp": 0,
+          "fp": 15,
+          "fn": 0,
+          "vn": 219,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 2,
+          "fn": 0,
+          "vn": 232,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 0,
+          "fp": 3,
+          "fn": 9,
+          "vn": 222,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 1.0,
+          "correct": 169,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "details": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 16,
+          "fp": 17,
+          "fn": 49,
+          "vn": 152,
+          "precision": 0.485,
+          "recall": 0.246,
+          "f1": 0.327
+        },
+        "skills": {
+          "vp": 19,
+          "fp": 22,
+          "fn": 46,
+          "vn": 147,
+          "precision": 0.463,
+          "recall": 0.292,
+          "f1": 0.358
+        },
+        "functional_skills": {
+          "vp": 4,
+          "fp": 65,
+          "fn": 10,
+          "vn": 155,
+          "precision": 0.058,
+          "recall": 0.286,
+          "f1": 0.096
+        },
+        "expertise_areas": {
+          "vp": 11,
+          "fp": 84,
+          "fn": 12,
+          "vn": 127,
+          "precision": 0.116,
+          "recall": 0.478,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 154,
+          "fn": 2,
+          "vn": 59,
+          "precision": 0.11,
+          "recall": 0.905,
+          "f1": 0.196
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 28,
+          "fn": 0,
+          "vn": 206,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 4,
+          "fp": 15,
+          "fn": 5,
+          "vn": 210,
+          "precision": 0.211,
+          "recall": 0.444,
+          "f1": 0.286
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.448,
+          "correct": 13,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.562,
+          "correct": 95,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.588,
+          "correct": 10,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.308,
+        "recall": 0.508,
+        "f1": 0.384,
+        "details": {
+          "tp": 33,
+          "fp": 74,
+          "fn": 32
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 16,
+          "fp": 17,
+          "fn": 49,
+          "vn": 152,
+          "precision": 0.485,
+          "recall": 0.246,
+          "f1": 0.327
+        },
+        "skills": {
+          "vp": 19,
+          "fp": 22,
+          "fn": 46,
+          "vn": 147,
+          "precision": 0.463,
+          "recall": 0.292,
+          "f1": 0.358
+        },
+        "functional_skills": {
+          "vp": 4,
+          "fp": 65,
+          "fn": 10,
+          "vn": 155,
+          "precision": 0.058,
+          "recall": 0.286,
+          "f1": 0.096
+        },
+        "expertise_areas": {
+          "vp": 11,
+          "fp": 84,
+          "fn": 12,
+          "vn": 127,
+          "precision": 0.116,
+          "recall": 0.478,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 154,
+          "fn": 2,
+          "vn": 59,
+          "precision": 0.11,
+          "recall": 0.905,
+          "f1": 0.196
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 28,
+          "fn": 0,
+          "vn": 206,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 4,
+          "fp": 15,
+          "fn": 5,
+          "vn": 210,
+          "precision": 0.211,
+          "recall": 0.444,
+          "f1": 0.286
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.448,
+          "correct": 13,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.562,
+          "correct": 95,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.474,
+          "correct": 9,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.588,
+          "correct": 10,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.302,
+        "recall": 0.492,
+        "f1": 0.374,
+        "details": {
+          "tp": 32,
+          "fp": 74,
+          "fn": 33
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 16,
+          "fp": 17,
+          "fn": 49,
+          "vn": 152,
+          "precision": 0.485,
+          "recall": 0.246,
+          "f1": 0.327
+        },
+        "skills": {
+          "vp": 19,
+          "fp": 22,
+          "fn": 46,
+          "vn": 147,
+          "precision": 0.463,
+          "recall": 0.292,
+          "f1": 0.358
+        },
+        "functional_skills": {
+          "vp": 4,
+          "fp": 65,
+          "fn": 10,
+          "vn": 155,
+          "precision": 0.058,
+          "recall": 0.286,
+          "f1": 0.096
+        },
+        "expertise_areas": {
+          "vp": 11,
+          "fp": 84,
+          "fn": 12,
+          "vn": 127,
+          "precision": 0.116,
+          "recall": 0.478,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 154,
+          "fn": 2,
+          "vn": 59,
+          "precision": 0.11,
+          "recall": 0.905,
+          "f1": 0.196
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 28,
+          "fn": 0,
+          "vn": 206,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 4,
+          "fp": 15,
+          "fn": 5,
+          "vn": 210,
+          "precision": 0.211,
+          "recall": 0.444,
+          "f1": 0.286
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.448,
+          "correct": 13,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.562,
+          "correct": 95,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.474,
+          "correct": 9,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.588,
+          "correct": 10,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.302,
+        "recall": 0.492,
+        "f1": 0.374,
+        "details": {
+          "tp": 32,
+          "fp": 74,
+          "fn": 33
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 16,
+          "fp": 17,
+          "fn": 49,
+          "vn": 152,
+          "precision": 0.485,
+          "recall": 0.246,
+          "f1": 0.327
+        },
+        "skills": {
+          "vp": 19,
+          "fp": 22,
+          "fn": 46,
+          "vn": 147,
+          "precision": 0.463,
+          "recall": 0.292,
+          "f1": 0.358
+        },
+        "functional_skills": {
+          "vp": 4,
+          "fp": 65,
+          "fn": 10,
+          "vn": 155,
+          "precision": 0.058,
+          "recall": 0.286,
+          "f1": 0.096
+        },
+        "expertise_areas": {
+          "vp": 11,
+          "fp": 84,
+          "fn": 12,
+          "vn": 127,
+          "precision": 0.116,
+          "recall": 0.478,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 154,
+          "fn": 2,
+          "vn": 59,
+          "precision": 0.11,
+          "recall": 0.905,
+          "f1": 0.196
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 28,
+          "fn": 0,
+          "vn": 206,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 4,
+          "fp": 15,
+          "fn": 5,
+          "vn": 210,
+          "precision": 0.211,
+          "recall": 0.444,
+          "f1": 0.286
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.379,
+          "correct": 11,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.71,
+          "correct": 120,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.474,
+          "correct": 9,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.529,
+          "correct": 9,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.372,
+        "recall": 0.446,
+        "f1": 0.406,
+        "details": {
+          "tp": 29,
+          "fp": 49,
+          "fn": 36
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 16,
+          "fp": 17,
+          "fn": 49,
+          "vn": 152,
+          "precision": 0.485,
+          "recall": 0.246,
+          "f1": 0.327
+        },
+        "skills": {
+          "vp": 19,
+          "fp": 22,
+          "fn": 46,
+          "vn": 147,
+          "precision": 0.463,
+          "recall": 0.292,
+          "f1": 0.358
+        },
+        "functional_skills": {
+          "vp": 4,
+          "fp": 65,
+          "fn": 10,
+          "vn": 155,
+          "precision": 0.058,
+          "recall": 0.286,
+          "f1": 0.096
+        },
+        "expertise_areas": {
+          "vp": 11,
+          "fp": 84,
+          "fn": 12,
+          "vn": 127,
+          "precision": 0.116,
+          "recall": 0.478,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 154,
+          "fn": 2,
+          "vn": 59,
+          "precision": 0.11,
+          "recall": 0.905,
+          "f1": 0.196
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 28,
+          "fn": 0,
+          "vn": 206,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 4,
+          "fp": 15,
+          "fn": 5,
+          "vn": 210,
+          "precision": 0.211,
+          "recall": 0.444,
+          "f1": 0.286
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.276,
+          "correct": 8,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.882,
+          "correct": 149,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.263,
+          "correct": 5,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.512,
+        "recall": 0.323,
+        "f1": 0.396,
+        "details": {
+          "tp": 21,
+          "fp": 20,
+          "fn": 44
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 16,
+          "fp": 17,
+          "fn": 49,
+          "vn": 152,
+          "precision": 0.485,
+          "recall": 0.246,
+          "f1": 0.327
+        },
+        "skills": {
+          "vp": 19,
+          "fp": 22,
+          "fn": 46,
+          "vn": 147,
+          "precision": 0.463,
+          "recall": 0.292,
+          "f1": 0.358
+        },
+        "functional_skills": {
+          "vp": 4,
+          "fp": 65,
+          "fn": 10,
+          "vn": 155,
+          "precision": 0.058,
+          "recall": 0.286,
+          "f1": 0.096
+        },
+        "expertise_areas": {
+          "vp": 11,
+          "fp": 84,
+          "fn": 12,
+          "vn": 127,
+          "precision": 0.116,
+          "recall": 0.478,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 154,
+          "fn": 2,
+          "vn": 59,
+          "precision": 0.11,
+          "recall": 0.905,
+          "f1": 0.196
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 28,
+          "fn": 0,
+          "vn": 206,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 4,
+          "fp": 15,
+          "fn": 5,
+          "vn": 210,
+          "precision": 0.211,
+          "recall": 0.444,
+          "f1": 0.286
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.276,
+          "correct": 8,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.911,
+          "correct": 154,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.211,
+          "correct": 4,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0.571,
+        "recall": 0.308,
+        "f1": 0.4,
+        "details": {
+          "tp": 20,
+          "fp": 15,
+          "fn": 45
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.5,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 16,
+          "fp": 17,
+          "fn": 49,
+          "vn": 152,
+          "precision": 0.485,
+          "recall": 0.246,
+          "f1": 0.327
+        },
+        "skills": {
+          "vp": 19,
+          "fp": 22,
+          "fn": 46,
+          "vn": 147,
+          "precision": 0.463,
+          "recall": 0.292,
+          "f1": 0.358
+        },
+        "functional_skills": {
+          "vp": 4,
+          "fp": 65,
+          "fn": 10,
+          "vn": 155,
+          "precision": 0.058,
+          "recall": 0.286,
+          "f1": 0.096
+        },
+        "expertise_areas": {
+          "vp": 11,
+          "fp": 84,
+          "fn": 12,
+          "vn": 127,
+          "precision": 0.116,
+          "recall": 0.478,
+          "f1": 0.186
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 154,
+          "fn": 2,
+          "vn": 59,
+          "precision": 0.11,
+          "recall": 0.905,
+          "f1": 0.196
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 28,
+          "fn": 0,
+          "vn": 206,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 4,
+          "fp": 15,
+          "fn": 5,
+          "vn": 210,
+          "precision": 0.211,
+          "recall": 0.444,
+          "f1": 0.286
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 1,
+          "vn": 233,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.276,
+          "correct": 8,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.929,
+          "correct": 157,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.211,
+          "correct": 4,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.471,
+          "correct": 8,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0.625,
+        "recall": 0.308,
+        "f1": 0.412,
+        "details": {
+          "tp": 20,
+          "fp": 12,
+          "fn": 45
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 30,
+          "fp": 74,
+          "fn": 35,
+          "vn": 95,
+          "precision": 0.288,
+          "recall": 0.462,
+          "f1": 0.355
+        },
+        "skills": {
+          "vp": 38,
+          "fp": 72,
+          "fn": 27,
+          "vn": 97,
+          "precision": 0.345,
+          "recall": 0.585,
+          "f1": 0.434
+        },
+        "functional_skills": {
+          "vp": 10,
+          "fp": 156,
+          "fn": 4,
+          "vn": 64,
+          "precision": 0.06,
+          "recall": 0.714,
+          "f1": 0.111
+        },
+        "expertise_areas": {
+          "vp": 15,
+          "fp": 150,
+          "fn": 8,
+          "vn": 61,
+          "precision": 0.091,
+          "recall": 0.652,
+          "f1": 0.16
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 194,
+          "fn": 2,
+          "vn": 19,
+          "precision": 0.089,
+          "recall": 0.905,
+          "f1": 0.162
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 102,
+          "fn": 0,
+          "vn": 132,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 43,
+          "fn": 3,
+          "vn": 182,
+          "precision": 0.122,
+          "recall": 0.667,
+          "f1": 0.207
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 1,
+          "vn": 228,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.897,
+          "correct": 26,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.16,
+          "correct": 27,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.632,
+          "correct": 12,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.272,
+        "recall": 0.815,
+        "f1": 0.408,
+        "details": {
+          "tp": 53,
+          "fp": 142,
+          "fn": 12
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 30,
+          "fp": 74,
+          "fn": 35,
+          "vn": 95,
+          "precision": 0.288,
+          "recall": 0.462,
+          "f1": 0.355
+        },
+        "skills": {
+          "vp": 38,
+          "fp": 72,
+          "fn": 27,
+          "vn": 97,
+          "precision": 0.345,
+          "recall": 0.585,
+          "f1": 0.434
+        },
+        "functional_skills": {
+          "vp": 10,
+          "fp": 156,
+          "fn": 4,
+          "vn": 64,
+          "precision": 0.06,
+          "recall": 0.714,
+          "f1": 0.111
+        },
+        "expertise_areas": {
+          "vp": 15,
+          "fp": 150,
+          "fn": 8,
+          "vn": 61,
+          "precision": 0.091,
+          "recall": 0.652,
+          "f1": 0.16
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 194,
+          "fn": 2,
+          "vn": 19,
+          "precision": 0.089,
+          "recall": 0.905,
+          "f1": 0.162
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 102,
+          "fn": 0,
+          "vn": 132,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 43,
+          "fn": 3,
+          "vn": 182,
+          "precision": 0.122,
+          "recall": 0.667,
+          "f1": 0.207
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 1,
+          "vn": 228,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.897,
+          "correct": 26,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.172,
+          "correct": 29,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.579,
+          "correct": 11,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.271,
+        "recall": 0.8,
+        "f1": 0.405,
+        "details": {
+          "tp": 52,
+          "fp": 140,
+          "fn": 13
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 30,
+          "fp": 74,
+          "fn": 35,
+          "vn": 95,
+          "precision": 0.288,
+          "recall": 0.462,
+          "f1": 0.355
+        },
+        "skills": {
+          "vp": 38,
+          "fp": 72,
+          "fn": 27,
+          "vn": 97,
+          "precision": 0.345,
+          "recall": 0.585,
+          "f1": 0.434
+        },
+        "functional_skills": {
+          "vp": 10,
+          "fp": 156,
+          "fn": 4,
+          "vn": 64,
+          "precision": 0.06,
+          "recall": 0.714,
+          "f1": 0.111
+        },
+        "expertise_areas": {
+          "vp": 15,
+          "fp": 150,
+          "fn": 8,
+          "vn": 61,
+          "precision": 0.091,
+          "recall": 0.652,
+          "f1": 0.16
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 194,
+          "fn": 2,
+          "vn": 19,
+          "precision": 0.089,
+          "recall": 0.905,
+          "f1": 0.162
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 102,
+          "fn": 0,
+          "vn": 132,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 43,
+          "fn": 3,
+          "vn": 182,
+          "precision": 0.122,
+          "recall": 0.667,
+          "f1": 0.207
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 1,
+          "vn": 228,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.828,
+          "correct": 24,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.29,
+          "correct": 49,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.29,
+        "recall": 0.754,
+        "f1": 0.419,
+        "details": {
+          "tp": 49,
+          "fp": 120,
+          "fn": 16
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 30,
+          "fp": 74,
+          "fn": 35,
+          "vn": 95,
+          "precision": 0.288,
+          "recall": 0.462,
+          "f1": 0.355
+        },
+        "skills": {
+          "vp": 38,
+          "fp": 72,
+          "fn": 27,
+          "vn": 97,
+          "precision": 0.345,
+          "recall": 0.585,
+          "f1": 0.434
+        },
+        "functional_skills": {
+          "vp": 10,
+          "fp": 156,
+          "fn": 4,
+          "vn": 64,
+          "precision": 0.06,
+          "recall": 0.714,
+          "f1": 0.111
+        },
+        "expertise_areas": {
+          "vp": 15,
+          "fp": 150,
+          "fn": 8,
+          "vn": 61,
+          "precision": 0.091,
+          "recall": 0.652,
+          "f1": 0.16
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 194,
+          "fn": 2,
+          "vn": 19,
+          "precision": 0.089,
+          "recall": 0.905,
+          "f1": 0.162
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 102,
+          "fn": 0,
+          "vn": 132,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 43,
+          "fn": 3,
+          "vn": 182,
+          "precision": 0.122,
+          "recall": 0.667,
+          "f1": 0.207
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 1,
+          "vn": 228,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.621,
+          "correct": 18,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.444,
+          "correct": 75,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.474,
+          "correct": 9,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.304,
+        "recall": 0.631,
+        "f1": 0.41,
+        "details": {
+          "tp": 41,
+          "fp": 94,
+          "fn": 24
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 30,
+          "fp": 74,
+          "fn": 35,
+          "vn": 95,
+          "precision": 0.288,
+          "recall": 0.462,
+          "f1": 0.355
+        },
+        "skills": {
+          "vp": 38,
+          "fp": 72,
+          "fn": 27,
+          "vn": 97,
+          "precision": 0.345,
+          "recall": 0.585,
+          "f1": 0.434
+        },
+        "functional_skills": {
+          "vp": 10,
+          "fp": 156,
+          "fn": 4,
+          "vn": 64,
+          "precision": 0.06,
+          "recall": 0.714,
+          "f1": 0.111
+        },
+        "expertise_areas": {
+          "vp": 15,
+          "fp": 150,
+          "fn": 8,
+          "vn": 61,
+          "precision": 0.091,
+          "recall": 0.652,
+          "f1": 0.16
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 194,
+          "fn": 2,
+          "vn": 19,
+          "precision": 0.089,
+          "recall": 0.905,
+          "f1": 0.162
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 102,
+          "fn": 0,
+          "vn": 132,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 43,
+          "fn": 3,
+          "vn": 182,
+          "precision": 0.122,
+          "recall": 0.667,
+          "f1": 0.207
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 1,
+          "vn": 228,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.586,
+          "correct": 17,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.503,
+          "correct": 85,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.474,
+          "correct": 9,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.706,
+          "correct": 12,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.311,
+        "recall": 0.585,
+        "f1": 0.406,
+        "details": {
+          "tp": 38,
+          "fp": 84,
+          "fn": 27
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 30,
+          "fp": 74,
+          "fn": 35,
+          "vn": 95,
+          "precision": 0.288,
+          "recall": 0.462,
+          "f1": 0.355
+        },
+        "skills": {
+          "vp": 38,
+          "fp": 72,
+          "fn": 27,
+          "vn": 97,
+          "precision": 0.345,
+          "recall": 0.585,
+          "f1": 0.434
+        },
+        "functional_skills": {
+          "vp": 10,
+          "fp": 156,
+          "fn": 4,
+          "vn": 64,
+          "precision": 0.06,
+          "recall": 0.714,
+          "f1": 0.111
+        },
+        "expertise_areas": {
+          "vp": 15,
+          "fp": 150,
+          "fn": 8,
+          "vn": 61,
+          "precision": 0.091,
+          "recall": 0.652,
+          "f1": 0.16
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 194,
+          "fn": 2,
+          "vn": 19,
+          "precision": 0.089,
+          "recall": 0.905,
+          "f1": 0.162
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 102,
+          "fn": 0,
+          "vn": 132,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 43,
+          "fn": 3,
+          "vn": 182,
+          "precision": 0.122,
+          "recall": 0.667,
+          "f1": 0.207
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 1,
+          "vn": 228,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.552,
+          "correct": 16,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.592,
+          "correct": 100,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.474,
+          "correct": 9,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.706,
+          "correct": 12,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0.349,
+        "recall": 0.569,
+        "f1": 0.433,
+        "details": {
+          "tp": 37,
+          "fp": 69,
+          "fn": 28
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.6,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 30,
+          "fp": 74,
+          "fn": 35,
+          "vn": 95,
+          "precision": 0.288,
+          "recall": 0.462,
+          "f1": 0.355
+        },
+        "skills": {
+          "vp": 38,
+          "fp": 72,
+          "fn": 27,
+          "vn": 97,
+          "precision": 0.345,
+          "recall": 0.585,
+          "f1": 0.434
+        },
+        "functional_skills": {
+          "vp": 10,
+          "fp": 156,
+          "fn": 4,
+          "vn": 64,
+          "precision": 0.06,
+          "recall": 0.714,
+          "f1": 0.111
+        },
+        "expertise_areas": {
+          "vp": 15,
+          "fp": 150,
+          "fn": 8,
+          "vn": 61,
+          "precision": 0.091,
+          "recall": 0.652,
+          "f1": 0.16
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 194,
+          "fn": 2,
+          "vn": 19,
+          "precision": 0.089,
+          "recall": 0.905,
+          "f1": 0.162
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 102,
+          "fn": 0,
+          "vn": 132,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 43,
+          "fn": 3,
+          "vn": 182,
+          "precision": 0.122,
+          "recall": 0.667,
+          "f1": 0.207
+        },
+        "countries_worked": {
+          "vp": 0,
+          "fp": 5,
+          "fn": 1,
+          "vn": 228,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.379,
+          "correct": 11,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.751,
+          "correct": 127,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.421,
+          "correct": 8,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.647,
+          "correct": 11,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0.417,
+        "recall": 0.462,
+        "f1": 0.438,
+        "details": {
+          "tp": 30,
+          "fp": 42,
+          "fn": 35
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 134,
+          "fn": 23,
+          "vn": 35,
+          "precision": 0.239,
+          "recall": 0.646,
+          "f1": 0.349
+        },
+        "skills": {
+          "vp": 43,
+          "fp": 103,
+          "fn": 22,
+          "vn": 66,
+          "precision": 0.295,
+          "recall": 0.662,
+          "f1": 0.408
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 196,
+          "fn": 2,
+          "vn": 24,
+          "precision": 0.058,
+          "recall": 0.857,
+          "f1": 0.108
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 189,
+          "fn": 6,
+          "vn": 22,
+          "precision": 0.083,
+          "recall": 0.739,
+          "f1": 0.148
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 178,
+          "fn": 0,
+          "vn": 56,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 1,
+          "fn": 0,
+          "vn": 233,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 91,
+          "fn": 3,
+          "vn": 134,
+          "precision": 0.062,
+          "recall": 0.667,
+          "f1": 0.113
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 23,
+          "fn": 0,
+          "vn": 210,
+          "precision": 0.042,
+          "recall": 1.0,
+          "f1": 0.08
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.931,
+          "correct": 27,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.071,
+          "correct": 12,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.632,
+          "correct": 12,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.256,
+        "recall": 0.831,
+        "f1": 0.391,
+        "details": {
+          "tp": 54,
+          "fp": 157,
+          "fn": 11
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 134,
+          "fn": 23,
+          "vn": 35,
+          "precision": 0.239,
+          "recall": 0.646,
+          "f1": 0.349
+        },
+        "skills": {
+          "vp": 43,
+          "fp": 103,
+          "fn": 22,
+          "vn": 66,
+          "precision": 0.295,
+          "recall": 0.662,
+          "f1": 0.408
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 196,
+          "fn": 2,
+          "vn": 24,
+          "precision": 0.058,
+          "recall": 0.857,
+          "f1": 0.108
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 189,
+          "fn": 6,
+          "vn": 22,
+          "precision": 0.083,
+          "recall": 0.739,
+          "f1": 0.148
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 178,
+          "fn": 0,
+          "vn": 56,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 1,
+          "fn": 0,
+          "vn": 233,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 91,
+          "fn": 3,
+          "vn": 134,
+          "precision": 0.062,
+          "recall": 0.667,
+          "f1": 0.113
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 23,
+          "fn": 0,
+          "vn": 210,
+          "precision": 0.042,
+          "recall": 1.0,
+          "f1": 0.08
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.931,
+          "correct": 27,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.107,
+          "correct": 18,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.579,
+          "correct": 11,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.26,
+        "recall": 0.815,
+        "f1": 0.394,
+        "details": {
+          "tp": 53,
+          "fp": 151,
+          "fn": 12
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 134,
+          "fn": 23,
+          "vn": 35,
+          "precision": 0.239,
+          "recall": 0.646,
+          "f1": 0.349
+        },
+        "skills": {
+          "vp": 43,
+          "fp": 103,
+          "fn": 22,
+          "vn": 66,
+          "precision": 0.295,
+          "recall": 0.662,
+          "f1": 0.408
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 196,
+          "fn": 2,
+          "vn": 24,
+          "precision": 0.058,
+          "recall": 0.857,
+          "f1": 0.108
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 189,
+          "fn": 6,
+          "vn": 22,
+          "precision": 0.083,
+          "recall": 0.739,
+          "f1": 0.148
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 178,
+          "fn": 0,
+          "vn": 56,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 1,
+          "fn": 0,
+          "vn": 233,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 91,
+          "fn": 3,
+          "vn": 134,
+          "precision": 0.062,
+          "recall": 0.667,
+          "f1": 0.113
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 23,
+          "fn": 0,
+          "vn": 210,
+          "precision": 0.042,
+          "recall": 1.0,
+          "f1": 0.08
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.897,
+          "correct": 26,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.148,
+          "correct": 25,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.262,
+        "recall": 0.785,
+        "f1": 0.392,
+        "details": {
+          "tp": 51,
+          "fp": 144,
+          "fn": 14
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 134,
+          "fn": 23,
+          "vn": 35,
+          "precision": 0.239,
+          "recall": 0.646,
+          "f1": 0.349
+        },
+        "skills": {
+          "vp": 43,
+          "fp": 103,
+          "fn": 22,
+          "vn": 66,
+          "precision": 0.295,
+          "recall": 0.662,
+          "f1": 0.408
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 196,
+          "fn": 2,
+          "vn": 24,
+          "precision": 0.058,
+          "recall": 0.857,
+          "f1": 0.108
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 189,
+          "fn": 6,
+          "vn": 22,
+          "precision": 0.083,
+          "recall": 0.739,
+          "f1": 0.148
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 178,
+          "fn": 0,
+          "vn": 56,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 1,
+          "fn": 0,
+          "vn": 233,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 91,
+          "fn": 3,
+          "vn": 134,
+          "precision": 0.062,
+          "recall": 0.667,
+          "f1": 0.113
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 23,
+          "fn": 0,
+          "vn": 210,
+          "precision": 0.042,
+          "recall": 1.0,
+          "f1": 0.08
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.793,
+          "correct": 23,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.195,
+          "correct": 33,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.261,
+        "recall": 0.738,
+        "f1": 0.386,
+        "details": {
+          "tp": 48,
+          "fp": 136,
+          "fn": 17
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 134,
+          "fn": 23,
+          "vn": 35,
+          "precision": 0.239,
+          "recall": 0.646,
+          "f1": 0.349
+        },
+        "skills": {
+          "vp": 43,
+          "fp": 103,
+          "fn": 22,
+          "vn": 66,
+          "precision": 0.295,
+          "recall": 0.662,
+          "f1": 0.408
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 196,
+          "fn": 2,
+          "vn": 24,
+          "precision": 0.058,
+          "recall": 0.857,
+          "f1": 0.108
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 189,
+          "fn": 6,
+          "vn": 22,
+          "precision": 0.083,
+          "recall": 0.739,
+          "f1": 0.148
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 178,
+          "fn": 0,
+          "vn": 56,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 1,
+          "fn": 0,
+          "vn": 233,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 91,
+          "fn": 3,
+          "vn": 134,
+          "precision": 0.062,
+          "recall": 0.667,
+          "f1": 0.113
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 23,
+          "fn": 0,
+          "vn": 210,
+          "precision": 0.042,
+          "recall": 1.0,
+          "f1": 0.08
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.793,
+          "correct": 23,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.278,
+          "correct": 47,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.278,
+        "recall": 0.723,
+        "f1": 0.402,
+        "details": {
+          "tp": 47,
+          "fp": 122,
+          "fn": 18
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 134,
+          "fn": 23,
+          "vn": 35,
+          "precision": 0.239,
+          "recall": 0.646,
+          "f1": 0.349
+        },
+        "skills": {
+          "vp": 43,
+          "fp": 103,
+          "fn": 22,
+          "vn": 66,
+          "precision": 0.295,
+          "recall": 0.662,
+          "f1": 0.408
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 196,
+          "fn": 2,
+          "vn": 24,
+          "precision": 0.058,
+          "recall": 0.857,
+          "f1": 0.108
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 189,
+          "fn": 6,
+          "vn": 22,
+          "precision": 0.083,
+          "recall": 0.739,
+          "f1": 0.148
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 178,
+          "fn": 0,
+          "vn": 56,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 1,
+          "fn": 0,
+          "vn": 233,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 91,
+          "fn": 3,
+          "vn": 134,
+          "precision": 0.062,
+          "recall": 0.667,
+          "f1": 0.113
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 23,
+          "fn": 0,
+          "vn": 210,
+          "precision": 0.042,
+          "recall": 1.0,
+          "f1": 0.08
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.724,
+          "correct": 21,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.438,
+          "correct": 74,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.824,
+          "correct": 14,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0.321,
+        "recall": 0.692,
+        "f1": 0.439,
+        "details": {
+          "tp": 45,
+          "fp": 95,
+          "fn": 20
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.7,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 42,
+          "fp": 134,
+          "fn": 23,
+          "vn": 35,
+          "precision": 0.239,
+          "recall": 0.646,
+          "f1": 0.349
+        },
+        "skills": {
+          "vp": 43,
+          "fp": 103,
+          "fn": 22,
+          "vn": 66,
+          "precision": 0.295,
+          "recall": 0.662,
+          "f1": 0.408
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 196,
+          "fn": 2,
+          "vn": 24,
+          "precision": 0.058,
+          "recall": 0.857,
+          "f1": 0.108
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 189,
+          "fn": 6,
+          "vn": 22,
+          "precision": 0.083,
+          "recall": 0.739,
+          "f1": 0.148
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 178,
+          "fn": 0,
+          "vn": 56,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 1,
+          "fn": 0,
+          "vn": 233,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 6,
+          "fp": 91,
+          "fn": 3,
+          "vn": 134,
+          "precision": 0.062,
+          "recall": 0.667,
+          "f1": 0.113
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 23,
+          "fn": 0,
+          "vn": 210,
+          "precision": 0.042,
+          "recall": 1.0,
+          "f1": 0.08
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.448,
+          "correct": 13,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.698,
+          "correct": 118,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.421,
+          "correct": 8,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.706,
+          "correct": 12,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0.393,
+        "recall": 0.508,
+        "f1": 0.443,
+        "details": {
+          "tp": 33,
+          "fp": 51,
+          "fn": 32
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 30,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 48,
+          "fp": 161,
+          "fn": 17,
+          "vn": 8,
+          "precision": 0.23,
+          "recall": 0.738,
+          "f1": 0.35
+        },
+        "skills": {
+          "vp": 48,
+          "fp": 141,
+          "fn": 17,
+          "vn": 28,
+          "precision": 0.254,
+          "recall": 0.738,
+          "f1": 0.378
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 204,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.056,
+          "recall": 0.857,
+          "f1": 0.104
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 6,
+          "vn": 14,
+          "precision": 0.079,
+          "recall": 0.739,
+          "f1": 0.143
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 216,
+          "fn": 0,
+          "vn": 18,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 34,
+          "fn": 0,
+          "vn": 200,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 7,
+          "fp": 113,
+          "fn": 2,
+          "vn": 112,
+          "precision": 0.058,
+          "recall": 0.778,
+          "f1": 0.109
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 31,
+          "fn": 0,
+          "vn": 202,
+          "precision": 0.031,
+          "recall": 1.0,
+          "f1": 0.061
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.931,
+          "correct": 27,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.047,
+          "correct": 8,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.632,
+          "correct": 12,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 30,
+        "precision": 0.251,
+        "recall": 0.831,
+        "f1": 0.386,
+        "details": {
+          "tp": 54,
+          "fp": 161,
+          "fn": 11
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 35,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 48,
+          "fp": 161,
+          "fn": 17,
+          "vn": 8,
+          "precision": 0.23,
+          "recall": 0.738,
+          "f1": 0.35
+        },
+        "skills": {
+          "vp": 48,
+          "fp": 141,
+          "fn": 17,
+          "vn": 28,
+          "precision": 0.254,
+          "recall": 0.738,
+          "f1": 0.378
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 204,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.056,
+          "recall": 0.857,
+          "f1": 0.104
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 6,
+          "vn": 14,
+          "precision": 0.079,
+          "recall": 0.739,
+          "f1": 0.143
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 216,
+          "fn": 0,
+          "vn": 18,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 34,
+          "fn": 0,
+          "vn": 200,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 7,
+          "fp": 113,
+          "fn": 2,
+          "vn": 112,
+          "precision": 0.058,
+          "recall": 0.778,
+          "f1": 0.109
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 31,
+          "fn": 0,
+          "vn": 202,
+          "precision": 0.031,
+          "recall": 1.0,
+          "f1": 0.061
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.931,
+          "correct": 27,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.047,
+          "correct": 8,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.579,
+          "correct": 11,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 35,
+        "precision": 0.248,
+        "recall": 0.815,
+        "f1": 0.38,
+        "details": {
+          "tp": 53,
+          "fp": 161,
+          "fn": 12
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 40,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 48,
+          "fp": 161,
+          "fn": 17,
+          "vn": 8,
+          "precision": 0.23,
+          "recall": 0.738,
+          "f1": 0.35
+        },
+        "skills": {
+          "vp": 48,
+          "fp": 141,
+          "fn": 17,
+          "vn": 28,
+          "precision": 0.254,
+          "recall": 0.738,
+          "f1": 0.378
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 204,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.056,
+          "recall": 0.857,
+          "f1": 0.104
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 6,
+          "vn": 14,
+          "precision": 0.079,
+          "recall": 0.739,
+          "f1": 0.143
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 216,
+          "fn": 0,
+          "vn": 18,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 34,
+          "fn": 0,
+          "vn": 200,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 7,
+          "fp": 113,
+          "fn": 2,
+          "vn": 112,
+          "precision": 0.058,
+          "recall": 0.778,
+          "f1": 0.109
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 31,
+          "fn": 0,
+          "vn": 202,
+          "precision": 0.031,
+          "recall": 1.0,
+          "f1": 0.061
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.931,
+          "correct": 27,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.059,
+          "correct": 10,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.579,
+          "correct": 11,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 40,
+        "precision": 0.25,
+        "recall": 0.815,
+        "f1": 0.383,
+        "details": {
+          "tp": 53,
+          "fp": 159,
+          "fn": 12
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 45,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 48,
+          "fp": 161,
+          "fn": 17,
+          "vn": 8,
+          "precision": 0.23,
+          "recall": 0.738,
+          "f1": 0.35
+        },
+        "skills": {
+          "vp": 48,
+          "fp": 141,
+          "fn": 17,
+          "vn": 28,
+          "precision": 0.254,
+          "recall": 0.738,
+          "f1": 0.378
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 204,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.056,
+          "recall": 0.857,
+          "f1": 0.104
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 6,
+          "vn": 14,
+          "precision": 0.079,
+          "recall": 0.739,
+          "f1": 0.143
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 216,
+          "fn": 0,
+          "vn": 18,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 34,
+          "fn": 0,
+          "vn": 200,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 7,
+          "fp": 113,
+          "fn": 2,
+          "vn": 112,
+          "precision": 0.058,
+          "recall": 0.778,
+          "f1": 0.109
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 31,
+          "fn": 0,
+          "vn": 202,
+          "precision": 0.031,
+          "recall": 1.0,
+          "f1": 0.061
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.931,
+          "correct": 27,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.118,
+          "correct": 20,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 45,
+        "precision": 0.259,
+        "recall": 0.8,
+        "f1": 0.391,
+        "details": {
+          "tp": 52,
+          "fp": 149,
+          "fn": 13
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 50,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 48,
+          "fp": 161,
+          "fn": 17,
+          "vn": 8,
+          "precision": 0.23,
+          "recall": 0.738,
+          "f1": 0.35
+        },
+        "skills": {
+          "vp": 48,
+          "fp": 141,
+          "fn": 17,
+          "vn": 28,
+          "precision": 0.254,
+          "recall": 0.738,
+          "f1": 0.378
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 204,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.056,
+          "recall": 0.857,
+          "f1": 0.104
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 6,
+          "vn": 14,
+          "precision": 0.079,
+          "recall": 0.739,
+          "f1": 0.143
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 216,
+          "fn": 0,
+          "vn": 18,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 34,
+          "fn": 0,
+          "vn": 200,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 7,
+          "fp": 113,
+          "fn": 2,
+          "vn": 112,
+          "precision": 0.058,
+          "recall": 0.778,
+          "f1": 0.109
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 31,
+          "fn": 0,
+          "vn": 202,
+          "precision": 0.031,
+          "recall": 1.0,
+          "f1": 0.061
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.931,
+          "correct": 27,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.219,
+          "correct": 37,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 50,
+        "precision": 0.283,
+        "recall": 0.8,
+        "f1": 0.418,
+        "details": {
+          "tp": 52,
+          "fp": 132,
+          "fn": 13
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 55,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 48,
+          "fp": 161,
+          "fn": 17,
+          "vn": 8,
+          "precision": 0.23,
+          "recall": 0.738,
+          "f1": 0.35
+        },
+        "skills": {
+          "vp": 48,
+          "fp": 141,
+          "fn": 17,
+          "vn": 28,
+          "precision": 0.254,
+          "recall": 0.738,
+          "f1": 0.378
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 204,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.056,
+          "recall": 0.857,
+          "f1": 0.104
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 6,
+          "vn": 14,
+          "precision": 0.079,
+          "recall": 0.739,
+          "f1": 0.143
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 216,
+          "fn": 0,
+          "vn": 18,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 34,
+          "fn": 0,
+          "vn": 200,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 7,
+          "fp": 113,
+          "fn": 2,
+          "vn": 112,
+          "precision": 0.058,
+          "recall": 0.778,
+          "f1": 0.109
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 31,
+          "fn": 0,
+          "vn": 202,
+          "precision": 0.031,
+          "recall": 1.0,
+          "f1": 0.061
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.759,
+          "correct": 22,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.402,
+          "correct": 68,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.526,
+          "correct": 10,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.882,
+          "correct": 15,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 55,
+        "precision": 0.318,
+        "recall": 0.723,
+        "f1": 0.441,
+        "details": {
+          "tp": 47,
+          "fp": 101,
+          "fn": 18
+        }
+      }
+    }
+  },
+  {
+    "threshold": 0.8,
+    "min_relevance_score": 60,
+    "metrics": {
+      "by_section": {
+        "summary": {
+          "vp": 48,
+          "fp": 161,
+          "fn": 17,
+          "vn": 8,
+          "precision": 0.23,
+          "recall": 0.738,
+          "f1": 0.35
+        },
+        "skills": {
+          "vp": 48,
+          "fp": 141,
+          "fn": 17,
+          "vn": 28,
+          "precision": 0.254,
+          "recall": 0.738,
+          "f1": 0.378
+        },
+        "functional_skills": {
+          "vp": 12,
+          "fp": 204,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.056,
+          "recall": 0.857,
+          "f1": 0.104
+        },
+        "expertise_areas": {
+          "vp": 17,
+          "fp": 197,
+          "fn": 6,
+          "vn": 14,
+          "precision": 0.079,
+          "recall": 0.739,
+          "f1": 0.143
+        },
+        "experience": {
+          "vp": 19,
+          "fp": 197,
+          "fn": 2,
+          "vn": 16,
+          "precision": 0.088,
+          "recall": 0.905,
+          "f1": 0.16
+        },
+        "project": {
+          "vp": 0,
+          "fp": 18,
+          "fn": 0,
+          "vn": 216,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "education": {
+          "vp": 0,
+          "fp": 216,
+          "fn": 0,
+          "vn": 18,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "languages": {
+          "vp": 0,
+          "fp": 34,
+          "fn": 0,
+          "vn": 200,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0
+        },
+        "certifications": {
+          "vp": 7,
+          "fp": 113,
+          "fn": 2,
+          "vn": 112,
+          "precision": 0.058,
+          "recall": 0.778,
+          "f1": 0.109
+        },
+        "countries_worked": {
+          "vp": 1,
+          "fp": 31,
+          "fn": 0,
+          "vn": 202,
+          "precision": 0.031,
+          "recall": 1.0,
+          "f1": 0.061
+        },
+        "professional_affiliations": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 234,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      },
+      "by_label_accuracy": {
+        "match_limite": {
+          "accuracy": 0.517,
+          "correct": 15,
+          "total": 29
+        },
+        "non_match": {
+          "accuracy": 0.663,
+          "correct": 112,
+          "total": 169
+        },
+        "match_moyen": {
+          "accuracy": 0.421,
+          "correct": 8,
+          "total": 19
+        },
+        "match_fort": {
+          "accuracy": 0.765,
+          "correct": 13,
+          "total": 17
+        }
+      },
+      "global": {
+        "min_relevance_score": 60,
+        "precision": 0.387,
+        "recall": 0.554,
+        "f1": 0.456,
+        "details": {
+          "tp": 36,
+          "fp": 57,
+          "fn": 29
+        }
+      }
+    }
+  }
+]
