@@ -26,9 +26,16 @@ def build_profile_detection_prompt(all_versions_summary: list[dict], candidate_n
 
 Candidate name: {candidate_name}
 
-Your task: detect DISTINCT PROFESSIONAL PROFILES this candidate could be positioned as (e.g. "Business Intelligence Consultant", "Project Manager", "Cloud Architect"). A junior candidate with a narrow, consistent career usually has only ONE profile. A senior candidate with varied experience may have 2-3 profiles.
+Your task: detect DISTINCT PROFESSIONAL PROFILES this candidate could be positioned as (e.g. "Business Intelligence Consultant", "Project Manager", "Cloud Architect"). Base this ONLY on the FUNCTIONAL NATURE OF THE WORK — what the candidate actually did (design, build, manage, train, analyze...) and in what technical domain (infrastructure, BI, cloud, project governance...).
 
-Group experiences and projects by profile based on their keywords and titles — not by employer or dates. The same employer/dates can appear under different profiles if the work itself was different in nature.
+DO NOT cluster by client industry, sector, or employer name (e.g. "public sector" vs "banking" is NOT a valid distinction if the underlying work — e.g. project management, systems integration — is the same). Two projects for a bank and a ministry using the same skillset and delivering the same type of work belong in the SAME profile.
+
+Valid clustering signals: recurring technologies/tools, recurring deliverable types (e.g. "migration", "architecture design", "team coaching", "dashboard development"), recurring role verbs in the description (architected / managed / trained / developed / audited).
+Invalid clustering signals: client name, client industry/sector, project country, project dates.
+
+Evidence to look for: distinct clusters of skills/expertise_areas that don't overlap technically (e.g. BI/reporting tools vs infrastructure/virtualization vs project management methodology), distinct types of projects, distinct certifications tracks. Two or more such clusters = two or more profiles, regardless of experience entry count.
+
+Important: senior consultants often hold one long-tenure role whose TITLE ALONE already spans several domains (e.g. "Cloud Architect & BI Architect & Senior Trainer"). Parse compound titles and descriptions for multiple domains even within a single experience entry.
 
 For each experience/project, you are given its (version_number, index) — use these to reference it, do not invent new indices.
 
@@ -43,7 +50,7 @@ Return ONLY JSON, no other text, no markdown fences, in this exact format:
   ]
 }}
 
-If an experience doesn't clearly fit a distinct profile, assign it to the closest matching one. Every experience/project index provided in the input MUST appear in exactly one profile's refs.
+Every experience/project index provided in the input MUST appear in exactly one profile's refs — pick the profile it fits best if it touches multiple domains.
 
 Candidate CV data (condensed, multiple versions):
 {json.dumps(all_versions_summary, ensure_ascii=False)}

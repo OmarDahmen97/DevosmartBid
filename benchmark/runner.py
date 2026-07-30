@@ -230,7 +230,10 @@ if __name__ == "__main__":
     runner = BenchmarkRunner()
     best_config, all_results = runner.grid_search()
     runner.print_results(all_results)
- 
-    with open("grid_search_per_section.json", "w", encoding="utf-8") as f:
-        json.dump(all_results, f, indent=2, ensure_ascii=False)
+    # Sauvegarde
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    out_dir = f"benchmark/results/{timestamp}"
+    os.makedirs(out_dir, exist_ok=True)
+    with open(f"{out_dir}/grid_search.json", "w", encoding="utf-8") as f:
+            json.dump(all_results, f, indent=2, ensure_ascii=False)
  

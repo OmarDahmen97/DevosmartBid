@@ -12,6 +12,7 @@ from app.embedding.embedding_chunker import (
     build_chunks_for_version,
     
 )
+from app.profiling.profile_detector_full_cv import detect_profiles_full
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -26,7 +27,7 @@ client = MongoClient(mongo_uri)
 db = client["cv_platform"]
 candidates = db["candidates"]
 
-candidate = candidates.find_one({"normalized_name": "leith majdoub"})
+candidate = candidates.find_one({"normalized_name": "ahmed amine ben souayeh"})
 version = candidate["versions"][0]
 experiences = version["structured"]["experience"]
 projects=version["structured"]["projects"]
@@ -45,5 +46,5 @@ from app.profiling.profile_detector import detect_profiles
 import json
 
 all_versions_summary = summarize_all_versions(candidate)
-result = detect_profiles(all_versions_summary, candidate.get("name", ""))
+result = detect_profiles_full(all_versions_summary, candidate.get("name", ""))
 print(json.dumps(result, indent=2, ensure_ascii=False))
