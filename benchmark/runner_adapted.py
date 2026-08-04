@@ -8,7 +8,8 @@ from collections import defaultdict
 
 from app.embedding.embedder import Embedder
 from app.embedding.vector_store import VectorStore
-from app.generation.cv_json_builder import SEARCH_CONFIG, distance_to_score
+from app.config import SEARCH_CONFIG
+from app.generation.cv_json_builder import distance_to_score
 from benchmark.judge import judge_chunk_relevance
 
 

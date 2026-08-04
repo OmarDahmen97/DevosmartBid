@@ -1,5 +1,3 @@
-# app/generation/mongo_resolver.py
-
 from bson import ObjectId
 from app.embedding.embedding_chunker import (
     serialize_category_description_list,
@@ -8,10 +6,31 @@ from app.embedding.embedding_chunker import (
     serialize_certifications_list,
 )
 
-# Maps each list-type chunk_type to its list serializer.
-# Each serializer is called with a single-element list ([item]) to get
-# the exact same text representation as when the item was chunked,
-# so it can be matched against a Chroma chunk's text.
+_candidate_cache: dict[tuple[str, int], dict] = {}
+
+
+def clear_candidate_cache() -> None:
+    _candidate_cache.clear()
+
+
+def _get_candidate_version(mongo_collection, candidate_id: str, version_number: int) -> dict | None:
+    key = (candidate_id, version_number)
+    if key in _candidate_cache:
+        return _candidate_cache[key]
+
+    candidate = mongo_collection.find_one({"_id": ObjectId(candidate_id)})
+    if not candidate:
+        _candidate_cache[key] = None
+        return None
+
+    version = next(
+        (v for v in candidate["versions"] if v["version_number"] == version_number),
+        None,
+    )
+    _candidate_cache[key] = version
+    return version
+
+
 LIST_SERIALIZERS = {
     "expertise_areas": serialize_category_description_list,
     "functional_skills": serialize_category_description_list,
@@ -22,16 +41,10 @@ LIST_SERIALIZERS = {
 
 
 def resolve_chunk_to_mongo_source(mongo_collection, metadata: dict) -> dict:
-    """Resolve experience/project/simple-field chunks back to their Mongo source. Unchanged."""
-    candidate = mongo_collection.find_one({"_id": ObjectId(metadata["candidate_id"])})
-    if not candidate:
-        return None
-
-    version = next(
-        (v for v in candidate["versions"] if v["version_number"] == metadata["version_number"]),
-        None,
-    )
-    if not version:
+    candidate_id = metadata["candidate_id"]
+    version_number = metadata["version_number"]
+    version = _get_candidate_version(mongo_collection, candidate_id, version_number)
+    if version is None:
         return None
 
     structured = version["structured"]
@@ -42,26 +55,15 @@ def resolve_chunk_to_mongo_source(mongo_collection, metadata: dict) -> dict:
         idx = metadata["experience_index"]
         return experiences[idx] if idx < len(experiences) else None
 
-    elif chunk_type == "project":
+    if chunk_type == "project":
         projects = structured.get("projects", [])
         idx = metadata["project_index"]
         return projects[idx] if idx < len(projects) else None
 
-    else:
-        return structured.get(chunk_type)
+    return structured.get(chunk_type)
 
 
 def find_matching_mongo_items(chunk_text: str, mongo_items: list[dict], serialize_one) -> list[int]:
-    """
-    Given a chunk of text (a token-window slice of the concatenated serialization)
-    and the original Mongo items of the same section, find which item indices
-    overlap (even partially, due to token-boundary truncation) with this chunk.
-    Literal substring overlap, not semantic search — the chunk is a deterministic
-    slice of the same serialized strings stored in Mongo.
-
-    serialize_one(item) must return the same text an item would produce when
-    serialized alone (e.g. serialize_category_description_list([item])).
-    """
     matched_indices = []
     chunk_normalized = chunk_text.lower().strip()
 
@@ -87,20 +89,10 @@ def find_matching_mongo_items(chunk_text: str, mongo_items: list[dict], serializ
 
 
 def resolve_list_section_matches(mongo_collection, metadata: dict, chunk_text: str) -> list[dict]:
-    """
-    For list-type sections (expertise_areas, functional_skills, education,
-    languages, certifications), resolve a Chroma chunk back to the exact
-    Mongo items it overlaps with.
-    """
-    candidate = mongo_collection.find_one({"_id": ObjectId(metadata["candidate_id"])})
-    if not candidate:
-        return []
-
-    version = next(
-        (v for v in candidate["versions"] if v["version_number"] == metadata["version_number"]),
-        None,
-    )
-    if not version:
+    candidate_id = metadata["candidate_id"]
+    version_number = metadata["version_number"]
+    version = _get_candidate_version(mongo_collection, candidate_id, version_number)
+    if version is None:
         return []
 
     chunk_type = metadata["chunk_type"]
@@ -110,7 +102,6 @@ def resolve_list_section_matches(mongo_collection, metadata: dict, chunk_text: s
 
     items = version["structured"].get(chunk_type, [])
 
-    # wrap the list serializer so it works on one item at a time
     def serialize_one(item):
         return list_serializer([item])
 

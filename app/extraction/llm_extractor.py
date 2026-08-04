@@ -23,11 +23,33 @@ from app.extraction.prompt_builder import (
 
 
 load_dotenv()
-Groq_key = os.getenv("GROQ_API_KEY6")
+Groq_key = os.getenv("GROQ_API_KEY1")
 client = Groq(api_key=Groq_key)
 
 
+def _parse_response(response, key: str | None = None) -> dict:
+    """Parse la réponse JSON du modèle Groq de façon robuste.
 
+    Le modèle renvoie parfois un tableau JSON au premier niveau au lieu d'un
+    objet, ou ajoute du texte parasite avant/après le JSON, ou des balises
+    Markdown. Si `key` est fourni (ex: "missions"/"experience"), un tableau
+    renvoyé directement est encapsulé sous cette clé. Sinon on renvoie le
+    premier élément dict du tableau ou un dict vide.
+    """
+    text = (response.choices[0].message.content or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```[^\n]*\n?", "", text)
+        text = re.sub(r"\n?```\s*$", "", text)
+        text = text.strip()
+
+    data = json.loads(text)
+    if isinstance(data, list):
+        if key is not None:
+            return {key: data}
+        if data and isinstance(data[0], dict):
+            return data[0]
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 CHUNKING_THRESHOLD = 5000
@@ -121,7 +143,7 @@ def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = 
         response_format={"type": "json_object"},
         max_tokens=2000
     )
-    general_data = json.loads(response.choices[0].message.content)
+    general_data = _parse_response(response)
 
     all_projects = []
 
@@ -135,7 +157,7 @@ def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = 
             response_format={"type": "json_object"},
             max_tokens=4000
         )
-        chunk_data = json.loads(response.choices[0].message.content)
+        chunk_data = _parse_response(response, key="missions")
 
         for mission in chunk_data.get("missions", []):
             activities = mission.get("activities")
@@ -184,7 +206,7 @@ def extract_structured_sections_d2c_chunked(raw_text: str, folder_name: str = ""
         response_format={"type": "json_object"},
         max_tokens=3000
     )
-    general_data = json.loads(response.choices[0].message.content)
+    general_data = _parse_response(response)
 
     all_experience = []
     mission_chunks = split_d2c_missions(raw_text)
@@ -197,7 +219,7 @@ def extract_structured_sections_d2c_chunked(raw_text: str, folder_name: str = ""
             response_format={"type": "json_object"},
             max_tokens=4000
         )
-        chunk_data = json.loads(response.choices[0].message.content)
+        chunk_data = _parse_response(response, key="experience")
         all_experience.extend(chunk_data.get("experience", []))
         time.sleep(2)
 
@@ -309,7 +331,7 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
                 max_tokens=1500  # On baisse aussi le max_tokens de sortie attendu
             )
             
-            chunk_data = json.loads(response.choices[0].message.content)
+            chunk_data = _parse_response(response, key="missions")
             extracted_chunks_json.append(chunk_data)
             
         except Exception as e:
@@ -357,7 +379,7 @@ def extract_structured_sections(raw_text: str,file_path, folder_name: str = "", 
                 response_format={"type": "json_object"},
                 max_tokens=16000
             )
-            data = json.loads(response.choices[0].message.content)
+            data = _parse_response(response)
             data["name"] = resolve_candidate_name(data.get("name", ""), folder_name)
             return data
         except RateLimitError:

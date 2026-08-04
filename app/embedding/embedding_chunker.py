@@ -1,31 +1,10 @@
+from app.config import DEFAULT_MAX_TOKENS, HARD_CAP_TOKENS, MAX_TOKENS_BY_TYPE
 from sentence_transformers import SentenceTransformer
 
 """
 Chunking of structured CV data (post-extraction, from MongoDB)
 into text chunks ready for embedding and storage in ChromaDB.
 """
-
-#model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2')
-#tokenizer = model.tokenizer
-#max_length = model.max_seq_length
-
-
-DEFAULT_MAX_TOKENS = 118
-HARD_CAP_TOKENS = 120  # safety margin below the model's 128 max_seq_length
-
-MAX_TOKENS_BY_TYPE = {
-    "summary": 118,                  
-    "skills": 100,                   
-    "education": 80,                 
-    "languages": 50,                 
-    "expertise_areas": 118,          
-    "functional_skills": 118,        
-    "certifications": 50,            
-    "countries_worked": 40,          
-    "professional_affiliations": 40, 
-    "experience": 118,               
-    "project": 100,                  
-}
 
 
 def resolve_max_tokens(chunk_type: str, max_tokens_by_type: dict) -> int:
@@ -106,13 +85,16 @@ def count_tokens(text: str, tokenizer) -> int:
 
 def split_text_by_tokens(text: str, tokenizer, max_tokens: int, overlap: int = 20) -> list[str]:
     """Split text into overlapping token windows when it exceeds the model's max sequence length."""
+    if max_tokens <= 0:
+        return [text]
+
     tokens = tokenizer.encode(text, add_special_tokens=False)
     if len(tokens) <= max_tokens:
         return [text]
 
-    # scale overlap proportionally to max_tokens, capped by the fixed overlap
-    # requested, to avoid degenerate windows on very small max_tokens
-    safe_overlap = min(overlap, max_tokens // 3)  # at most 1/3 of the window
+    safe_overlap = min(overlap, max_tokens // 3)
+    if safe_overlap >= max_tokens:
+        safe_overlap = max_tokens - 1
 
     chunks = []
     start = 0
@@ -121,6 +103,8 @@ def split_text_by_tokens(text: str, tokenizer, max_tokens: int, overlap: int = 2
         chunk_tokens = tokens[start:end]
         chunks.append(tokenizer.decode(chunk_tokens, skip_special_tokens=True))
         start += max_tokens - safe_overlap
+        if start <= 0:
+            break
 
     return chunks
 

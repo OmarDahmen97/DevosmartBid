@@ -1,6 +1,7 @@
 
 import chromadb
 from chromadb.config import Settings
+from app.config import CHROMA_PERSIST_PATH, CHROMA_COLLECTION_NAME
 
 
 class VectorStore:
@@ -8,7 +9,7 @@ class VectorStore:
     Wrapper around a local ChromaDB collection for CV chunk indexing and search.
     """
 
-    def __init__(self, persist_path: str = "./chroma_data", collection_name: str = "cv_chunks"):
+    def __init__(self, persist_path: str = CHROMA_PERSIST_PATH, collection_name: str = CHROMA_COLLECTION_NAME):
         self.client = chromadb.PersistentClient(path=persist_path)
         self.collection = self.client.get_or_create_collection(
             name=collection_name,

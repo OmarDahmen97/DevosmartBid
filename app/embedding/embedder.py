@@ -1,3 +1,4 @@
+from app.config import EMBEDDING_MODEL_NAME, EMBEDDING_MAX_SEQ_LENGTH, EMBEDDING_BATCH_SIZE
 from sentence_transformers import SentenceTransformer
 
 
@@ -6,9 +7,9 @@ class Embedder:
     Wrapper around the SBERT model. Loaded once at instantiation.
     """
 
-    def __init__(self, model_name: str = "paraphrase-multilingual-mpnet-base-v2"):
+    def __init__(self, model_name: str = EMBEDDING_MODEL_NAME):
         self.model = SentenceTransformer(model_name)
-        self.model.max_seq_length = 128
+        self.model.max_seq_length = EMBEDDING_MAX_SEQ_LENGTH
 
     def embed_chunks(self, chunks: list[dict]) -> list[dict]:
         """
@@ -21,7 +22,7 @@ class Embedder:
         texts = [chunk["text"] for chunk in chunks]
         embeddings = self.model.encode(
             texts,
-            batch_size=32,
+            batch_size=EMBEDDING_BATCH_SIZE,
             show_progress_bar=False,
             convert_to_numpy=True,
         )

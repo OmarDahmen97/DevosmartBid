@@ -1,6 +1,6 @@
 # benchmark/analyze_best_config.py
 from benchmark.runner import BenchmarkRunner
-from app.generation.cv_json_builder import SEARCH_CONFIG
+from app.config import SEARCH_CONFIG
 import json
 
 runner = BenchmarkRunner()

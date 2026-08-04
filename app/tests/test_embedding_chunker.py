@@ -419,9 +419,8 @@ import json
 from app.generation.cv_json_builder import (
     build_matched_cv_json,
     is_candidate_relevant_v2,
-    MIN_RELEVANCE_SCORE,
-    PASS_A_SECTION_THRESHOLDS,
 )
+from app.config import MIN_RELEVANCE_SCORE, PASS_A_SECTION_THRESHOLDS
 
 all_candidates_cursor = candidates.find({}, {"name": 1, "_id": 1, "versions": 1})
 

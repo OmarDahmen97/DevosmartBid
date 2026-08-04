@@ -1,5 +1,6 @@
 import ollama
 import json
+import re
 
 
 
@@ -112,6 +113,23 @@ def resolve_candidate_name(extracted_name: str, folder_name: str) -> str:
 
 
 
+def _parse_response_local(response: dict, key: str | None = None) -> dict:
+    text = (response.get("message", {}).get("content") or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```[^\n]*\n?", "", text)
+        text = re.sub(r"\n?```\s*$", "", text)
+        text = text.strip()
+
+    data = json.loads(text)
+    if isinstance(data, list):
+        if key is not None:
+            return {key: data}
+        if data and isinstance(data[0], dict):
+            return data[0]
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
 def extract_structured_sections_local(raw_text: str, folder_name: str="", max_retries=3) -> dict:
     for attempt in range(max_retries):
        
@@ -122,6 +140,6 @@ def extract_structured_sections_local(raw_text: str, folder_name: str="", max_re
            format="json"
     )
 
-    return json.loads(response["message"]["content"])
+    return _parse_response_local(response)
         
 

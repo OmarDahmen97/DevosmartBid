@@ -3,17 +3,16 @@ from app.generation.mongo_resolver import (
     resolve_list_section_matches,
 )
 
+from app.config import (
+    MIN_RELEVANCE_SCORE,
+    PASS_A_SECTION_THRESHOLDS,
+    SEARCH_CONFIG,
+    EXPERIENCE_SEARCH_CONFIG,
+    PROJECT_SEARCH_CONFIG,
+    INDEXED_TYPES,
+    LIST_TYPES,
+)
 from bson import ObjectId
-
-
-MIN_RELEVANCE_SCORE = 60.0  # en %, seuil minimal Pass A (calibré via grid search)
-
-# Thresholds par section pour le garde-fou Pass A (is_candidate_relevant_v2)
-PASS_A_SECTION_THRESHOLDS = {
-    "summary": 0.6,
-    "experience": 0.35,
-    "project": 0.5,  # pas optimisé (aucun cas positif dans le ground truth)
-}
 
 
 def distance_to_score(distance: float) -> float:
@@ -53,36 +52,6 @@ def is_candidate_relevant_v2(
     sections_above = sum(1 for s in best_scores if s >= min_score)
     avg_score = sum(best_scores) / len(best_scores)
     return sections_above >= 1 and avg_score >= (min_score * 0.5), avg_score
-
-
-# Search configuration per section chunk_type, calibrated empirically.
-SEARCH_CONFIG = {
-    "summary": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
-    "skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 1},
-    "functional_skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 1},
-    "expertise_areas": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
-    "experience": {"distance_threshold": 0.35, "min_results": 1, "max_results": 1},
-    "project": {"distance_threshold": 0.5, "min_results": 1, "max_results": 1},
-
-    # OPTIONNELLES : min_results=0
-    "education": {"distance_threshold": 0.7, "min_results": 0, "max_results": 1},
-    "languages": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
-    "certifications": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
-    "countries_worked": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
-    "professional_affiliations": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
-}
-
-# experience et project cherchés SEPAREMENT (pas de liste fusionnée), chacun
-# avec son propre threshold calibré. min_results/max_results restent communs
-# pour l'instant (pas de signal du grid search pour les différencier).
-EXPERIENCE_SEARCH_CONFIG = {"distance_threshold": 0.35, "min_results": 2, "max_results": 6}
-PROJECT_SEARCH_CONFIG = {"distance_threshold": 0.5, "min_results": 2, "max_results": 6}
-
-# chunk_types resolved via exact index (no text-matching needed)
-INDEXED_TYPES = {"experience", "project"}
-
-# chunk_types resolved via text-overlap against a list of Mongo items
-LIST_TYPES = {"expertise_areas", "functional_skills", "education", "languages", "certifications"}
 
 
 def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_number: int, query_vec: list[float]) -> dict:
