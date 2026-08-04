@@ -28,20 +28,33 @@ PASS_A_SECTION_THRESHOLDS = {
     "summary": 0.6,
     "experience": 0.35,
     "project": 0.5,
+    "skills": 0.3,
+    "expertise_areas": 0.3,
+    "functional_skills": 0.3,
+    # sections factuelles/catégorielles -- un "match" sémantique dessus a
+    # rarement du sens pour évaluer la pertinence d'une mission, donc
+    # resserrées fortement plutôt que retirées
+    "education": 0.3,
+    "certifications": 0.33,
+    "languages": 0.6,
+    "countries_worked": 0.65,
+    "professional_affiliations": 0.4,
 }
+
+SECTION_RICHNESS_THRESHOLD = 500.0
 
 SEARCH_CONFIG = {
     "summary": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
-    "skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 1},
-    "functional_skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 1},
-    "expertise_areas": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
-    "experience": {"distance_threshold": 0.35, "min_results": 0, "max_results": 1},
-    "project": {"distance_threshold": 0.5, "min_results": 0, "max_results": 1},
-    "education": {"distance_threshold": 0.7, "min_results": 0, "max_results": 1},
-    "languages": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
-    "certifications": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
-    "countries_worked": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
-    "professional_affiliations": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
+    "skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 10},
+    "functional_skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 10},
+    "expertise_areas": {"distance_threshold": 0.6, "min_results": 1, "max_results": 10},
+    "experience": {"distance_threshold": 0.35, "min_results": 0, "max_results": 10},
+    "project": {"distance_threshold": 0.5, "min_results": 0, "max_results": 10},
+    "education": {"distance_threshold": 0.7, "min_results": 0, "max_results": 10},
+    "languages": {"distance_threshold": 0.8, "min_results": 0, "max_results": 10},
+    "certifications": {"distance_threshold": 0.8, "min_results": 0, "max_results": 10},
+    "countries_worked": {"distance_threshold": 0.8, "min_results": 0, "max_results": 10},
+    "professional_affiliations": {"distance_threshold": 0.8, "min_results": 0, "max_results": 10},
 }
 
 EXPERIENCE_SEARCH_CONFIG = {"distance_threshold": 0.35, "min_results": 0, "max_results": 6}

@@ -112,6 +112,7 @@ def run_matching_mode(cv_path: str = None, mission_text: str = None, normalized_
         query_vec=query_vec,
         candidate_id=candidate_id,
         version_number=None,
+        structured=versions[-1].get("structured", {}),
     )
     print(f"[matching] Pertinent : {is_relevant} (score moyen: {avg_score}%)")
 
@@ -158,6 +159,7 @@ def run_matching_all(mission_text: str) -> list[dict]:
             query_vec=query_vec,
             candidate_id=candidate_id,
             version_number=None,
+            structured=versions[-1].get("structured", {}),
         )
         print(f"    -> pertinent : {is_relevant} (score moyen: {avg_score}%)")
 
@@ -212,6 +214,7 @@ def get_relevant_candidate_names(mission_text: str) -> list[str]:
             query_vec=query_vec,
             candidate_id=candidate_id,
             version_number=version_number,
+            structured=version.get("structured", {}),
         )
         print(f"    -> pertinent : {is_relevant} (score moyen: {avg_score}%)")
 

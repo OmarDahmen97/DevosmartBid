@@ -212,10 +212,25 @@ def build_section_chunks(
         "functional_skills": lambda d: serialize_category_description_list(d.get("functional_skills", [])),
     }
 
+    RICHNESS_SECTIONS = {"skills", "expertise_areas", "functional_skills"}
+
     for section_name, serializer in section_serializers.items():
         text = serializer(structured_data)
         if not text:
             continue
+        if section_name in RICHNESS_SECTIONS:
+            items = structured_data.get(section_name) or []
+            if not items:
+                continue
+            if section_name in ("expertise_areas", "functional_skills"):
+                richness = sum(
+                    len((e.get("category") or "")) + len((e.get("description") or ""))
+                    for e in items
+                )
+            else:
+                richness = sum(len(str(s)) for s in items)
+            if richness <= 0:
+                continue
 
         max_tokens = resolve_max_tokens(section_name, max_tokens_by_type)
         sub_texts = split_text_by_tokens(text, tokenizer, max_tokens=max_tokens)

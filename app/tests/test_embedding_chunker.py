@@ -452,6 +452,7 @@ for candidate in all_candidates_cursor:
         version_number=version_number,
         min_score=MIN_RELEVANCE_SCORE,
         section_thresholds=PASS_A_SECTION_THRESHOLDS,
+        structured=version.get("structured", {}),
     )
     print(f"[PASSE A] Candidat jugé pertinent : {relevant} (score moyen: {avg_score}%, seuil: {MIN_RELEVANCE_SCORE}%)")
 
