@@ -1,3 +1,4 @@
+from app.embedding.embedding_chunker import serialize_experience_to_text
 from app.generation.mongo_resolver import (
     resolve_chunk_to_mongo_source,
     resolve_list_section_matches,
@@ -13,6 +14,40 @@ from app.config import (
     LIST_TYPES,
 )
 from bson import ObjectId
+from rapidfuzz import fuzz
+
+
+def serialize_project_to_text(project: dict) -> str:
+    name = project.get("name")
+    description = project.get("description")
+    technologies = project.get("technologies") or []
+
+    parts = [name] if name else []
+    if description:
+        parts.append(description)
+    tech_text = ", ".join(technologies)
+    if tech_text:
+        parts.append(f"Technologies: {tech_text}")
+
+    return ". ".join(parts)
+
+
+def deduplicate_items(items: list[dict], serialize_fn, threshold: float = 90.0) -> list[dict]:
+    seen_texts = []
+    result = []
+    for item in items:
+        text = serialize_fn(item).lower().strip()
+        if not text:
+            continue
+        is_dup = False
+        for seen in seen_texts:
+            if fuzz.ratio(text, seen) >= threshold:
+                is_dup = True
+                break
+        if not is_dup:
+            seen_texts.append(text)
+            result.append(item)
+    return result
 
 
 def distance_to_score(distance: float) -> float:
@@ -54,7 +89,7 @@ def is_candidate_relevant_v2(
     return sections_above >= 1 and avg_score >= (min_score * 0.5), avg_score
 
 
-def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_number: int, query_vec: list[float]) -> dict:
+def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_number: int, query_vec: list[float], all_versions: bool = False) -> dict:
     """
     Static sections (summary, skills, education, etc.) are included wholesale
     from Mongo — no semantic filtering. Only experience/project go through
@@ -72,7 +107,11 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_nu
     if not candidate:
         return {}
 
-    version = next((v for v in candidate["versions"] if v["version_number"] == version_number), None)
+    if all_versions:
+        versions = candidate.get("versions", [])
+        version = versions[-1] if versions else None
+    else:
+        version = next((v for v in candidate["versions"] if v["version_number"] == version_number), None)
     if not version:
         return {}
 
@@ -89,14 +128,16 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_nu
         if value:
             result[section] = value
 
+    search_version_number = None if all_versions else version_number
+
     # experience + project : recherches séparées, thresholds différents
     experience_res = store.search_section(
         query_vec, chunk_types="experience", candidate_id=candidate_id,
-        version_number=version_number, **EXPERIENCE_SEARCH_CONFIG
+        version_number=search_version_number, **EXPERIENCE_SEARCH_CONFIG
     )
     project_res = store.search_section(
         query_vec, chunk_types="project", candidate_id=candidate_id,
-        version_number=version_number, **PROJECT_SEARCH_CONFIG
+        version_number=search_version_number, **PROJECT_SEARCH_CONFIG
     )
 
     experiences, projects = [], []
@@ -121,6 +162,10 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_nu
         item = resolve_chunk_to_mongo_source(mongo_collection, metadata)
         if item:
             projects.append(item)
+
+    if all_versions:
+        experiences = deduplicate_items(experiences, serialize_experience_to_text)
+        projects = deduplicate_items(projects, serialize_project_to_text)
 
     if experiences:
         result["experience"] = experiences

@@ -8,7 +8,9 @@ load_dotenv()
 mongo_uri = os.getenv("MONGO_URI")
 client = MongoClient(mongo_uri)
 db = client["cv_platform"]
-candidates = db["candidates"]
+candidates = db["candidatesV2"]
+#candisatesV2
+#candidates = db["candidatesV2"]
 
 def get_dedup_key(cv_schema) -> tuple[str, str]:
     """if cv_schema.email and cv_schema.email.strip():

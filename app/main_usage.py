@@ -94,28 +94,36 @@ def run_matching_mode(cv_path: str = None, mission_text: str = None, normalized_
     """Mode 1: CV + mission -> extract, store, semantic search, return matched CV JSON."""
     candidate = get_candidate(cv_path=cv_path, normalized_name=normalized_name)
 
-    version = candidate["versions"][-1]  # most recently added version
-    index_candidate_version(candidate, version)
+    versions = candidate.get("versions", [])
+    if not versions:
+        return {}
 
     candidate_id = str(candidate["_id"])
-    version_number = version["version_number"]
-    print("[matching] Embedding de la mission...")
+    latest_version = versions[-1]
+
+    for version in versions:
+        index_candidate_version(candidate, version)
+
     query_vec = get_embedder().model.encode(mission_text).tolist()
 
-    print("[matching] Passe A : évaluation de la pertinence...")
+    print("[matching] Évaluation de la pertinence sur toutes les versions...")
     is_relevant, avg_score = is_candidate_relevant_v2(
         store=get_store(),
         query_vec=query_vec,
         candidate_id=candidate_id,
-        version_number=version_number,
+        version_number=None,
     )
     print(f"[matching] Pertinent : {is_relevant} (score moyen: {avg_score}%)")
 
     if not is_relevant:
         return {}
 
-    print("[matching] Construction du JSON final...")
-    return build_matched_cv_json(get_store(), candidates_collection, candidate_id, version_number, query_vec)
+    print("[matching] Construction du JSON final (toutes versions, dédoublonné)...")
+    return build_matched_cv_json(
+        get_store(), candidates_collection, candidate_id,
+        latest_version["version_number"], query_vec,
+        all_versions=True,
+    )
 
 
 def run_matching_all(mission_text: str) -> list[dict]:
@@ -138,25 +146,29 @@ def run_matching_all(mission_text: str) -> list[dict]:
             print(f"[{i}/{total}] {name} : aucune version, ignoré.")
             continue
 
-        version = versions[-1]
         candidate_id = str(candidate["_id"])
-        version_number = version["version_number"]
+        latest_version = versions[-1]
 
-        print(f"[{i}/{total}] {name} (v{version_number})...")
-        index_candidate_version(candidate, version)
+        print(f"[{i}/{total}] {name} ({len(versions)} version(s))...")
+        for version in versions:
+            index_candidate_version(candidate, version)
 
         is_relevant, avg_score = is_candidate_relevant_v2(
             store=get_store(),
             query_vec=query_vec,
             candidate_id=candidate_id,
-            version_number=version_number,
+            version_number=None,
         )
         print(f"    -> pertinent : {is_relevant} (score moyen: {avg_score}%)")
 
         if not is_relevant:
             continue
 
-        cv_json = build_matched_cv_json(get_store(), candidates_collection, candidate_id, version_number, query_vec)
+        cv_json = build_matched_cv_json(
+            get_store(), candidates_collection, candidate_id,
+            latest_version["version_number"], query_vec,
+            all_versions=True,
+        )
         relevant_results.append({
             "candidate_id": candidate_id,
             "candidate_name": name,

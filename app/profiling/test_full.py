@@ -1,24 +1,34 @@
-from app.profiling.profile_detector_full_cv import detect_profiles_full
-from app.profiling.profile_detector_full_cv_local import detect_profiles_full_local
 import os
-import json
+import sys
+import time
 from pymongo import MongoClient
 from dotenv import load_dotenv
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from app.profiling.profile_detector_full_cv import detect_profiles_full
+from app.profiling.profile_builder import build_profiles_document, store_candidate_profiles
+
 load_dotenv()
-mongo_uri = os.getenv("MONGO_URI")
-client = MongoClient(mongo_uri)
+client = MongoClient(os.getenv("MONGO_URI"))
 db = client["cv_platform"]
 candidates = db["candidates"]
+candidate_profiles = db["candidate_profiles"]
 
-candidate = candidates.find_one({"normalized_name": "ahmed amine ben souayeh"})
+already_done = {doc["candidate_id"] for doc in candidate_profiles.find({}, {"candidate_id": 1})}
+print(f"{len(already_done)} candidats déjà traités")
 
-result = detect_profiles_full(candidate)
-#local
-#result=detect_profiles_full_local(candidate)
-from app.profiling.profile_builder import build_profiles_document, store_candidate_profiles
-detection_result = detect_profiles_full(candidate)
-profiles_doc = build_profiles_document(candidate, detection_result)
-print(json.dumps(profiles_doc, indent=2, ensure_ascii=False))  # inspecte AVANT de stocker
-
-store_candidate_profiles(db["candidate_profiles"], profiles_doc)
+for i, candidate in enumerate(candidates.find()):
+    candidate_id = str(candidate["_id"])
+    if candidate_id in already_done:
+        print(f"[{i+1}] SKIP: {candidate.get('name', '?')} (déjà traité)")
+        continue
+    if not candidate.get("versions"):
+        print(f"[{i+1}] SKIP: {candidate.get('name', '?')} (aucune version)")
+        continue
+    print(f"[{i+1}] Traitement: {candidate.get('name', '?')}...")
+    result = detect_profiles_full(candidate)
+    doc = build_profiles_document(candidate, result)
+    store_candidate_profiles(candidate_profiles, doc)
+    print(f"  → {len(doc['profiles'])} profils stockés")
+    time.sleep(1)
