@@ -28,11 +28,11 @@ MAX_TOKENS_BY_TYPE = {
     "project": 100,
 }
 
-MIN_RELEVANCE_SCORE = 50.0
+MIN_RELEVANCE_SCORE = 40.0
 
 PASS_A_SECTION_THRESHOLDS = {
     "summary": 0.6,
-    "experience": 0.35,
+    "experience": 0.5,
     "project": 0.5,
     "skills": 0.3,
     "expertise_areas": 0.3,
@@ -54,7 +54,7 @@ SEARCH_CONFIG = {
     "skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 10},
     "functional_skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 10},
     "expertise_areas": {"distance_threshold": 0.6, "min_results": 1, "max_results": 10},
-    "experience": {"distance_threshold": 0.35, "min_results": 0, "max_results": 10},
+    "experience": {"distance_threshold": 0.5, "min_results": 0, "max_results": 10},
     "project": {"distance_threshold": 0.5, "min_results": 0, "max_results": 10},
     "education": {"distance_threshold": 0.7, "min_results": 0, "max_results": 10},
     "languages": {"distance_threshold": 0.8, "min_results": 0, "max_results": 10},
@@ -63,7 +63,7 @@ SEARCH_CONFIG = {
     "professional_affiliations": {"distance_threshold": 0.8, "min_results": 0, "max_results": 10},
 }
 
-EXPERIENCE_SEARCH_CONFIG = {"distance_threshold": 0.35, "min_results": 0, "max_results": 6}
+EXPERIENCE_SEARCH_CONFIG = {"distance_threshold": 0.5, "min_results": 0, "max_results": 6}
 PROJECT_SEARCH_CONFIG = {"distance_threshold": 0.5, "min_results": 0, "max_results": 6}
 
 INDEXED_TYPES = {"experience", "project"}

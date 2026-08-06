@@ -1,3 +1,5 @@
+# file: app/generation/cv_json_builder.py
+
 from app.embedding.embedding_chunker import serialize_experience_to_text
 from app.generation.mongo_resolver import (
     resolve_chunk_to_mongo_source,
@@ -13,7 +15,6 @@ from app.config import (
     PASS_A_SECTION_THRESHOLDS,
     SECTION_RICHNESS_THRESHOLD,
 )
-
 
 
 def distance_to_score(distance: float) -> float:
@@ -75,6 +76,12 @@ def serialize_project_to_text(project: dict) -> str:
 
 
 def deduplicate_items(items: list[dict], serialize_fn, threshold: float = 90.0) -> list[dict]:
+    """
+    Fuzzy near-duplicate filter, kept as a general-purpose utility. No longer
+    invoked from build_matched_cv_json for experience/project — deduplication
+    across CV versions is now handled upstream at merge time (merged_candidates
+    already holds a single deduplicated experience list per candidate).
+    """
     seen_texts = []
     result = []
     for item in items:
@@ -96,31 +103,26 @@ def is_candidate_relevant_v2(
     store,
     query_vec,
     candidate_id,
-    version_number,
-    structured=None,
     min_score: float = MIN_RELEVANCE_SCORE,
     section_thresholds: dict = None,
 ):
+    """
+    Relevance is now judged solely on experience and project chunks -- the
+    only sections that should adapt to a target mission. Static sections
+    (skills, education, summary, etc.) no longer participate in the
+    relevance decision, only in the final matched CV JSON output.
+    """
     if section_thresholds is None:
         section_thresholds = PASS_A_SECTION_THRESHOLDS
 
-    if structured is not None:
-        all_sections = [
-            "summary", "skills", "expertise_areas", "functional_skills",
-            "education", "languages", "certifications",
-            "countries_worked", "professional_affiliations",
-            "experience", "project",
-        ]
-        sections_to_check = select_search_sections(structured, all_sections)
-    else:
-        sections_to_check = list(section_thresholds.keys())
+    sections_to_check = ["experience", "project"]
 
     best_scores = []
     for section in sections_to_check:
         threshold = section_thresholds.get(section, 0.8)
         res = store.search_section(
             query_vec, chunk_types=section, candidate_id=candidate_id,
-            version_number=version_number, distance_threshold=threshold,
+            distance_threshold=threshold,
             min_results=0, max_results=3,
         )
         if res:
@@ -164,12 +166,16 @@ INDEXED_TYPES = {"experience", "project"}
 LIST_TYPES = {"expertise_areas", "functional_skills", "education", "languages", "certifications"}
 
 
-def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_number: int, query_vec: list[float], all_versions: bool = False) -> dict:
+def build_matched_cv_json(store, mongo_collection, candidate_id: str, query_vec: list[float]) -> dict:
     """
     Static sections (summary, skills, education, etc.) are included wholesale
     from Mongo — no semantic filtering. Only experience/project go through
     Chroma search, since that's the only part of a CV that should adapt to
     the target mission.
+
+    mongo_collection is expected to be scoped to merged_candidates — each
+    candidate has a single consolidated document (no versions, no version
+    dedup needed here: that's already resolved upstream at merge time).
 
     NOTE: no relevance gate here on purpose. This function is called both for
     single-CV-upload flows (user wants a JSON regardless of match quality) and
@@ -178,19 +184,10 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_nu
     Keeping the gate out of this function keeps both use cases correct without
     a mode flag.
     """
-    candidate = mongo_collection.find_one({"_id": ObjectId(candidate_id)})
+    candidate = mongo_collection.find_one({"candidate_id": ObjectId(candidate_id)})
     if not candidate:
         return {}
 
-    if all_versions:
-        versions = candidate.get("versions", [])
-        version = versions[-1] if versions else None
-    else:
-        version = next((v for v in candidate["versions"] if v["version_number"] == version_number), None)
-    if not version:
-        return {}
-
-    structured = version["structured"]
     result = {}
 
     STATIC_SECTIONS = [
@@ -199,20 +196,18 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_nu
         "countries_worked", "professional_affiliations",
     ]
     for section in STATIC_SECTIONS:
-        value = structured.get(section)
+        value = candidate.get(section)
         if value:
             result[section] = value
-
-    search_version_number = None if all_versions else version_number
 
     # experience + project : recherches séparées, thresholds différents
     experience_res = store.search_section(
         query_vec, chunk_types="experience", candidate_id=candidate_id,
-        version_number=search_version_number, **EXPERIENCE_SEARCH_CONFIG
+        **EXPERIENCE_SEARCH_CONFIG
     )
     project_res = store.search_section(
         query_vec, chunk_types="project", candidate_id=candidate_id,
-        version_number=search_version_number, **PROJECT_SEARCH_CONFIG
+        **PROJECT_SEARCH_CONFIG
     )
 
     experiences, projects = [], []
@@ -237,10 +232,6 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, version_nu
         item = resolve_chunk_to_mongo_source(mongo_collection, metadata)
         if item:
             projects.append(item)
-
-    if all_versions:
-        experiences = deduplicate_items(experiences, serialize_experience_to_text)
-        projects = deduplicate_items(projects, serialize_project_to_text)
 
     if experiences:
         result["experience"] = experiences

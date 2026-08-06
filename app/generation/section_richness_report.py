@@ -1,9 +1,11 @@
+# file: app/generation/section_richness_report.py
 """
 app/generation/section_richness_report.py
 
 Read-only diagnostic script that measures content richness of
 expertise_areas, functional_skills, and skills across all candidates
-and all versions in the candidates collection.
+in merged_candidates. Each candidate has a single consolidated document
+now — no version dimension to iterate over.
 """
 
 import csv
@@ -17,7 +19,7 @@ from pymongo import MongoClient
 load_dotenv()
 
 SECTIONS = ["expertise_areas", "functional_skills", "skills"]
-COLLECTION_NAME = "candidates"
+COLLECTION_NAME = "merged_candidates"
 OUTPUT_PATH = os.path.join("data", "section_richness_report.csv")
 
 
@@ -86,44 +88,32 @@ def main():
     print(f"Total candidates: {total_candidates}")
 
     rows = []
-    skipped = 0
 
     for candidate in collection.find({}):
-        versions = candidate.get("versions", [])
-        if not versions:
-            skipped += 1
-            continue
-
-        candidate_id = str(candidate["_id"])
+        candidate_id = str(candidate.get("candidate_id") or candidate["_id"])
         candidate_name = candidate.get("name", "")
 
-        for version in versions:
-            version_number = version.get("version_number")
-            structured = version.get("structured", {})
+        for section in SECTIONS:
+            items = candidate.get(section, [])
+            if items is None:
+                items = []
 
-            for section in SECTIONS:
-                items = structured.get(section, [])
-                if items is None:
-                    items = []
+            num_elements, avg_element_length, richness_score = compute_richness(
+                section, items
+            )
 
-                num_elements, avg_element_length, richness_score = compute_richness(
-                    section, items
-                )
+            rows.append(
+                {
+                    "candidate_id": candidate_id,
+                    "candidate_name": candidate_name,
+                    "section": section,
+                    "num_elements": num_elements,
+                    "avg_element_length": round(avg_element_length, 2),
+                    "richness_score": round(richness_score, 2),
+                }
+            )
 
-                rows.append(
-                    {
-                        "candidate_id": candidate_id,
-                        "candidate_name": candidate_name,
-                        "version_number": version_number,
-                        "section": section,
-                        "num_elements": num_elements,
-                        "avg_element_length": round(avg_element_length, 2),
-                        "richness_score": round(richness_score, 2),
-                    }
-                )
-
-    print(f"Candidates skipped (no versions): {skipped}")
-    print(f"Total candidate-version-section rows: {len(rows)}")
+    print(f"Total candidate-section rows: {len(rows)}")
 
     section_values = defaultdict(list)
     for row in rows:
@@ -137,7 +127,7 @@ def main():
         values = section_values[section]
         stats = aggregate_stats(values)
         print(f"\n[{section}]")
-        print(f"  candidate-version count : {stats['count']}")
+        print(f"  candidate count         : {stats['count']}")
         print(f"  min                     : {stats['min']:.2f}")
         print(f"  max                     : {stats['max']:.2f}")
         print(f"  mean                    : {stats['mean']:.2f}")
@@ -154,7 +144,6 @@ def main():
             fieldnames=[
                 "candidate_id",
                 "candidate_name",
-                "version_number",
                 "section",
                 "num_elements",
                 "avg_element_length",

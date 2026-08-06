@@ -1,3 +1,5 @@
+# file: app/embedding/embedder.py
+
 from app.config import EMBEDDING_MODEL_NAME, EMBEDDING_MAX_SEQ_LENGTH, EMBEDDING_BATCH_SIZE
 from sentence_transformers import SentenceTransformer
 
@@ -13,7 +15,7 @@ class Embedder:
 
     def embed_chunks(self, chunks: list[dict]) -> list[dict]:
         """
-        Takes a list of chunks (output of build_chunks_for_version) and returns
+        Takes a list of chunks (output of build_chunks_for_candidate) and returns
         the same list, each chunk enriched with an "embedding" key (list[float]).
         """
         if not chunks:

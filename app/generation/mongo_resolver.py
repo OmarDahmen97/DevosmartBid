@@ -1,3 +1,5 @@
+# file: app/embedding/mongo_resolver.py
+
 from bson import ObjectId
 from app.embedding.embedding_chunker import (
     serialize_category_description_list,
@@ -6,29 +8,32 @@ from app.embedding.embedding_chunker import (
     serialize_certifications_list,
 )
 
-_candidate_cache: dict[tuple[str, int], dict] = {}
+"""
+Resolves a chunk's metadata back to its source document in merged_candidates.
+Each candidate now has a single consolidated document — the cache and lookups
+are keyed on candidate_id alone, with no version dimension.
+"""
+
+_candidate_cache: dict[str, dict] = {}
 
 
 def clear_candidate_cache() -> None:
     _candidate_cache.clear()
 
 
-def _get_candidate_version(mongo_collection, candidate_id: str, version_number: int) -> dict | None:
-    key = (candidate_id, version_number)
-    if key in _candidate_cache:
-        return _candidate_cache[key]
+def _get_candidate(mongo_collection, candidate_id: str) -> dict | None:
+    """
+    Fetch the consolidated candidate document from merged_candidates.
+    mongo_collection is expected to be scoped to merged_candidates, keyed by
+    candidate_id (not _id) since that's the field build_merged_candidate_cv
+    upserts on.
+    """
+    if candidate_id in _candidate_cache:
+        return _candidate_cache[candidate_id]
 
-    candidate = mongo_collection.find_one({"_id": ObjectId(candidate_id)})
-    if not candidate:
-        _candidate_cache[key] = None
-        return None
-
-    version = next(
-        (v for v in candidate["versions"] if v["version_number"] == version_number),
-        None,
-    )
-    _candidate_cache[key] = version
-    return version
+    candidate = mongo_collection.find_one({"candidate_id": ObjectId(candidate_id)})
+    _candidate_cache[candidate_id] = candidate
+    return candidate
 
 
 LIST_SERIALIZERS = {
@@ -42,25 +47,23 @@ LIST_SERIALIZERS = {
 
 def resolve_chunk_to_mongo_source(mongo_collection, metadata: dict) -> dict:
     candidate_id = metadata["candidate_id"]
-    version_number = metadata["version_number"]
-    version = _get_candidate_version(mongo_collection, candidate_id, version_number)
-    if version is None:
+    candidate = _get_candidate(mongo_collection, candidate_id)
+    if candidate is None:
         return None
 
-    structured = version["structured"]
     chunk_type = metadata["chunk_type"]
 
     if chunk_type == "experience":
-        experiences = structured.get("experience", [])
+        experiences = candidate.get("experience", [])
         idx = metadata["experience_index"]
         return experiences[idx] if idx < len(experiences) else None
 
     if chunk_type == "project":
-        projects = structured.get("projects", [])
+        projects = candidate.get("projects", [])
         idx = metadata["project_index"]
         return projects[idx] if idx < len(projects) else None
 
-    return structured.get(chunk_type)
+    return candidate.get(chunk_type)
 
 
 def find_matching_mongo_items(chunk_text: str, mongo_items: list[dict], serialize_one) -> list[int]:
@@ -90,9 +93,8 @@ def find_matching_mongo_items(chunk_text: str, mongo_items: list[dict], serializ
 
 def resolve_list_section_matches(mongo_collection, metadata: dict, chunk_text: str) -> list[dict]:
     candidate_id = metadata["candidate_id"]
-    version_number = metadata["version_number"]
-    version = _get_candidate_version(mongo_collection, candidate_id, version_number)
-    if version is None:
+    candidate = _get_candidate(mongo_collection, candidate_id)
+    if candidate is None:
         return []
 
     chunk_type = metadata["chunk_type"]
@@ -100,7 +102,7 @@ def resolve_list_section_matches(mongo_collection, metadata: dict, chunk_text: s
     if not list_serializer:
         return []
 
-    items = version["structured"].get(chunk_type, [])
+    items = candidate.get(chunk_type, [])
 
     def serialize_one(item):
         return list_serializer([item])

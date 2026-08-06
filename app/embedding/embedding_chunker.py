@@ -1,9 +1,17 @@
+# file: app/embedding/embedding_chunker.py
+
 from app.config import DEFAULT_MAX_TOKENS, HARD_CAP_TOKENS, MAX_TOKENS_BY_TYPE
 from sentence_transformers import SentenceTransformer
 
 """
-Chunking of structured CV data (post-extraction, from MongoDB)
-into text chunks ready for embedding and storage in ChromaDB.
+Chunking of structured CV data (post-merge, from merged_candidates) into
+text chunks ready for embedding and storage in ChromaDB.
+
+Each candidate now has a single consolidated document — sections
+(experience, projects, skills, ...) are accessed directly at the top
+level. There is no version_number: the merge step already resolved
+which experiences to keep, so chunking operates on one canonical view
+per candidate.
 """
 
 
@@ -79,9 +87,11 @@ def serialize_experience_to_text(experience: dict) -> str:
 
     return ". ".join(parts)
 
+
 def count_tokens(text: str, tokenizer) -> int:
     """Count the number of tokens a text will produce with the given tokenizer."""
     return len(tokenizer.encode(text))
+
 
 def split_text_by_tokens(text: str, tokenizer, max_tokens: int, overlap: int = 20) -> list[str]:
     """Split text into overlapping token windows when it exceeds the model's max sequence length."""
@@ -113,7 +123,6 @@ def build_experience_chunks(
     experience_list: list[dict],
     candidate_id: str,
     candidate_name: str,
-    version_number: int,
     tokenizer,
     max_tokens: int = 118,
 ) -> list[dict]:
@@ -132,7 +141,6 @@ def build_experience_chunks(
             metadata = {
                 "candidate_id": candidate_id,
                 "candidate_name": candidate_name,
-                "version_number": version_number,
                 "chunk_type": "experience",
                 "company": exp.get("company"),
                 "dates": exp.get("dates"),
@@ -143,7 +151,8 @@ def build_experience_chunks(
 
     return chunks
 
-#build section chunks
+
+# build section chunks
 def serialize_education_list(items: list[dict]) -> str:
     """Join a list of education entries into one readable string."""
     parts = []
@@ -176,23 +185,24 @@ def serialize_languages_list(items: list[dict]) -> str:
         parts.append(f"{language} ({level})" if level else language)
     return ", ".join(parts)
 
-def serialize_certifications_list(items: list[dict])-> str :
-    """join a list of certifications entries into one readable string"""
-    parts=[]
+
+def serialize_certifications_list(items: list[dict]) -> str:
+    """Join a list of certifications entries into one readable string."""
+    parts = []
     for item in items:
-        certification_name =item.get("name")
-        issuer=item.get("issuer")
-        year=item.get("year")
+        certification_name = item.get("name")
+        issuer = item.get("issuer")
+        year = item.get("year")
         if not certification_name:
             continue
         parts.append(f"{certification_name}" + (f", {issuer}" if issuer else "") + (f" ({year})" if year else ""))
     return ", ".join(parts)
 
+
 def build_section_chunks(
     structured_data: dict,
     candidate_id: str,
     candidate_name: str,
-    version_number: int,
     tokenizer,
     max_tokens_by_type: dict = None,
 ) -> list[dict]:
@@ -239,7 +249,6 @@ def build_section_chunks(
             metadata = {
                 "candidate_id": candidate_id,
                 "candidate_name": candidate_name,
-                "version_number": version_number,
                 "chunk_type": section_name,
                 "part_index": part_index,
             }
@@ -248,13 +257,11 @@ def build_section_chunks(
     return chunks
 
 
-
 # build_project_chunks
 def build_project_chunks(
     project_list: list[dict],
     candidate_id: str,
     candidate_name: str,
-    version_number: int,
     tokenizer,
     max_tokens: int = 118,
 ) -> list[dict]:
@@ -283,7 +290,6 @@ def build_project_chunks(
             metadata = {
                 "candidate_id": candidate_id,
                 "candidate_name": candidate_name,
-                "version_number": version_number,
                 "chunk_type": "project",
                 "project_index": project_index,
                 "part_index": part_index,
@@ -293,49 +299,48 @@ def build_project_chunks(
     return chunks
 
 
-def build_chunks_for_version(
+def build_chunks_for_candidate(
     candidate_doc: dict,
-    version: dict,
     tokenizer,
     max_tokens_by_type: dict = None,
 ) -> list[dict]:
-    """Orchestrate all chunk builders for a single CV version, return the full list of chunks."""
+    """
+    Orchestrate all chunk builders for a single merged_candidates document.
+    Sections are read directly from the top level of candidate_doc — no
+    version wrapping, no version_number in metadata.
+    """
     max_tokens_by_type = max_tokens_by_type or MAX_TOKENS_BY_TYPE
 
-    candidate_id = str(candidate_doc["_id"])
+    # merged_candidates documents store the original candidatesV2 _id under
+    # "candidate_id" (their own "_id" is this collection's own document id) —
+    # fall back to "_id" for any other doc shape that might be passed in.
+    candidate_id = str(candidate_doc.get("candidate_id") or candidate_doc["_id"])
     candidate_name = candidate_doc.get("name")
-    version_number = version.get("version_number")
-    structured = version.get("structured", {})
 
     all_chunks = []
 
     all_chunks.extend(build_section_chunks(
-        structured_data=structured,
+        structured_data=candidate_doc,
         candidate_id=candidate_id,
         candidate_name=candidate_name,
-        version_number=version_number,
         tokenizer=tokenizer,
         max_tokens_by_type=max_tokens_by_type,
     ))
 
     all_chunks.extend(build_experience_chunks(
-        experience_list=structured.get("experience", []),
+        experience_list=candidate_doc.get("experience", []),
         candidate_id=candidate_id,
         candidate_name=candidate_name,
-        version_number=version_number,
         tokenizer=tokenizer,
         max_tokens=resolve_max_tokens("experience", max_tokens_by_type),
     ))
 
     all_chunks.extend(build_project_chunks(
-        project_list=structured.get("projects", []),
+        project_list=candidate_doc.get("projects", []),
         candidate_id=candidate_id,
         candidate_name=candidate_name,
-        version_number=version_number,
         tokenizer=tokenizer,
         max_tokens=resolve_max_tokens("project", max_tokens_by_type),
     ))
 
     return all_chunks
-
-
