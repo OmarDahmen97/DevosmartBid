@@ -23,7 +23,7 @@ from app.extraction.prompt_builder import (
 
 
 load_dotenv()
-Groq_key = os.getenv("GROQ_API_KEY6")
+Groq_key = os.getenv("GROQ_API_KEY2")
 client = Groq(api_key=Groq_key)
 
 

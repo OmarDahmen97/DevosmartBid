@@ -201,7 +201,7 @@ def build_prompt_D2C(raw_text: str, folder_name: str) -> str:
   "languages": [{{"language": "...", "level": "..."}}],
   "experience": [{{
     "title": "mission/role title",
-    "company": "client company name",
+    "company": "end-client company name (prioritize actual client over ESN/Devoteam)",
     "dates": "...",
     "description": "mission context",
     "responsibilities": [{{"category": "...", "description": "full merged text for this category"}}],
@@ -221,9 +221,13 @@ This CV follows a fixed company template, in reading order (plain text only, no 
 6. Two distinct skills sections, told apart by their CONTENT PATTERN, not by title wording:
    - One lists concrete tool/technology names grouped under category headers (e.g. header "Programming Languages" with items "Python", "SQL"). Extract ONLY the concrete names into "skills" — never the category headers.
    - The other lists short category names each followed by ONE descriptive sentence (not a list of names). Extract each as a separate entry in "functional_skills" (category = short name, description = the sentence after it).
-7.Some lines under the technical skills section mention MULTIPLE tool/technology/platform names within a single descriptive sentence, rather than one name per line. Extract EVERY concrete name mentioned in each sentence into "skills" — do not extract only the first name mentioned, and do not skip names embedded mid-sentence alongside a description of what was done with them.
+7. Some lines under the technical skills section mention MULTIPLE tool/technology/platform names within a single descriptive sentence, rather than one name per line. Extract EVERY concrete name mentioned in each sentence into "skills" — do not extract only the first name mentioned, and do not skip names embedded mid-sentence alongside a description of what was done with them.
 8. Detailed professional experience, one block per mission: client company, role and dates, mission title, context, a responsibilities section (→ responsibilities, one entry per category with bullets merged), a deliverables section (→ deliverables, one string per item), a technical environment section (→ technologies, flat list merging all sub-groups like databases/languages/OS/tools/methodologies).
-9. CRITICAL STRING ESCAPING:
+9. COMPANY NAME RESOLUTION FOR EXPERIENCES:
+   - For each mission, search carefully inside the mission header, context, or description for the actual end-client / final client company where the work was performed.
+   - ESN / employer names such as "Devoteam" (or similar consulting firms) often appear as the main employer. Always check if a real client company is mentioned underneath or within the mission context (e.g., "Client: [Company]", "pour le compte de [Company]", or mentioned inside the mission description).
+   - ALWAYS prioritize and extract the actual client company name for "company". Use the ESN name ("Devoteam") ONLY as a last resort if no specific client company is mentioned anywhere in that mission's details.
+10. CRITICAL STRING ESCAPING:
    - All string values MUST start and end with standard double quotes ("). 
    - Inside any string, if you need to use an apostrophe (like d'évaluation) or quotes, do NOT break the string wrapping. 
    - Absolutely NEVER mix single quotes (') and double quotes (") to open/close JSON keys or values.
@@ -273,13 +277,16 @@ def build_prompt_D2C_missions(missions_text: str) -> str:
 Each mission in the text includes: an employer/client name, a role title and dates, a context description, a responsibilities section (one entry per category, bullets merged into one description), a deliverables section, and sometimes a technical environment section.
 
 You MUST use exactly the field names "title", "company", "dates", "description", "responsibilities", "deliverables", "technologies" as shown in the JSON schema above — do NOT use alternative field names like "employer" or "role".
-
+COMPANY NAME RESOLUTION FOR EXPERIENCES:
+   - For each mission, search carefully inside the mission header, context, or description for the actual end-client / final client company where the work was performed.
+   - ESN / employer names such as "Devoteam" (or similar consulting firms) often appear as the main employer. Always check if a real client company is mentioned underneath or within the mission context (e.g., "Client: [Company]", "pour le compte de [Company]", or mentioned inside the mission description).
+   - ALWAYS prioritize and extract the actual client company name for "company". Use the ESN name ("Devoteam") ONLY as a last resort if no specific client company is mentioned anywhere in that mission's details.
 Extract EVERY mission in this excerpt.
 
 Text excerpt:
 {missions_text}"""
 
-#REste
+#Other
 def build_prompt_generic_chunk(raw_text: str, folder_name: str) -> str:
     return f"""Extract CV fields as JSON only. Do not wrap the response in markdown code fences (like ```json). 
 Ensure your output is strictly valid JSON syntax. Never leave trailing commas.

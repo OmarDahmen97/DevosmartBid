@@ -1,4 +1,4 @@
-
+#test_full_pipeline.py
 import os
 from app.ingestion.format_detector import detect_format, UnsupportedFormatError
 from app.extraction.pdf_extractor import extract_pdf_text
@@ -16,7 +16,35 @@ from deep_translator import GoogleTranslator
 from langdetect import detect
 import deepl
 
+# --- AJOUT : merge/dédup ---
+from pymongo import MongoClient
+from app.merging.experience_similarity import build_merged_candidate_cv, DEFAULT_SIMILARITY_THRESHOLD
+
 deepl_key = os.getenv("DEEPL_API_KEY")
+
+# --- AJOUT : connexions Mongo pour le merge ---
+mongo_uri = os.getenv("MONGO_URI")
+_mongo_client = MongoClient(mongo_uri)
+_db = _mongo_client["cv_platform"]
+_candidates_col = _db["candidatesV2"]
+_merged_candidates_col = _db["merged_candidates"]
+
+
+# --- AJOUT : fonction de sync merge ---
+def sync_merged_candidate(candidate_id: str, threshold: float = DEFAULT_SIMILARITY_THRESHOLD) -> None:
+    """
+    Reconstruit et sauvegarde la version fusionnée d'un candidat dans
+    merged_candidates. Idempotent — safe à chaque ingestion.
+    """
+    merged_cv = build_merged_candidate_cv(
+        mongo_collection=_candidates_col,
+        candidate_id=candidate_id,
+        target_collection=_merged_candidates_col,
+        threshold=threshold,
+    )
+    nb_exp = len(merged_cv.get("experience", []))
+    print(f"MERGED — candidate_id={candidate_id} -> {nb_exp} experience(s) unique(s) -> merged_candidates")
+
 
 def adapt_data_to_schema(data: dict) -> dict:
     """
@@ -94,12 +122,26 @@ def adapt_data_to_schema(data: dict) -> dict:
     return data
 
 
+# --- AJOUT : mode merge-only (skip extraction + storage, fusionne juste l'existant) ---
+import sys
+MERGE_ONLY = "--merge-only" in sys.argv or os.getenv("MERGE_ONLY", "false").lower() == "true"
+
+if MERGE_ONLY:
+    print("MODE: MERGE_ONLY — skip extraction/storage, fusion de tous les candidats existants")
+    for candidate in _candidates_col.find({}, {"_id": 1}):
+        candidate_id = str(candidate["_id"])
+        try:
+            sync_merged_candidate(candidate_id)
+        except Exception as e:
+            print(f"FAILED merge candidate_id={candidate_id}: {type(e).__name__}: {e}")
+    raise SystemExit(0)
+
 SAMPLES_DIR = "data/samples"
 # --- D2C ---
-#results = find_cv_files('data/D2C Pôle Consulting-20260708T092849Z-3-001')
+results = find_cv_files('data/D2C Pôle Consulting-20260708T092849Z-3-001')
 
 # --- CV Externe (TECH-6, générique) ---
-results = [(path, "") for path in find_cv_files_external('data/CV-20260708T092409Z-3-001/CV/CV Externe')]
+#results = [(path, "") for path in find_cv_files_external('data/CV-20260708T092409Z-3-001/CV/CV Externe')]
 i=0
 for path, folder_name in results:
     """if i>=1:
@@ -132,11 +174,13 @@ for path, folder_name in results:
             print(f"DUPLICATE (skipped LLM) — v{existing_version}")
             continue
         language = detect(text)
+        print(language)
         translator = deepl.Translator(deepl_key)
         original_text=None
         if language == "fr":
             original_text=text
             result = translator.translate_text(text, target_lang="EN-US")
+            print("text translated")
             text = result.text
             
         #API
@@ -149,13 +193,10 @@ for path, folder_name in results:
         cv = CVSchema(**data)
         result = save_cv(cv, text,original_text)
         print(f"{result['status'].upper()} — email: {result['email']} — name:  {result['name']}, v{result['version']}")
+
+        # --- AJOUT : sync merged_candidates (skip si duplicate exact) ---
+        if result["status"] != "duplicate":
+            sync_merged_candidate(result["candidate_id"])
+
     except Exception as e:
         print(f"FAILED: {type(e).__name__}: {e}")
-
-
-
-
-
-
-
-       

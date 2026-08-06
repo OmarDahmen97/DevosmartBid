@@ -8,9 +8,9 @@ load_dotenv()
 mongo_uri = os.getenv("MONGO_URI")
 client = MongoClient(mongo_uri)
 db = client["cv_platform"]
-candidates = db["candidatesV2"]
+#candidates = db["candidates"]
 #candisatesV2
-#candidates = db["candidatesV2"]
+candidates = db["candidatesV2"]
 
 def get_dedup_key(cv_schema) -> tuple[str, str]:
     """if cv_schema.email and cv_schema.email.strip():
@@ -65,7 +65,8 @@ def save_cv(cv_schema, Eng_raw_text: str,original_raw_text: str = None):
                 return {
                     "status": "duplicate", 
                     "email": cv_schema.email, 
-                    "version": v["version_number"]
+                    "version": v["version_number"],
+                    "candidate_id": str(existing["_id"]),
                 }
 
     # 4. Création de la version
@@ -81,22 +82,24 @@ def save_cv(cv_schema, Eng_raw_text: str,original_raw_text: str = None):
 
     # 5. ÉCRITURE DANS MONGODB 
     if existing:
-        
         candidates.update_one(
             {"_id": existing["_id"]}, 
             {"$push": {"versions": version_doc}}
         )
+        candidate_id = existing["_id"]
     else:
-        candidates.insert_one({
+        insert_result = candidates.insert_one({
             "email": cv_schema.email,
             "name": cv_schema.name,
             "normalized_name": cv_schema.name.lower().strip(),
             "versions": [version_doc],
         })
+        candidate_id = insert_result.inserted_id
 
     return {
         "status": "new_version" if existing else "new_candidate", 
         "email": cv_schema.email, 
         "version": version_doc["version_number"], 
-        "name": cv_schema.name
+        "name": cv_schema.name,
+        "candidate_id": str(candidate_id),
     }

@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+from pymongo import MongoClient
+
+
+
 EMBEDDING_MODEL_NAME = "paraphrase-multilingual-mpnet-base-v2"
 EMBEDDING_MAX_SEQ_LENGTH = 128
 EMBEDDING_BATCH_SIZE = 32
