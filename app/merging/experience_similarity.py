@@ -268,6 +268,105 @@ def merge_and_deduplicate_experiences(
     return merged_experiences
 
 
+# ---- richest-version selection for non-experience sections ----
+#
+# Rather than always taking the latest version's value, each section is
+# picked independently from whichever version carries the most information
+# for that specific section. Richness is judged in two stages:
+#   1. how many sub-fields are actually populated (e.g. both "category" and
+#      "description" filled in, vs only one, vs empty)
+#   2. total text length, used only to break ties on stage 1
+#
+# On an exact tie, the version that appears later in cv_versions_structured
+# wins — preserving "prefer the latest version" as the final tiebreaker,
+# consistent with the rest of the pipeline.
+
+def _richness_scalar(value) -> tuple[int, int]:
+    """Richness for a single scalar field (summary, phone, linkedin, github, email)."""
+    if not value or not str(value).strip():
+        return (0, 0)
+    return (1, len(str(value)))
+
+
+def _richness_dict_list(items: list) -> tuple[int, int]:
+    """
+    Richness for a list of sub-structured entries (expertise_areas,
+    functional_skills, education, certifications, languages, projects).
+    Stage 1 counts populated sub-fields across all entries (e.g. an entry
+    with both category and description counts more than one with only
+    category) — this is what makes a version "more complete" rather than
+    just "longer". Stage 2 sums text length as the tiebreaker.
+    """
+    if not items:
+        return (0, 0)
+
+    populated_subfields = 0
+    total_length = 0
+    for item in items:
+        if isinstance(item, dict):
+            for value in item.values():
+                if value not in (None, "", []):
+                    populated_subfields += 1
+                    total_length += len(str(value))
+        elif item:
+            populated_subfields += 1
+            total_length += len(str(item))
+
+    return (populated_subfields, total_length)
+
+
+def _richness_string_list(items: list) -> tuple[int, int]:
+    """Richness for a flat list of strings (skills, countries_worked, professional_affiliations)."""
+    if not items:
+        return (0, 0)
+    return (len(items), sum(len(str(i)) for i in items))
+
+
+def select_richest_section(cv_versions_structured: list[dict], field: str, richness_fn) -> object:
+    """
+    Scan every version's value for `field` and return the one richness_fn
+    scores highest, using tuple comparison so stage 1 (sub-field
+    completeness / element count) always outranks stage 2 (text length).
+    """
+    best_value = None
+    best_score = (-1, -1)
+
+    for structured in cv_versions_structured:
+        value = structured.get(field)
+        score = richness_fn(value)
+        if score >= best_score:  # >= so the later version wins on exact ties
+            best_score = score
+            best_value = value
+
+    return best_value
+
+
+def merge_static_sections_by_richness(cv_versions_structured: list[dict]) -> dict:
+    """
+    Build the set of non-experience fields for the merged document, each
+    picked independently from its richest source version.
+    """
+    scalar_fields = ["summary", "phone", "linkedin", "github", "email"]
+    dict_list_fields = [
+        "expertise_areas", "functional_skills",
+        "education", "certifications", "languages", "projects",
+    ]
+    string_list_fields = ["skills", "countries_worked", "professional_affiliations"]
+
+    merged = {}
+
+    for field in scalar_fields:
+        merged[field] = select_richest_section(cv_versions_structured, field, _richness_scalar)
+
+    for field in dict_list_fields:
+        merged[field] = select_richest_section(cv_versions_structured, field, _richness_dict_list) or []
+
+    for field in string_list_fields:
+        merged[field] = select_richest_section(cv_versions_structured, field, _richness_string_list) or []
+
+    return merged
+
+
 def build_merged_candidate_cv(
     mongo_collection,
     candidate_id: str,
@@ -275,8 +374,13 @@ def build_merged_candidate_cv(
     threshold: float = DEFAULT_SIMILARITY_THRESHOLD,
 ) -> dict:
     """
-    Construit le CV consolidé dans un ordre clair et structuré,
-    puis l'enregistre dans target_collection (merged_candidates).
+    Construit le CV consolidé, puis l'enregistre dans target_collection
+    (merged_candidates). Chaque section est traitée indépendamment :
+    - "experience" est fusionnée/dédupliquée par similarité sémantique
+      inter-versions (merge_and_deduplicate_experiences)
+    - toutes les autres sections sont prises depuis la version la plus
+      riche en information pour cette section spécifique, pas
+      systématiquement la dernière version (merge_static_sections_by_richness)
     """
     # 1. Récupération du candidat source
     candidate = mongo_collection.find_one({"_id": ObjectId(candidate_id)})
@@ -303,11 +407,15 @@ def build_merged_candidate_cv(
     else:
         deduplicated_experiences = latest_structured.get("experience", []) or []
 
-    # Nom original et normalisé
+    # 4. Sélection par richesse pour toutes les autres sections
+    static_sections = merge_static_sections_by_richness(cv_versions_structured)
+
+    # Nom original et normalisé (pas soumis à la sélection par richesse —
+    # l'identité du candidat reste ancrée sur le document top-level)
     name = candidate.get("name") or latest_structured.get("name")
     normalized_name = candidate.get("normalized_name") or (name.lower() if name else None)
 
-    # 4. Construction du document ordonné
+    # 5. Construction du document ordonné
     result = {
         # Identifiants & Métadonnées de base
         "candidate_id": ObjectId(candidate_id),
@@ -315,32 +423,32 @@ def build_merged_candidate_cv(
         "normalized_name": normalized_name,
 
         # Coordonnées
-        "email": candidate.get("email") or latest_structured.get("email"),
-        "phone": latest_structured.get("phone"),
-        "linkedin": latest_structured.get("linkedin"),
-        "github": latest_structured.get("github"),
+        "email": candidate.get("email") or static_sections["email"],
+        "phone": static_sections["phone"],
+        "linkedin": static_sections["linkedin"],
+        "github": static_sections["github"],
 
         # Profil & Compétences
-        "summary": latest_structured.get("summary"),
-        "skills": latest_structured.get("skills", []),
-        "expertise_areas": latest_structured.get("expertise_areas", []),
-        "functional_skills": latest_structured.get("functional_skills", []),
+        "summary": static_sections["summary"],
+        "skills": static_sections["skills"],
+        "expertise_areas": static_sections["expertise_areas"],
+        "functional_skills": static_sections["functional_skills"],
 
         # Parcours Professionnel (Fusionné) & Projets
         "experience": deduplicated_experiences,
-        "projects": latest_structured.get("projects", []),
+        "projects": static_sections["projects"],
 
         # Formations, Certifications & Langues
-        "education": latest_structured.get("education", []),
-        "certifications": latest_structured.get("certifications", []),
-        "languages": latest_structured.get("languages", []),
+        "education": static_sections["education"],
+        "certifications": static_sections["certifications"],
+        "languages": static_sections["languages"],
 
         # Informations complémentaires
-        "countries_worked": latest_structured.get("countries_worked", []),
-        "professional_affiliations": latest_structured.get("professional_affiliations", []),
+        "countries_worked": static_sections["countries_worked"],
+        "professional_affiliations": static_sections["professional_affiliations"],
     }
 
-    # 5. Sauvegarde / Upsert dans MongoDB Atlas
+    # 6. Sauvegarde / Upsert dans MongoDB Atlas
     if target_collection is not None:
         target_collection.update_one(
             {"candidate_id": ObjectId(candidate_id)},
