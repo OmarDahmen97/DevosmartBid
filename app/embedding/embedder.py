@@ -33,3 +33,23 @@ class Embedder:
             chunk["embedding"] = embedding.tolist()
 
         return chunks
+
+
+# ---- process-wide singleton ----
+#
+# Every module that needs the SBERT model (main_usage, experience_similarity,
+# etc.) must go through get_shared_embedder() rather than instantiating its
+# own Embedder(). Each module previously rolled its own lazy-singleton, which
+# meant the model got loaded twice (once per singleton) the first time both
+# code paths were hit in the same process. Centralizing it here guarantees
+# exactly one load per process, regardless of which module triggers it first.
+
+_shared_embedder_instance = None
+
+
+def get_shared_embedder(model_name: str = EMBEDDING_MODEL_NAME) -> Embedder:
+    global _shared_embedder_instance
+    if _shared_embedder_instance is None:
+        print("[loading] SBERT (Embedder)...")
+        _shared_embedder_instance = Embedder(model_name)
+    return _shared_embedder_instance

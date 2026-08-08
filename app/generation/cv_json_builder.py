@@ -154,16 +154,90 @@ SEARCH_CONFIG = {
 }
 
 # experience et project cherchés SEPAREMENT (pas de liste fusionnée), chacun
-# avec son propre threshold calibré. min_results/max_results restent communs
-# pour l'instant (pas de signal du grid search pour les différencier).
-EXPERIENCE_SEARCH_CONFIG = {"distance_threshold": 0.35, "min_results": 0, "max_results": 6}
-PROJECT_SEARCH_CONFIG = {"distance_threshold": 0.5, "min_results": 0, "max_results": 6}
+# avec son propre threshold calibré. min_results=1 (pas 0) garantit qu'un
+# candidat jugé pertinent par is_candidate_relevant_v2 renvoie toujours au
+# moins sa meilleure expérience/projet disponible, même si aucun ne passe
+# le seuil strict -- évite un cv_json vide malgré is_relevant=True.
+EXPERIENCE_SEARCH_CONFIG = {"distance_threshold": 0.35, "min_results": 1, "max_results": 6}
+PROJECT_SEARCH_CONFIG = {"distance_threshold": 0.5, "min_results": 1, "max_results": 6}
 
 # chunk_types resolved via exact index (no text-matching needed)
 INDEXED_TYPES = {"experience", "project"}
 
 # chunk_types resolved via text-overlap against a list of Mongo items
 LIST_TYPES = {"expertise_areas", "functional_skills", "education", "languages", "certifications"}
+
+
+def _dedupe_ranked_by_index(raw_results: list[dict], index_field: str) -> list[dict]:
+    """
+    A single experience/project can be split into several chunks
+    (part_index) when its serialized text exceeds max_tokens. Keep only the
+    closest (lowest distance) chunk per index_field so the ranked list has
+    exactly one entry per real experience/project, not one per text chunk.
+    """
+    best_by_index: dict[int, dict] = {}
+    for r in raw_results:
+        idx = r["metadata"][index_field]
+        if idx not in best_by_index or r["distance"] < best_by_index[idx]["distance"]:
+            best_by_index[idx] = r
+    return sorted(best_by_index.values(), key=lambda r: r["distance"])
+
+
+def get_ranked_experiences(
+    store, mongo_collection, candidate_id: str, query_vec: list[float],
+    auto_select_threshold: float = None,
+) -> list[dict]:
+    """
+    Return every experience for this candidate, ranked by similarity to the
+    mission, each with its similarity score (0-100%) and an auto_selected
+    flag (True if it would pass the standard retrieval threshold used by
+    build_matched_cv_json). Meant for a review UI: pre-check the
+    auto_selected ones, let the user add/remove the rest, then rebuild the
+    final CV from the confirmed selection.
+    """
+    if auto_select_threshold is None:
+        auto_select_threshold = EXPERIENCE_SEARCH_CONFIG["distance_threshold"]
+
+    raw = store.get_ranked_chunks(query_vec, chunk_type="experience", candidate_id=candidate_id)
+    ranked = _dedupe_ranked_by_index(raw, "experience_index")
+
+    output = []
+    for r in ranked:
+        item = resolve_chunk_to_mongo_source(mongo_collection, r["metadata"])
+        if not item:
+            continue
+        output.append({
+            "experience_index": r["metadata"]["experience_index"],
+            "item": item,
+            "score": distance_to_score(r["distance"]),
+            "auto_selected": r["distance"] <= auto_select_threshold,
+        })
+    return output
+
+
+def get_ranked_projects(
+    store, mongo_collection, candidate_id: str, query_vec: list[float],
+    auto_select_threshold: float = None,
+) -> list[dict]:
+    """Same as get_ranked_experiences, for projects."""
+    if auto_select_threshold is None:
+        auto_select_threshold = PROJECT_SEARCH_CONFIG["distance_threshold"]
+
+    raw = store.get_ranked_chunks(query_vec, chunk_type="project", candidate_id=candidate_id)
+    ranked = _dedupe_ranked_by_index(raw, "project_index")
+
+    output = []
+    for r in ranked:
+        item = resolve_chunk_to_mongo_source(mongo_collection, r["metadata"])
+        if not item:
+            continue
+        output.append({
+            "project_index": r["metadata"]["project_index"],
+            "item": item,
+            "score": distance_to_score(r["distance"]),
+            "auto_selected": r["distance"] <= auto_select_threshold,
+        })
+    return output
 
 
 def build_matched_cv_json(store, mongo_collection, candidate_id: str, query_vec: list[float]) -> dict:

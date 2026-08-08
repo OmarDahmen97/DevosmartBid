@@ -10,9 +10,7 @@ def build_prompt(raw_text: str, folder_name: str) -> str:
         return build_prompt_tech6(raw_text, folder_name)
     print("Using D2C prompt")
     return build_prompt_D2C(raw_text, folder_name)
-    # TODO: ajouter une vraie distinction D2C vs générique une fois
-    # build_prompt_generic() écrit — actuellement tout non-TECH-6 tombe
-    # sur D2C, ce qui est incorrect pour les CV externes sans template
+    
 
 def build_prompt_tech6(raw_text: str, folder_name: str) -> str:
     return f"""Extract the following fields from this CV text as JSON only, no other text, no markdown code fences.
@@ -103,8 +101,8 @@ CV text:
 
 def resolve_candidate_name(extracted_name: str, folder_name: str) -> str:
     """
-    Filet de sécurité si le LLM ignore l'instruction de fallback dans le
-    prompt. Détecte un nom probablement réduit à des initiales.
+    Safety net if the LLM ignores the fallback instruction in the
+    prompt. Detects a name likely reduced to initials.
     """
     cleaned = (extracted_name or "").replace(".", "").replace(" ", "")
     if len(cleaned) <= 3:

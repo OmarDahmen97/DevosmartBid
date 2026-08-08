@@ -21,19 +21,17 @@ from rapidfuzz.fuzz import token_set_ratio
 from rapidfuzz import fuzz
 
 from app.config import EMBEDDING_BATCH_SIZE
-from app.embedding.embedder import Embedder
+from app.embedding.embedder import get_shared_embedder
 from difflib import SequenceMatcher
 
 from bson import ObjectId
-_embedder_instance = None
 
 
-def _get_embedder() -> Embedder:
-    """Lazy singleton — avoid reloading the SBERT model on every call."""
-    global _embedder_instance
-    if _embedder_instance is None:
-        _embedder_instance = Embedder()
-    return _embedder_instance
+def _get_embedder():
+    """Delegates to the process-wide shared singleton (app.embedding.embedder) --
+    avoid rolling a separate local singleton that would load its own SBERT
+    instance independently from the rest of the app."""
+    return get_shared_embedder()
 
 
 # ---- lightweight company prefilter (no fuzzy library dependency) ----
@@ -65,7 +63,7 @@ def _companies_plausibly_match(raw_a: str | None, raw_b: str | None, threshold: 
     b = _normalize_company(raw_b)
 
     if a is None or b is None:
-        return True  # can't confidently rule out -> let embedding decide
+        return True  # can't confidently rule it out -> let embedding decide
 
     if not a or not b:
         return True
@@ -199,7 +197,7 @@ def merge_and_deduplicate_experiences(
     flat_experiences: list[dict] = []
     flat_version_indices: list[int] = []
 
-    # 1. Aplatir toutes les expériences
+    # 1. Flatten all experiences
     for v_idx, structured in enumerate(cv_versions_structured):
         exps = structured.get("experience", []) or []
         for exp in exps:
@@ -209,11 +207,11 @@ def merge_and_deduplicate_experiences(
     if not flat_experiences:
         return []
 
-    # 2. Calculer les similarités inter-versions
+    # 2. Calculate cross-version similarities
     pairs = pairwise_similarities(flat_experiences, flat_version_indices)
     matching_pairs = [(i, j, sim) for i, j, sim in pairs if sim >= threshold]
 
-    # 3. Composantes connexes (Union-Find)
+    # 3. Connected components (Union-Find)
     parent = list(range(len(flat_experiences)))
 
     def find(i: int) -> int:
@@ -235,7 +233,7 @@ def merge_and_deduplicate_experiences(
         root = find(idx)
         clusters.setdefault(root, []).append(idx)
 
-    # 4. Sélection de la meilleure version pour chaque groupe
+    # 4. Select the best version for each cluster
     merged_experiences: list[dict] = []
     for cluster_indices in clusters.values():
         best_idx = max(
@@ -247,11 +245,11 @@ def merge_and_deduplicate_experiences(
         )
         merged_experiences.append(flat_experiences[best_idx])
 
-    # 5. Garde-fou anti sur-fusion : si le résultat fusionné contient
-    # moins d'expériences que la meilleure version prise seule, c'est
-    # signe de faux positifs (deux missions différentes fusionnées à
-    # tort). Dans ce cas on retombe sur les expériences de cette
-    # version max plutôt que de risquer une perte de données.
+    # 5. Anti-over-merging safeguard: if the merged result contains
+    # fewer experiences than the best single version alone, it signals
+    # false positives (two different missions incorrectly merged).
+    # In this case, fall back to the experiences of that max version
+    # rather than risking data loss.
     experiences_per_version: dict[int, list[dict]] = {}
     for exp, v_idx in zip(flat_experiences, flat_version_indices):
         experiences_per_version.setdefault(v_idx, []).append(exp)
@@ -374,15 +372,15 @@ def build_merged_candidate_cv(
     threshold: float = DEFAULT_SIMILARITY_THRESHOLD,
 ) -> dict:
     """
-    Construit le CV consolidé, puis l'enregistre dans target_collection
-    (merged_candidates). Chaque section est traitée indépendamment :
-    - "experience" est fusionnée/dédupliquée par similarité sémantique
-      inter-versions (merge_and_deduplicate_experiences)
-    - toutes les autres sections sont prises depuis la version la plus
-      riche en information pour cette section spécifique, pas
-      systématiquement la dernière version (merge_static_sections_by_richness)
+    Constructs the consolidated CV, then saves it in target_collection
+    (merged_candidates). Each section is processed independently:
+    - "experience" is merged/deduplicated via cross-version semantic similarity
+      (merge_and_deduplicate_experiences)
+    - all other sections are selected from the most information-rich version
+      for that specific section, rather than systematically using the latest
+      version (merge_static_sections_by_richness)
     """
-    # 1. Récupération du candidat source
+    # 1. Retrieve source candidate
     candidate = mongo_collection.find_one({"_id": ObjectId(candidate_id)})
     if not candidate:
         return {}
@@ -391,7 +389,7 @@ def build_merged_candidate_cv(
     if not versions:
         return {}
 
-    # 2. Récupération des données structurées
+    # 2. Extract structured data
     latest_version = versions[-1]
     latest_structured = latest_version.get("structured", {})
     cv_versions_structured = [v.get("structured", {}) for v in versions if "structured" in v]
@@ -399,7 +397,7 @@ def build_merged_candidate_cv(
     if not cv_versions_structured:
         return {}
 
-    # 3. Fusion des expériences — skip l'embedding si une seule version
+    # 3. Merge experiences — skip embedding if there is only one version
     if len(cv_versions_structured) > 1:
         deduplicated_experiences = merge_and_deduplicate_experiences(
             cv_versions_structured, threshold=threshold
@@ -407,48 +405,48 @@ def build_merged_candidate_cv(
     else:
         deduplicated_experiences = latest_structured.get("experience", []) or []
 
-    # 4. Sélection par richesse pour toutes les autres sections
+    # 4. Select by richness for all other sections
     static_sections = merge_static_sections_by_richness(cv_versions_structured)
 
-    # Nom original et normalisé (pas soumis à la sélection par richesse —
-    # l'identité du candidat reste ancrée sur le document top-level)
+    # Original and normalized name (not subject to richness selection —
+    # candidate identity remains anchored to the top-level document)
     name = candidate.get("name") or latest_structured.get("name")
     normalized_name = candidate.get("normalized_name") or (name.lower() if name else None)
 
-    # 5. Construction du document ordonné
+    # 5. Build ordered document
     result = {
-        # Identifiants & Métadonnées de base
+        # Identifiers & Base Metadata
         "candidate_id": ObjectId(candidate_id),
         "name": name,
         "normalized_name": normalized_name,
 
-        # Coordonnées
+        # Contact Details
         "email": candidate.get("email") or static_sections["email"],
         "phone": static_sections["phone"],
         "linkedin": static_sections["linkedin"],
         "github": static_sections["github"],
 
-        # Profil & Compétences
+        # Profile & Skills
         "summary": static_sections["summary"],
         "skills": static_sections["skills"],
         "expertise_areas": static_sections["expertise_areas"],
         "functional_skills": static_sections["functional_skills"],
 
-        # Parcours Professionnel (Fusionné) & Projets
+        # Work Experience (Merged) & Projects
         "experience": deduplicated_experiences,
         "projects": static_sections["projects"],
 
-        # Formations, Certifications & Langues
+        # Education, Certifications & Languages
         "education": static_sections["education"],
         "certifications": static_sections["certifications"],
         "languages": static_sections["languages"],
 
-        # Informations complémentaires
+        # Additional Information
         "countries_worked": static_sections["countries_worked"],
         "professional_affiliations": static_sections["professional_affiliations"],
     }
 
-    # 6. Sauvegarde / Upsert dans MongoDB Atlas
+    # 6. Save / Upsert into MongoDB Atlas
     if target_collection is not None:
         target_collection.update_one(
             {"candidate_id": ObjectId(candidate_id)},

@@ -6,16 +6,15 @@ import re
 
 def extract_pptx_text(file_path: str) -> str:
     """
-    Extrait le texte d'un fichier PPTX en parcourant :
-      - TextBox
-      - Placeholder
-      - GroupShape (récursif)
-      - Tableaux
+    Extracts text from a PPTX file by iterating over:
+    - TextBox
+    - Placeholder
+    - GroupShape (recursive)
+    - Tables
 
-    Retourne un texte brut proche de la structure visuelle
-    de la présentation.
+    Returns raw text close to the visual structure
+    of the presentation.
     """
-
     prs = Presentation(file_path)
 
     def extract_from_table(table):
@@ -43,12 +42,12 @@ def extract_pptx_text(file_path: str) -> str:
 
         for shape in shapes:
 
-            # Groupes imbriqués
+            # Nested groups
             if isinstance(shape, GroupShape):
                 collected.extend(collect_shapes(shape.shapes))
                 continue
 
-            # Tableaux
+            # Tables
             if getattr(shape, "has_table", False):
 
                 table_text = extract_from_table(shape.table)
@@ -64,7 +63,7 @@ def extract_pptx_text(file_path: str) -> str:
 
                 continue
 
-            # TextBox / Placeholder / autres text frames
+            # TextBox / Placeholder / other text frames
             if getattr(shape, "has_text_frame", False):
 
                 text = "\n".join(
@@ -89,7 +88,7 @@ def extract_pptx_text(file_path: str) -> str:
 
         slide_content = collect_shapes(slide.shapes)
 
-        # Ordre de lecture visuel
+        # Order of visual reading
         slide_content.sort(key=lambda x: (x[0], x[1]))
 
         for _, _, text in slide_content:

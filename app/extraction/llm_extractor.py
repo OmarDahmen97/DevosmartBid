@@ -7,6 +7,7 @@ import re
 import os
 from dotenv import load_dotenv
 from app.extraction.chunker import split_raw_text_into_chunks
+from app.extraction.llm_extractor_gemini import _extract_first_json
 from app.extraction.prompt_builder import (
     build_prompt,
     build_prompt_tech6_general,
@@ -19,7 +20,6 @@ from app.extraction.prompt_builder import (
     build_prompt_generic_chunk,
     is_tech6_format
 )
-#from app.config import get_groq_api_key
 
 
 load_dotenv()
@@ -28,21 +28,21 @@ client = Groq(api_key=Groq_key)
 
 
 def _parse_response(response, key: str | None = None) -> dict:
-    """Parse la réponse JSON du modèle Groq de façon robuste.
+    """Robustly parses the JSON response from the Groq model.
 
-    Le modèle renvoie parfois un tableau JSON au premier niveau au lieu d'un
-    objet, ou ajoute du texte parasite avant/après le JSON, ou des balises
-    Markdown. Si `key` est fourni (ex: "missions"/"experience"), un tableau
-    renvoyé directement est encapsulé sous cette clé. Sinon on renvoie le
-    premier élément dict du tableau ou un dict vide.
-    """
+        The model sometimes returns a JSON array at the root level instead of an
+        object, or adds unwanted text before/after the JSON, or Markdown tags.
+        If `key` is provided (e.g., "missions"/"experience"), a directly returned
+        array is wrapped under that key. Otherwise, the first dict element of
+        the array or an empty dict is returned.
+        """
     text = (response.choices[0].message.content or "").strip()
     if text.startswith("```"):
         text = re.sub(r"^```[^\n]*\n?", "", text)
         text = re.sub(r"\n?```\s*$", "", text)
         text = text.strip()
 
-    data = json.loads(text)
+    data = _extract_first_json(text)
     if isinstance(data, list):
         if key is not None:
             return {key: data}
@@ -57,7 +57,7 @@ CHUNKING_THRESHOLD = 5000
 
 #TECH-6
 def split_missions_block(raw_text: str) -> list[str]:
-    # 1. Détection des débuts de missions
+    # 1. Mission start detection
     months_pattern = r'(?:janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)'
     pattern = rf'(?mi)^\s*(?:{months_pattern}\s+)?\d{{4}}(?:\s*(?:-|\u2013|\u2014)\s*(?:{months_pattern}\s+)?\d{{4}})?\s*\|'
 
@@ -69,7 +69,7 @@ def split_missions_block(raw_text: str) -> list[str]:
     end_marker = "|end of table"
     individual_missions = []
     
-    # 2. Extraction de chaque mission de manière isolée
+    # 2. Extracting each mission in isolation
     for i in range(len(mission_starts)):
         start = mission_starts[i]
         marker_pos = raw_text.find(end_marker, start)
@@ -80,21 +80,21 @@ def split_missions_block(raw_text: str) -> list[str]:
         
         individual_missions.append(raw_text[start:end].strip())
 
-    # 3. Calcul de la longueur moyenne d'une mission
+    # 3. Calculating average mission length
     total_chars = sum(len(m) for m in individual_missions)
     avg_length = total_chars / len(individual_missions)
-    print(f"Missions détectées : {len(individual_missions)} | Longueur moyenne : {avg_length:.1f} caractères")
+    print(f"Missions detected : {len(individual_missions)} | Average length : {avg_length:.1f} characters")
 
-    # 4. Choix dynamique du nombre de missions par chunk
-    # Si la moyenne est inférieure à 600 caractères, on fusionne 3 par 3. Sinon, 1 par 1.
+    # 4. Dynamic choice of number of missions per chunk
+    # If the average is less than 600 characters, merge 3 by 3. Otherwise, 1 by 1.
     if avg_length < 600:
         missions_per_chunk = 3
-        print("Missions courtes détectées -> Regroupement 3 par 3")
+        print("Short missions detected -> Grouping 3 by 3")
     else:
         missions_per_chunk = 1
-        print("Missions longues détectées -> Découpage 1 par 1")
+        print("Long missions detected -> Splitting 1 by 1")
 
-    # 5. Création des chunks
+    # 5. Creation of chunks
     chunks = []
     for i in range(0, len(individual_missions), missions_per_chunk):
         group = individual_missions[i:i + missions_per_chunk]
@@ -102,37 +102,10 @@ def split_missions_block(raw_text: str) -> list[str]:
 
     return chunks
 
-def build_prompt_tech6_general(raw_text: str, folder_name: str) -> str:
-    return f"""Extract ONLY these fields from this CV text as JSON only, no other text, no markdown code fences.
-
-{{
-  "name": "full candidate name",
-  "countries_worked": ["country1", "country2"],
-  "professional_affiliations": ["affiliation1"],
-  "education": [{{"degree": "...", "field_of_study": null, "institution": "...", "years": "..."}}],
-  "certifications": [],
-  "languages": [{{"language": "...", "level": "..."}}]
-}}
-
-This is a World Bank / EU standardized consultant CV (TECH-6 format). Extract ONLY the fields listed above — ignore the detailed mission/experience list entirely, it is handled separately.
-
-IMPORTANT for name: if missing or reduced to initials, use this name instead, from the folder: "{folder_name}"
-
-CV text:
-{raw_text}"""
 
 
-def build_prompt_tech6_missions(missions_text: str) -> str:
-    return f"""Extract every mission listed in this CV excerpt as JSON only, no other text, no markdown code fences.
 
-{{
-  "missions": [{{"year": "...", "employer": "...", "country": "...", "activities": "combine all activities for this mission into one string"}}]
-}}
 
-This is an excerpt from a World Bank / EU consultant CV, listing individual missions. Extract EVERY mission listed — do not skip or summarize any entry.
-If year is 1111 or missing, leave it null. 
-Text excerpt:
-{missions_text}"""
 
 
 def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = "") -> dict:
@@ -160,20 +133,38 @@ def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = 
         chunk_data = _parse_response(response, key="missions")
 
         for mission in chunk_data.get("missions", []):
-            activities = mission.get("activities")
-            if isinstance(activities, list):
-                activities = " ".join(str(a) for a in activities)
+            if not isinstance(mission, dict):
+                continue
 
+            # 1. Extraction avec les NOUVELLES clés du LLM
+            dates = mission.get("dates")
+            company = mission.get("company")
+            title = mission.get("title")
+            description = mission.get("description") or ""
+
+            if isinstance(description, list):
+                description = " ".join(str(d) for d in description)
+
+            # 2. Construction dynamique du champ 'name' ou 'title'
+            # Combine title et company proprement si disponibles
+            header_parts = [p.strip() for p in [title, company] if p and str(p).strip()]
+            base_name = " - ".join(header_parts) if header_parts else None
+
+            # 3. Structuration de l'objet pour 'experience'
             all_projects.append({
-                "name": f"{mission.get('employer', 'N/A')} ({mission.get('year', 'N/A')})",
-                "description": f"{mission.get('country', '')} — {activities or ''}".strip(" —"),
+                "title": title or "Position not specified",
+                "company": company,
+                "dates": dates,
+                "description": description.strip(),
+                "responsibilities": [],
+                "deliverables": [],
                 "technologies": []
             })
 
-        time.sleep(2)
+    time.sleep(2)
 
-    general_data["experience"] = []  
-    general_data["projects"] = all_projects
+    general_data["experience"] = all_projects 
+    general_data["projects"] = []
     general_data["name"] = resolve_candidate_name(general_data.get("name", ""), folder_name)
     general_data.setdefault("summary", None)
     general_data.setdefault("expertise_areas", [])
@@ -237,7 +228,7 @@ def merge_generic_chunks(chunks_json_list: list[dict]) -> dict:
     Fusionne une liste de dictionnaires JSON (extraits de chaque morceau de CV)
     en un seul dictionnaire structuré conforme à CVSchema.
     """
-    # Structure de base identique à ton CVSchema
+    # Base structure identical to your CVSchema
     merged_cv = {
         "name": "",
         "summary": None,
@@ -259,29 +250,29 @@ def merge_generic_chunks(chunks_json_list: list[dict]) -> dict:
         if not chunk or not isinstance(chunk, dict):
             continue
             
-        # 1. Extraction du Nom (On prend le premier nom valide trouvé)
+        # Base structure identical to your CVSchema
         if not merged_cv["name"] and chunk.get("name"):
             name_candidate = chunk["name"].strip()
-            # On évite de garder des valeurs génériques ou vides
+            # Base structure identical to your CVSchema
             if name_candidate.lower() not in ["null", "", "full candidate name", "candidate name"]:
                 merged_cv["name"] = name_candidate
             
-        # 2. Accumulation des résumés / objectifs professionnels
+        # Base structure identical to your CVSchema
         if chunk.get("summary"):
             summary_text = chunk["summary"].strip()
             if summary_text and summary_text.lower() != "null":
                 summaries.append(summary_text)
                 
-        # 3. Fusion des listes de chaînes de caractères simples (sans doublons sémantiques)
-        # On utilise set() pour s'assurer que les skills, pays ou affiliations n'apparaissent pas deux fois
+        # 3. Merging lists of simple strings (without semantic duplicates)
+        # We use set() to ensure that skills, countries, or affiliations do not appear twice
         for key in ["skills", "countries_worked", "professional_affiliations"]:
             if chunk.get(key) and isinstance(chunk[key], list):
                 # On nettoie et on fusionne
                 cleaned_items = [str(item).strip() for item in chunk[key] if item]
                 merged_cv[key] = list(set(merged_cv[key] + cleaned_items))
                 
-        # 4. Fusion des listes d'objets complexes (on accumule tout simplement)
-        # La validation et le nettoyage finaux seront gérés par ton Pydantic CVSchema
+        # 4. Merging lists of complex objects (simply accumulating everything)
+        # Final validation and cleaning will be handled by your Pydantic CVSchema
         object_keys = [
             "expertise_areas", 
             "functional_skills", 
@@ -295,9 +286,9 @@ def merge_generic_chunks(chunks_json_list: list[dict]) -> dict:
             if chunk.get(key) and isinstance(chunk[key], list):
                 merged_cv[key].extend(chunk[key])
                 
-    # On rassemble les morceaux de résumés s'il y en a plusieurs
+    # Gather summary fragments if there are multiple
     if summaries:
-        # On enlève les doublons de phrases exactes au cas où un morceau d'overlap s'est répété
+        # Remove exact duplicate sentences in case an overlap fragment was repeated
         unique_summaries = []
         for s in summaries:
             if s not in unique_summaries:
@@ -308,10 +299,10 @@ def merge_generic_chunks(chunks_json_list: list[dict]) -> dict:
 
 def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str = "") -> dict:
     """
-    Découpe un CV générique trop long en plusieurs petits morceaux (chunks),
-    les envoie un par un au LLM en évitant les limites TPM de Groq.
+    Splits an overly long generic CV into multiple smaller chunks,
+    sending them one by one to the LLM while avoiding Groq's TPM limits.
     """
-    # Chunks plus petits pour passer sous la limite TPM de 6000
+    # Smaller chunks to stay under the 6,000 TPM limit
     chunks = split_raw_text_into_chunks(raw_text, max_chars=1500, overlap=150)
     print(f"[Generic Chunking] CV split into {len(chunks)} chunks of 1500 characters each.")
 
@@ -320,7 +311,7 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
     for i, chunk_text in enumerate(chunks):
         print(f"   -> Chunk processing {i+1}/{len(chunks)}...")
         
-        # Utilisation du prompt allégé
+        # Using the lightweight prompt for generic CVs
         prompt = build_prompt_generic_chunk(chunk_text, folder_name)
         
         try:
@@ -328,7 +319,7 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
-                max_tokens=1500  # On baisse aussi le max_tokens de sortie attendu
+                max_tokens=1500  
             )
             
             chunk_data = _parse_response(response, key="missions")
@@ -337,8 +328,8 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
         except Exception as e:
             print(f"  Failed to extract from chunk {i+1}: {e}")
         
-        # Pause of 3 seconds to allow the TPM/RPM quota to reset
-        time.sleep(5.0)
+        
+        time.sleep(3.0)
 
     final_data = merge_generic_chunks(extracted_chunks_json)
     final_data["name"] = resolve_candidate_name(final_data.get("name", ""), folder_name)
@@ -353,27 +344,26 @@ def extract_structured_sections(raw_text: str,file_path, folder_name: str = "", 
     is_tech6 = is_tech6_format(raw_text)
     is_d2c = is_d2c_format(raw_text,file_path)
 
-    # Cas 1 : Format TECH-6 long
+    # Case 1: Long TECH-6 format
     if is_tech6 and len(raw_text) > CHUNKING_THRESHOLD:
         print("Using TECH-6 chunked extraction (long CV)")
         return extract_structured_sections_tech6_chunked(raw_text, folder_name)
 
-    # Cas 2 : Format D2C long
+    # Case 2: Long D2C format
     if is_d2c and len(raw_text) > CHUNKING_THRESHOLD:
         print("Using D2C chunked extraction (long CV)")
         return extract_structured_sections_d2c_chunked(raw_text, folder_name)
 
-    # Cas 3 : Format Générique / Non structuré long (AJOUTÉ)
+    # Case 3: Long generic/unstructured format (ADDED)
     if len(raw_text) > CHUNKING_THRESHOLD:
         print(f"Using GENERIC chunked extraction (long CV: {len(raw_text)} chars)")
         return extract_structured_sections_generic_chunked(raw_text, folder_name)
 
-    # Cas 4 : CV court (TECH-6, D2C ou Générique < CHUNKING_THRESHOLD) -> Traitement standard
+    # Case 4: Short CV (TECH-6, D2C or Generic < CHUNKING_THRESHOLD) -> Standard processing
     for attempt in range(max_retries):
         try:
             prompt = build_prompt(raw_text, folder_name,file_path)
             response = client.chat.completions.create(
-                # model="llama-3.3-70b-versatile",
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},

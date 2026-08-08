@@ -37,7 +37,7 @@ def serialize_category_description_list(items: list[dict]) -> str:
             parts.append(category)
         elif description:
             parts.append(f"Note: {description}")
-        # if both are None → skip
+        # if both are None -> skip
     return ". ".join(parts)
 
 

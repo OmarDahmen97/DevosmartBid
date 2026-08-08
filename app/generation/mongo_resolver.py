@@ -21,6 +21,11 @@ def clear_candidate_cache() -> None:
     _candidate_cache.clear()
 
 
+def invalidate_candidate_cache(candidate_id: str) -> None:
+    """Remove a single candidate's cached entry, without clearing everyone else's."""
+    _candidate_cache.pop(candidate_id, None)
+
+
 def _get_candidate(mongo_collection, candidate_id: str) -> dict | None:
     """
     Fetch the consolidated candidate document from merged_candidates.

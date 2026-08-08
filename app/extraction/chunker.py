@@ -1,5 +1,3 @@
-
-
 def split_raw_text_into_chunks(text: str, max_chars: int = 1500, overlap: int = 150) -> list:
     """
     Splits raw text (long general CV) into chunks of approximately `max_chars` characters.
@@ -18,7 +16,7 @@ def split_raw_text_into_chunks(text: str, max_chars: int = 1500, overlap: int = 
         if not paragraph:
             continue
             
-        # Security: If a single paragraph is unusually large
+        # Safety: If a single paragraph is unusually large
         if len(paragraph) > max_chars:
             # Force it to be split
             chunks.append(paragraph[:max_chars])
@@ -38,7 +36,7 @@ def split_raw_text_into_chunks(text: str, max_chars: int = 1500, overlap: int = 
             current_chunk.append(paragraph)
             current_length += len(paragraph)
 
-    
+    # Save the final remaining chunk if it exists
     if current_chunk:
         chunks.append("\n".join(current_chunk))
 

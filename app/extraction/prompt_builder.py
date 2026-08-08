@@ -11,7 +11,7 @@ import json
 #TECH-6
 
 def is_tech6_format(raw_text: str) -> bool:
-    """Détecte le format TECH-6."""
+    """Detects the TECH-6 format."""
     text = re.sub(r"\s+", " ", raw_text.lower())
 
     tech6_markers = [
@@ -45,7 +45,7 @@ def build_prompt_tech6(raw_text: str, folder_name: str) -> str:
     "deliverables": [],
     "technologies": []
   }}],
-  "projects": [{{"name": "mission/project name", "description": "activities performed, location, funding source if mentioned", "technologies": []}}]
+ 
 }}
 
 This CV follows the World Bank / EU standardized consultant CV format (TECH-6), with fixed numbered sections, roughly in this order:
@@ -60,7 +60,6 @@ This CV follows the World Bank / EU standardized consultant CV format (TECH-6), 
 9. Languages, usually rated by proficiency level per skill (spoken/read/written) → "languages"
 10. Employment record, reverse chronological, employer + position + dates → "experience" (title, company, dates)
 11. Detailed tasks per assignment/mission, usually including project name, year, location, funding source, position, activities → map each into "projects" (name = project/mission name, description = combining location, funding source and activities described)
-12. Prior experience most illustrative of competence for the current assignment → merge relevant content into "projects" if not already captured
 
 IMPORTANT: this format always ends with a signed declaration/certification statement (e.g. "I certify that..."). This is NOT candidate data — do not extract it into any field, ignore it completely.
 
@@ -91,12 +90,27 @@ CV text:
 def build_prompt_tech6_missions(missions_text: str) -> str:
     return f"""Extract every mission listed in this CV excerpt as JSON only, no other text, no markdown code fences.
 
+The input text uses the following pipe-separated format:
+`Dates | Company - Title | Country | Main Task / Description`
+
+Map these parts accurately into the output schema:
 {{
-  "missions": [{{"year": "...", "employer": "...", "country": "...", "activities": "combine all activities for this mission into one string"}}]
+  "missions": [
+    {{
+      "dates": "extracted dates or null",
+      "company": "extracted company name (before the dash) or null",
+      "title": "extracted job title / role (after the dash) or null",
+      "description": "extracted country and full description / activities"
+    }}
+  ]
 }}
 
+STRICT RULES FOR MISSING VALUES:
+- If an information or field is missing or unavailable, set its value directly to `null` (e.g., "company": null) instead of placeholders like "N/A" or "Position not specified".
+- If a date or year value equals 1111, set `"dates": null` (or omit the mission if completely invalid).
+
 This is an excerpt from a World Bank / EU consultant CV, listing individual missions. Extract EVERY mission listed — do not skip or summarize any entry.
-If a year value equals 1111, treat it as a placeholder for missing data and omit it (do not include it as a valid date)
+
 Text excerpt:
 {missions_text}"""
 
@@ -105,9 +119,9 @@ Text excerpt:
 
 def has_d2c_beige_circle(file_path: str) -> bool:
     """
-    Détecte la forme circulaire beige caractéristique du template D2C
-    (visible en arrière-plan de la première slide).
-    """
+  Detects the characteristic beige circular shape of the D2C template
+  (visible in the background of the first slide).
+  """
     try:
         prs = Presentation(file_path)
     except Exception:
@@ -125,7 +139,7 @@ def has_d2c_beige_circle(file_path: str) -> bool:
         )
 
     def check_shape(shape):
-        # Vérifier si c'est un cercle/ovale
+        # Check if it is a circle/oval
         is_circle = (
             shape.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE
             and hasattr(shape, "auto_shape_type")
@@ -146,7 +160,7 @@ def has_d2c_beige_circle(file_path: str) -> bool:
             except Exception as e:
                 print(f"Erreur lecture couleur : {e}")
 
-        # Vérifier récursivement les groupes
+        # Check recursively within groups
         if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
             return any(check_shape(s) for s in shape.shapes)
 
@@ -174,14 +188,14 @@ def is_d2c_format(raw_text: str, file_path: str = None) -> bool:
     ]
 
     text_lower = raw_text.lower()
-    # Détection par cercle beige dans le PPTX
+    # Detection by beige circle in the PPTX
     if file_path and file_path.lower().endswith(".pptx"):
         try:
             if has_d2c_beige_circle(file_path):
                 return True
         except Exception:
             pass
-    # Détection par texte
+    # DDetection by text
     if any(marker in text_lower for marker in markers):
         return True
 
@@ -417,7 +431,7 @@ def resolve_candidate_name(extracted_name: str, folder_name: str) -> str:
 def normalize(text: str) -> str:
     text = unicodedata.normalize("NFKC", text)
     text = text.replace("'", "'").replace("'", "'")
-    text = re.sub(r"\s+", " ", text)  # collapse tous les whitespaces (espaces, \n, \t) en un seul espace
+    text = re.sub(r"\s+", " ", text)  # collapse all whitespaces (spaces, \n, \t) into a single space
     return text.lower().strip()
 
 def build_prompt(raw_text: str, folder_name: str, file_path: str = None) -> str:

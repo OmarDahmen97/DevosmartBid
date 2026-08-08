@@ -1,3 +1,4 @@
+# file: app/extraction/pipeline.py
 """
 app/extraction/pipeline.py
 
@@ -15,6 +16,8 @@ from app.extraction.contact_parser import extract_contact_info, validate_email_m
 from app.extraction.llm_extractor_gemini import extract_structured_sections
 from app.schema import CVSchema
 from app.storage import save_cv, find_existing_by_raw_text
+from app.normalize_sections.normalize_countries import normalize_country_name
+from app.normalize_sections import normalize_language
 from langdetect import detect
 import deepl
 
@@ -23,8 +26,8 @@ deepl_key = os.getenv("DEEPL_API_KEY")
 
 def adapt_data_to_schema(data: dict) -> dict:
     """
-    Adapte les données extraites par le LLM pour qu'elles correspondent
-    strictement aux attentes du schéma Pydantic d'origine.
+    Adapts data extracted by the LLM so that it strictly matches
+    the expectations of the original Pydantic schema.
     """
     for field in ["expertise_areas", "functional_skills"]:
         if field in data and isinstance(data[field], list):
@@ -83,6 +86,36 @@ def adapt_data_to_schema(data: dict) -> dict:
             if isinstance(lang, dict) and lang.get("language") is None:
                 lang["language"] = "Langue non spécifiée"
 
+    # 6. Normalize countries_worked 
+    if "countries_worked" in data and isinstance(data["countries_worked"], list):
+        seen = set()
+        normalized = []
+        for raw in data["countries_worked"]:
+            if not raw:
+                continue
+            canonical = normalize_country_name(raw) or raw
+            if canonical not in seen:
+                seen.add(canonical)
+                normalized.append(canonical)
+        data["countries_worked"] = normalized
+
+    # 7. Normalize languages
+    if "languages" in data and isinstance(data["languages"], list):
+        by_language: dict[str, dict] = {}
+        for entry in data["languages"]:
+            if not isinstance(entry, dict):
+                continue
+            raw_language = entry.get("language")
+            if not raw_language:
+                continue
+            canonical = normalize_language(raw_language) or raw_language
+            existing = by_language.get(canonical)
+            if existing is None:
+                by_language[canonical] = {**entry, "language": canonical}
+            elif not existing.get("level") and entry.get("level"):
+                by_language[canonical] = {**entry, "language": canonical}
+        data["languages"] = list(by_language.values())
+
     return data
 
 
@@ -91,6 +124,13 @@ def extract_and_store_cv(path: str, folder_name: str = "", candidates_collection
     Full single-CV extraction + storage pipeline. Returns the full candidate
     Mongo document (with _id and versions) so downstream matching / profile
     detection can use it directly.
+
+    The returned dict also carries two runtime-only fields, not persisted to
+    Mongo, so callers (e.g. the API layer) can report what actually happened
+    without re-deriving it from the document:
+        - "_pipeline_status": "new_candidate" | "new_version" | "duplicate"
+        - "_pipeline_version": the version_number just written (or matched,
+          for a duplicate)
 
     Unlike the batch script this was refactored from, failures are NOT caught
     and logged here -- they propagate to the caller, since a single-CV usage
@@ -107,54 +147,56 @@ def extract_and_store_cv(path: str, folder_name: str = "", candidates_collection
         from app.storage import candidates as candidates_collection
 
     filename = os.path.basename(path)
-    print(f"[1/7] Détection du format : {filename}")
+    print(f"[1/7] Format detection: {filename}")
     fmt = detect_format(path)  # raises UnsupportedFormatError if not supported
-    print(f"      -> format détecté : {fmt}")
+    print(f"      -> format detected : {fmt}")
 
-    print(f"[2/7] Extraction du texte brut ({fmt})...")
+    print(f"[2/7] Extraction of raw text ({fmt})...")
     text = (
         extract_pdf_text(path) if fmt == "pdf"
         else extract_docx_text(path) if fmt == "docx"
         else extract_pptx_text(path)
     )
-    print(f"      -> {len(text)} caractères extraits")
+    print(f"      -> {len(text)} characters extracted")
 
-    print("[3/7] Vérification de doublon (raw_text exact)...")
+    print("[3/7] Duplicate verification (exact raw_text)...")
     existing_version = find_existing_by_raw_text(text)
     if existing_version is not None:
-        print(f"      -> DOUBLON détecté (version {existing_version} déjà en base), pas de ré-extraction LLM")
+        print(f"      -> DUPLICATE detected (version {existing_version} already in database), no LLM re-extraction")
         candidate = candidates_collection.find_one({"versions.raw_text": text})
         if candidate:
+            candidate["_pipeline_status"] = "duplicate"
+            candidate["_pipeline_version"] = existing_version
             return candidate
         raise RuntimeError(
             f"find_existing_by_raw_text reported v{existing_version} but no matching candidate found"
         )
-    print("      -> pas de doublon, poursuite du traitement")
+    print("      -> no duplicate found, continuing processing")
 
-    print("[4/7] Détection de la langue...")
+    print("[4/7] Language detection...")
     language = detect(text)
-    print(f"      -> langue détectée : {language}")
+    print(f"      -> detected language : {language}")
     original_text = None
     if language == "fr":
         print("      -> traduction FR -> EN via DeepL...")
         translator = deepl.Translator(deepl_key)
         original_text = text
         text = translator.translate_text(text, target_lang="EN-US").text
-        print("      -> traduction terminée")
+        print("      -> translation completed")
 
-    print("[5/7] Extraction structurée (LLM)...")
+    print("[5/7] Structured extraction (LLM)...")
     data = {**extract_contact_info(text), **extract_structured_sections(text, path, folder_name)}
-    print(f"      -> sections extraites : {list(data.keys())}")
+    print(f"      -> extracted sections : {list(data.keys())}")
 
-    print("[6/7] Adaptation au schéma + validation...")
+    print("[6/7] Schema adaptation + validation...")
     data = adapt_data_to_schema(data)
     if not validate_email_matches_name(data.get("email"), data.get("name", "")):
-        print("      -> email incohérent avec le nom, mis à null")
+        print("      -> email inconsistent with name, set to null")
         data["email"] = None
     cv = CVSchema(**data)
-    print(f"      -> schéma validé pour : {cv.name}")
+    print(f"      -> schema valid for : {cv.name}")
 
-    print("[7/7] Stockage MongoDB...")
+    print("[7/7] MongoDB storage...")
     result = save_cv(cv, text, original_text)
     print(f"      -> {result['status']} — {result['name']} (v{result['version']})")
 
@@ -169,5 +211,11 @@ def extract_and_store_cv(path: str, folder_name: str = "", candidates_collection
     if candidate is None:
         raise RuntimeError(f"save_cv reported success ({result}) but candidate not found in Mongo afterward")
 
-    print(f"Pipeline d'extraction terminé pour {cv.name}.\n")
+    # Attach save_cv's status/version as runtime-only fields (not persisted --
+    # this dict is the live Mongo document, callers just get the extra
+    # context for free). Prefixed to make clear these aren't CV data.
+    candidate["_pipeline_status"] = result["status"]
+    candidate["_pipeline_version"] = result["version"]
+
+    print(f"Extraction pipeline completed for {cv.name}.\n")
     return candidate

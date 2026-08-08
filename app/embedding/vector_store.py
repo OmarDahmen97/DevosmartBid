@@ -137,6 +137,36 @@ class VectorStore:
             all_results.extend(results)
         return all_results
 
+    def get_ranked_chunks(
+        self,
+        query_embedding: list[float],
+        chunk_type: str,
+        candidate_id: str,
+        limit: int = 100,
+    ) -> list[dict]:
+        """
+        Return every chunk of chunk_type for this candidate, ranked by
+        distance to query_embedding -- no distance_threshold filtering.
+        Used to build a full ranked list (with scores) for a UI where the
+        user reviews and manually adjusts an auto-selection, rather than
+        search_section's "give me the best N above threshold" behavior.
+        """
+        where_filter = {"$and": [{"chunk_type": chunk_type}, {"candidate_id": candidate_id}]}
+
+        raw = self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=limit,
+            where=where_filter,
+        )
+
+        results = [
+            {"id": raw["ids"][0][i], "distance": raw["distances"][0][i],
+             "metadata": raw["metadatas"][0][i], "text": raw["documents"][0][i]}
+            for i in range(len(raw["ids"][0]))
+        ]
+        results.sort(key=lambda x: x["distance"])
+        return results
+
     @staticmethod
     def _build_id(metadata: dict) -> str:
         """Build a unique, stable chunk ID from its metadata."""
