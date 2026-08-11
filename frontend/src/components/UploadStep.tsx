@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CloudUpload, FileText, Loader2, X } from "lucide-react";
+import { updateCandidateName } from "../api";
 import type { UploadResultItem, UploadErrorItem } from "../types";
 
 const statusStyles: Record<string, string> = {
@@ -14,6 +15,9 @@ export function UploadStep({ onUploaded }: { onUploaded: () => void }) {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<(UploadResultItem | UploadErrorItem)[]>([]);
   const input = useRef<HTMLInputElement>(null);
+  const [nameInputs, setNameInputs] = useState<Record<string, string>>({});
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const add = useCallback((next: FileList | null) => {
     if (!next) return;
@@ -28,6 +32,8 @@ export function UploadStep({ onUploaded }: { onUploaded: () => void }) {
     if (!files.length) return;
     setLoading(true);
     setResults([]);
+    setNameInputs({});
+    setSavedId(null);
     try {
       const res = await fetch("http://127.0.0.1:8000/cv/upload", {
         method: "POST",
@@ -45,6 +51,23 @@ export function UploadStep({ onUploaded }: { onUploaded: () => void }) {
       setResults([{ filename: "", error: e instanceof Error ? e.message : "Unknown error" }]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveName = async (candidateId: string, name: string) => {
+    if (!name.trim()) return;
+    setSavingId(candidateId);
+    try {
+      await updateCandidateName(candidateId, name.trim());
+      setSavedId(candidateId);
+      setResults((prev) =>
+        prev.map((r) => ("candidate_id" in r && r.candidate_id === candidateId ? { ...r, name: name.trim() } : r))
+      );
+    } catch {
+      // handled by user seeing the failure
+    } finally {
+      setSavingId(null);
+      setTimeout(() => setSavedId(null), 2000);
     }
   };
 
@@ -100,8 +123,43 @@ export function UploadStep({ onUploaded }: { onUploaded: () => void }) {
                 {"error" in r ? (
                   <p className="text-sm text-red-700">{r.error || "Unknown error"}</p>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                    <span className="text-sm font-semibold">{r.name || r.filename}</span>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div className="flex items-center gap-2">
+                      {!r.name ? (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const val = nameInputs[r.candidate_id] || "";
+                            if (val.trim()) saveName(r.candidate_id, val);
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            value={nameInputs[r.candidate_id] || ""}
+                            onChange={(e) =>
+                              setNameInputs((prev) => ({ ...prev, [r.candidate_id]: e.target.value }))
+                            }
+                            placeholder="Enter candidate name..."
+                            className="field text-sm"
+                          />
+                          <button
+                            type="submit"
+                            disabled={savingId === r.candidate_id || !(nameInputs[r.candidate_id] || "").trim()}
+                            className="inline-flex items-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                          >
+                            {savingId === r.candidate_id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : savedId === r.candidate_id ? (
+                              "Saved"
+                            ) : (
+                              "Save"
+                            )}
+                          </button>
+                        </form>
+                      ) : (
+                        <span className="text-sm font-semibold">{r.name}</span>
+                      )}
+                    </div>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${statusStyles[r.status]}`}>{r.status.replace("_", " ")}</span>
                     <span className="text-xs text-slate-500">v{r.version} · {r.experience_count_after_merge} experiences</span>
                   </div>

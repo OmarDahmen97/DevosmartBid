@@ -50,7 +50,7 @@ from app.main_usage import (
     get_distinct_section_values,
     search_candidates,
     delete_candidate,
-    delete_candidate_by_name,
+    update_candidate_name,
     generate_cv_from_selection,
 )
 
@@ -97,6 +97,10 @@ class SelectedCandidate(BaseModel):
     candidate_id: str
     selected_experience_indices: list[int] = []
     selected_project_indices: list[int] = []
+
+
+class UpdateNameRequest(BaseModel):
+    name: str
 
 
 class GenerationRequest(BaseModel):
@@ -282,10 +286,10 @@ async def delete_candidate_endpoint(candidate_id: str):
     return result
 
 
-@app.delete("/candidates/delete-by-name/{name}")
-async def delete_candidate_by_name_endpoint(name: str):
+@app.put("/candidates/{candidate_id}")
+async def update_candidate_name_endpoint(candidate_id: str, request: UpdateNameRequest):
     try:
-        result = delete_candidate_by_name(name)
+        result = update_candidate_name(candidate_id, request.name)
     except Exception as e:
         return {"error": f"{type(e).__name__}: {e}"}
     return result

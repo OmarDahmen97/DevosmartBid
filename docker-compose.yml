@@ -1,0 +1,63 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: cv_platform
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cv-platform
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma_data
+      - hf_cache:/root/.cache/huggingface
+    environment:
+      MONGO_URI: mongodb://mongo:27017/cv_platform
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      DEEPL_API_KEY: ${DEEPL_API_KEY}
+      GROQ_API_KEY1: ${GROQ_API_KEY1}
+      GROQ_API_KEY2: ${GROQ_API_KEY2}
+      GROQ_API_KEY3: ${GROQ_API_KEY3}
+      GROQ_API_KEY4: ${GROQ_API_KEY4}
+      GROQ_API_KEY5: ${GROQ_API_KEY5}
+      GROQ_API_KEY6: ${GROQ_API_KEY6}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - cv-platform
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - cv-platform
+
+volumes:
+  mongo_data:
+  chroma_data:
+  hf_cache:
+
+networks:
+  cv-platform:
+    driver: bridge

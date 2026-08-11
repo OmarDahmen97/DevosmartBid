@@ -366,20 +366,29 @@ def delete_candidate(candidate_id: str) -> dict:
     }
 
 
-def delete_candidate_by_name(name: str) -> dict:
-    cursor = candidates_collection.find({
-        "$or": [
-            {"name": {"$regex": f"^{name}$", "$options": "i"}},
-            {"versions.structured.name": {"$regex": f"^{name}$", "$options": "i"}},
-        ]
-    })
-    deleted_ids = []
-    for c in cursor:
-        cid = str(c["_id"])
-        delete_candidate(cid)
-        deleted_ids.append(cid)
+def update_candidate_name(candidate_id: str, new_name: str) -> dict:
+    oid = ObjectId(candidate_id)
+    candidates_collection.update_one(
+        {"_id": oid},
+        {"$set": {"name": new_name, "normalized_name": new_name.lower().strip()}},
+    )
 
-    return {"deleted_count": len(deleted_ids), "deleted_ids": deleted_ids}
+    candidate = candidates_collection.find_one({"_id": oid})
+    if candidate and candidate.get("versions"):
+        latest = max(candidate["versions"], key=lambda v: v["version_number"])
+        version_number = latest["version_number"]
+        candidates_collection.update_one(
+            {"_id": oid, "versions.version_number": version_number},
+            {"$set": {"versions.$.structured.name": new_name}},
+        )
+
+    merged_candidates_collection.update_one(
+        {"candidate_id": oid},
+        {"$set": {"name": new_name}},
+    )
+
+    invalidate_candidate_cache(candidate_id)
+    return {"candidate_id": candidate_id, "name": new_name}
 
 
 def generate_cv_from_selection(payload: dict) -> dict:

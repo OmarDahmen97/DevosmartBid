@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, Search, Plus, X, Trash2 } from "lucide-react";
-import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, getCountriesOptions, deleteCandidateByName } from "../api";
+import { Sparkles, Loader2, Search, Plus, X } from "lucide-react";
+import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, getCountriesOptions, deleteCandidate } from "../api";
 import type { MatchCandidate, CandidateSummary, SelectionEntry } from "../types";
 
 type Tab = "matching" | "name" | "country" | "skill";
@@ -24,6 +24,13 @@ export function MatchingStep({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
   const [error, setError] = useState("");
+
+  const [deleteList, setDeleteList] = useState<CandidateSummary[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState("");
+
+  const [nameSearched, setNameSearched] = useState(false);
+  const [countrySearched, setCountrySearched] = useState(false);
+  const [skillSearched, setSkillSearched] = useState(false);
 
   const selectedList = useMemo(() => Array.from(selected.values()), [selected]);
 
@@ -85,6 +92,7 @@ export function MatchingStep({
     if (!nameQuery.trim()) return;
     setLoading(true);
     setError("");
+    setNameSearched(true);
     try {
       const data = await searchCandidatesByName(nameQuery);
       setSearchResults(data);
@@ -95,28 +103,11 @@ export function MatchingStep({
     }
   };
 
-  const handleDeleteByName = async () => {
-    if (!nameQuery.trim()) return;
-    const ok = window.confirm("Delete all candidates matching this name?");
-    if (!ok) return;
-    setLoading(true);
-    setError("");
-    try {
-      const result = await deleteCandidateByName(nameQuery.trim());
-      setError(`Deleted ${result.deleted_count} candidate(s)`);
-      setNameQuery("");
-      setSearchResults([]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Delete failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const runCountrySearch = async () => {
     if (!countryQuery) return;
     setLoading(true);
     setError("");
+    setCountrySearched(true);
     try {
       const data = await advancedSearch({ countries: [countryQuery], limit: 50 });
       setSearchResults(data);
@@ -131,6 +122,7 @@ export function MatchingStep({
     if (!skillQuery.trim()) return;
     setLoading(true);
     setError("");
+    setSkillSearched(true);
     try {
       const data = await advancedSearch({ skills: [skillQuery], limit: 50 });
       setSearchResults(data);
@@ -141,8 +133,42 @@ export function MatchingStep({
     }
   };
 
+  const loadDeleteList = async () => {
+    try {
+      const data = await searchCandidatesByName("");
+      setDeleteList(data);
+    } catch {
+      setDeleteList([]);
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!deleteTarget) return;
+    const target = deleteList.find((c) => c.candidate_id === deleteTarget);
+    if (!target) return;
+    const ok = window.confirm(`Delete candidate "${target.name}" permanently?`);
+    if (!ok) return;
+    setLoading(true);
+    setError("");
+    try {
+      await deleteCandidate(deleteTarget);
+      setError("Candidate deleted");
+      setDeleteTarget("");
+      setDeleteList((prev) => prev.filter((c) => c.candidate_id !== deleteTarget));
+      if (tab === "name") setSearchResults((prev) => prev.filter((c) => c.candidate_id !== deleteTarget));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     getCountriesOptions().then(setCountries).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadDeleteList();
   }, []);
 
   const tabClass = (t: Tab) =>
@@ -157,6 +183,29 @@ export function MatchingStep({
       <p className="mt-1 text-sm text-slate-500">
         Run semantic matching, or search by name / country / skill to add candidates.
       </p>
+
+      <div className="mt-4 rounded-xl border border-red-100 bg-red-50/40 p-4">
+        <p className="text-sm font-semibold text-red-900">Delete Candidate</p>
+        <p className="text-xs text-red-700">Permanently removes a candidate from the database.</p>
+        <div className="mt-3 flex gap-2">
+          <select
+            value={deleteTarget}
+            onChange={(e) => setDeleteTarget(e.target.value)}
+            className="field flex-1"
+          >
+            <option value="">Select a candidate...</option>
+            {deleteList.map((c) => (
+              <option key={c.candidate_id} value={c.candidate_id}>{c.name}</option>
+            ))}
+          </select>
+          <button onClick={handleDeleteSelected} disabled={loading || !deleteTarget} className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-70">
+            Delete
+          </button>
+          <button onClick={loadDeleteList} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">
+            Refresh
+          </button>
+        </div>
+      </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
         <button onClick={() => setTab("matching")} className={tabClass("matching")}>
@@ -200,6 +249,9 @@ export function MatchingStep({
                 </motion.p>
               )}
             </AnimatePresence>
+            {matched.length === 0 && !loading && (
+              <p className="mt-4 text-sm text-slate-500">No candidates matched yet. Run semantic matching to see results.</p>
+            )}
             <div className="mt-4 grid gap-3">
               {matched.map((c) => {
                 const isSelected = selected.has(c.candidate_id);
@@ -246,11 +298,8 @@ export function MatchingStep({
                 <Search className="h-4 w-4" />
                 Search
               </button>
-              <button onClick={handleDeleteByName} disabled={loading || !nameQuery.trim()} className="p-1 text-slate-300 hover:text-slate-400 disabled:opacity-40">
-                <Trash2 className="h-4 w-4" />
-              </button>
             </div>
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} />
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={nameSearched} />
           </div>
         )}
 
@@ -274,7 +323,7 @@ export function MatchingStep({
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               Search by Country
             </button>
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} />
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={countrySearched} />
           </div>
         )}
 
@@ -294,17 +343,17 @@ export function MatchingStep({
                 className="field flex-1"
                 list="skill-suggestions"
               />
-              <datalist id="skill-suggestions">
-                {suggestions.map((s) => (
-                  <option key={s} value={s} />
-                ))}
-              </datalist>
-              <button onClick={runSkillSearch} disabled={loading || !skillQuery.trim()}               className="inline-flex items-center gap-2 rounded-xl bg-[#C1121F] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-70">
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                Search
-              </button>
-            </div>
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} />
+               <datalist id="skill-suggestions">
+                 {suggestions.map((s) => (
+                   <option key={s} value={s} />
+                 ))}
+               </datalist>
+               <button onClick={runSkillSearch} disabled={loading || !skillQuery.trim()}               className="inline-flex items-center gap-2 rounded-xl bg-[#C1121F] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-70">
+                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                 Search
+               </button>
+             </div>
+             <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={skillSearched} />
           </div>
         )}
       </div>
@@ -332,11 +381,18 @@ function ResultList({
   results,
   selectedIds,
   onAdd,
+  hasSearched,
 }: {
   results: CandidateSummary[];
   selectedIds: Set<string>;
   onAdd: (c: CandidateSummary) => void;
+  hasSearched?: boolean;
 }) {
+  if (results.length === 0 && hasSearched) {
+    return (
+      <p className="mt-4 text-sm text-slate-500">No results found. Try a different query.</p>
+    );
+  }
   return (
     <div className="mt-4 grid gap-2">
       {results.map((c) => (
