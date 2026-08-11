@@ -1,8 +1,39 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
+
+# Environment variables
 .env
-data/
+
+# Config
 app/app.config
-*.yaml
+
+# Data
+data/
 chroma_data/
+
+# Generated files
+*.yaml
+
+# React / Node.js
+node_modules/
+dist/
+build/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite
+.vite/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
