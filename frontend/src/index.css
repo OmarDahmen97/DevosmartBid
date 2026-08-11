@@ -1,0 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base { body { @apply bg-[#F7F8FA] font-sans text-slate-900 antialiased; } button, input, textarea, select { font: inherit; } }
+@layer components { .panel { @apply rounded-2xl border border-slate-200/80 bg-white shadow-card; } .label { @apply text-xs font-semibold uppercase tracking-[.12em] text-slate-500; } .field { @apply h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#C1121F] focus:ring-4 focus:ring-red-100; } }

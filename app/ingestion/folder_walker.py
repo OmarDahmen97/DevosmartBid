@@ -1,4 +1,3 @@
-
 import os
 
 IGNORED_EXTENSIONS_PREFIX = "~$"
@@ -17,7 +16,7 @@ def find_cv_files(root_dir: str) -> list[tuple[str, str]]:
         ]
 
         if not cv_files:
-            continue  # dossier vide ou sans CV — on l'ignore silencieusement
+            continue  # empty folder or no CV — silently ignored
 
         candidate_folder_name = os.path.basename(dirpath)
 

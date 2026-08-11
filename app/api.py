@@ -2,33 +2,43 @@
 """
 app/api.py
 
-FastAPI layer over the CV platform pipeline. Two main flows:
+FastAPI layer over the CV platform pipeline.
 
-1. Upload  -> POST /cv/upload (single or multiple files). Each file is
-   extracted, stored as a new version in candidatesV2 (or flagged duplicate),
-   then merged into merged_candidates automatically.
-
+Main flows:
+1. Upload -> POST /cv/upload (single or multiple files).
 2. Mission matching + selection ->
    POST /candidates/match           mission text -> relevant candidates (id, name, score)
    GET  /candidates                 non-semantic search: by name and/or section filter
    GET  /candidates/filters/{section}  distinct values for a section, to populate a dropdown
-   GET  /candidates/{candidate_id}  full consolidated candidate detail
-   POST /cv/{candidate_id}/experiences-ranked  experiences/projects ranked by
-        similarity to a mission, each with a score and an auto_selected flag
+   POST /candidates/search-advanced multi-criteria filtering
+   GET  /candidates/{candidate_id}  full consolidated candidate detail/CV
+   POST /cv/{candidate_id}/experiences-ranked  experiences/projects ranked by similarity
+   POST /cv/{candidate_id}/adapted-json        generates adapted CV JSON for specific or auto-selected items
    POST /generation/cv              stub -- template generation not implemented yet
 """
 
 from typing import Optional
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, UploadFile, File, Query
+from fastapi import FastAPI, UploadFile, File, Query, HTTPException, Path
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import shutil
 import tempfile
 import os
+from bson import ObjectId
 
+from app.services.candidate_service import CandidateService
 from app.extraction.pipeline import extract_and_store_cv
-from app.generation.cv_json_builder import get_ranked_experiences, get_ranked_projects
+from app.generation.cv_json_builder import (
+    get_ranked_experiences,
+    get_ranked_projects,
+    build_matched_cv_json,
+)
+from app.generation.experience_adapter import (
+    adapt_selected_experiences,
+    adapt_selected_projects,
+)
 from app.main_usage import (
     candidates_collection,
     merged_candidates_collection,
@@ -37,7 +47,6 @@ from app.main_usage import (
     get_embedder,
     get_store,
     run_mission_matching,
-    get_candidate_detail,
     get_distinct_section_values,
     search_candidates,
     delete_candidate,
@@ -47,10 +56,6 @@ from app.main_usage import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load SBERT (Embedder) and Chroma (VectorStore) once at startup, so the
-    # first real request isn't the one paying for the model load time.
-    # get_embedder()/get_store() are already singletons -- calling them here
-    # just makes the loading happen eagerly instead of lazily.
     print("[startup] Chargement du modèle SBERT et de ChromaDB...")
     get_embedder()
     get_store()
@@ -60,6 +65,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="CV Platform API", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+candidate_service = CandidateService(merged_candidates_collection)
+
 
 # ---------------------------------------------------------------------------
 # Schemas
@@ -67,6 +82,14 @@ app = FastAPI(title="CV Platform API", lifespan=lifespan)
 
 class MissionRequest(BaseModel):
     mission_text: str
+    target_language: str = "French"
+
+
+class CustomSelectionAdaptRequest(BaseModel):
+    mission_text: str
+    target_language: str = "French"
+    selected_experience_indices: Optional[list[int]] = None
+    selected_project_indices: Optional[list[int]] = None
 
 
 class SelectedCandidate(BaseModel):
@@ -79,13 +102,24 @@ class GenerationRequest(BaseModel):
     candidates: list[SelectedCandidate]
 
 
+class AdvancedSearchRequest(BaseModel):
+    skills: Optional[list[str]] = None
+    skills_match_all: bool = False
+    countries: Optional[list[str]] = None
+    company: Optional[str] = None
+    job_title: Optional[str] = None
+    certifications: Optional[list[str]] = None
+    languages: Optional[list[str]] = None
+    degree: Optional[str] = None
+    page: int = 1
+    limit: int = 20
+
+
 # ---------------------------------------------------------------------------
 # 1. Upload
 # ---------------------------------------------------------------------------
 
 def _store_and_merge_one(tmp_path: str, original_filename: str) -> dict:
-    """Extract + store one CV file, then sync its merged view. Errors are
-    caught per-file so one bad file in a batch upload doesn't fail the rest."""
     try:
         candidate = extract_and_store_cv(tmp_path, candidates_collection=candidates_collection)
         candidate_id = str(candidate["_id"])
@@ -107,8 +141,6 @@ def _store_and_merge_one(tmp_path: str, original_filename: str) -> dict:
 
 @app.post("/cv/upload-single")
 async def upload_cv_single(file: UploadFile = File(...)):
-    """Single-file variant of /cv/upload, kept for convenient Swagger UI testing
-    (Swagger UI doesn't render array-of-file fields as a file picker)."""
     suffix = os.path.splitext(file.filename)[1]
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         shutil.copyfileobj(file.file, tmp)
@@ -121,13 +153,7 @@ async def upload_cv_single(file: UploadFile = File(...)):
 
 @app.post("/cv/upload")
 async def upload_cv(files: list[UploadFile] = File(...)):
-    """
-    Upload one or more CV files. Each is extracted and stored as a new
-    version (or flagged as a duplicate) in candidatesV2, then automatically
-    merged into merged_candidates if it introduces new experiences.
-    """
     results = []
-
     for file in files:
         suffix = os.path.splitext(file.filename)[1]
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -146,18 +172,13 @@ async def upload_cv(files: list[UploadFile] = File(...)):
 
 @app.post("/candidates/match")
 async def match_mission(request: MissionRequest):
-    """
-    Scan every stored candidate against the mission text, return the
-    relevant ones (candidate_id, name, email, avg_score), sorted by score
-    descending. The front-end pre-selects all of them and lets the user
-    deselect / add more via search or filters.
-    """
+    """Scan stored candidates against mission text and rank them."""
     relevant = run_mission_matching(request.mission_text)
     return {"candidates": relevant}
 
 
 # ---------------------------------------------------------------------------
-# 2a. Non-semantic search / filters, to add candidates outside the mission match
+# 2a. Candidate searches and filters
 # ---------------------------------------------------------------------------
 
 @app.get("/candidates")
@@ -166,11 +187,6 @@ async def list_candidates(
     section: Optional[str] = Query(None, description="Section to filter on, e.g. 'skills'"),
     values: Optional[str] = Query(None, description="Comma-separated values to match in that section"),
 ):
-    """
-    Non-semantic candidate search, used to add candidates to the selection
-    outside of mission matching: by name, and/or by exact membership in a
-    flat-list section (skills, countries_worked, professional_affiliations).
-    """
     value_list = [v.strip() for v in values.split(",")] if values else None
 
     try:
@@ -183,10 +199,6 @@ async def list_candidates(
 
 @app.get("/candidates/filters/{section}")
 async def get_section_filter_values(section: str):
-    """
-    Distinct values for a flat-list section, to populate a dropdown filter
-    (e.g. every distinct skill across all candidates).
-    """
     try:
         values = get_distinct_section_values(section)
     except ValueError as e:
@@ -195,21 +207,73 @@ async def get_section_filter_values(section: str):
     return {"section": section, "values": values}
 
 
+@app.get("/candidates/options/all")
+async def get_all_filter_options():
+    return candidate_service.get_all_filter_options()
+
+
+@app.get("/candidates/options/skills")
+async def get_skills_options():
+    return {"skills": candidate_service.get_distinct_skills()}
+
+
+@app.get("/candidates/options/countries")
+async def get_countries_options():
+    return {"countries": candidate_service.get_distinct_countries()}
+
+
+@app.get("/candidates/options/job-titles")
+async def get_job_titles_options():
+    return {"job_titles": candidate_service.get_distinct_job_titles()}
+
+
+@app.get("/candidates/suggest/skills")
+async def suggest_skills(
+    q: str = Query(..., min_length=1, description="Préfixe recherché"),
+    limit: int = Query(10, ge=1, le=50)
+):
+    suggestions = candidate_service.suggest_skills(prefix=q, limit=limit)
+    return {"query": q, "suggestions": suggestions}
+
+
+@app.get("/candidates/suggest/companies")
+async def suggest_companies(
+    q: str = Query(..., min_length=1, description="Préfixe recherché"),
+    limit: int = Query(10, ge=1, le=50)
+):
+    suggestions = candidate_service.suggest_companies(prefix=q, limit=limit)
+    return {"query": q, "suggestions": suggestions}
+
+
+@app.get("/candidates/suggest/job-titles")
+async def suggest_job_titles(
+    q: str = Query(..., min_length=1, description="Préfixe recherché"),
+    limit: int = Query(10, ge=1, le=50)
+):
+    suggestions = candidate_service.suggest_job_titles(prefix=q, limit=limit)
+    return {"query": q, "suggestions": suggestions}
+
+
+@app.post("/candidates/search-advanced")
+async def search_candidates_advanced(request: AdvancedSearchRequest):
+    filters = request.model_dump(exclude={"page", "limit"})
+    return candidate_service.filter_candidates(
+        filters=filters,
+        page=request.page,
+        limit=request.limit
+    )
+
+
 @app.get("/candidates/{candidate_id}")
-async def get_candidate(candidate_id: str):
-    """Full consolidated (merged) candidate document: static sections + all experiences/projects."""
-    candidate = get_candidate_detail(candidate_id)
-    if not candidate:
-        return {"error": f"Aucun candidat trouvé pour candidate_id='{candidate_id}'"}
-    return candidate
+async def get_candidate_cv(candidate_id: str = Path(..., description="MongoDB _id or candidate_id")):
+    candidate_cv = candidate_service.get_candidate_by_id(candidate_id)
+    if not candidate_cv:
+        raise HTTPException(status_code=404, detail=f"Aucun candidat trouvé pour ID='{candidate_id}'")
+    return candidate_cv
 
 
 @app.delete("/candidates/{candidate_id}")
 async def delete_candidate_endpoint(candidate_id: str):
-    """
-    Delete a candidate entirely -- candidatesV2, merged_candidates, and all
-    of their indexed Chroma chunks. Irreversible.
-    """
     try:
         result = delete_candidate(candidate_id)
     except Exception as e:
@@ -218,17 +282,12 @@ async def delete_candidate_endpoint(candidate_id: str):
 
 
 # ---------------------------------------------------------------------------
-# 2b. Per-candidate ranked experiences (review / manual adjustment step)
+# 2b. Per-candidate ranked experiences and adapted JSON generation
 # ---------------------------------------------------------------------------
 
 @app.post("/cv/{candidate_id}/experiences-ranked")
 async def get_ranked_experiences_and_projects(candidate_id: str, request: MissionRequest):
-    """
-    Every experience/project for this candidate, ranked by similarity to
-    the mission, each with its score (0-100%) and an auto_selected flag
-    (pre-checked in the UI if True). The user adjusts the selection before
-    generating the final CV.
-    """
+    """Every experience/project ranked by similarity to a mission."""
     merged = sync_merged_candidate(candidate_id)
     if not merged:
         return {"error": f"Candidat introuvable pour candidate_id='{candidate_id}'"}
@@ -244,16 +303,95 @@ async def get_ranked_experiences_and_projects(candidate_id: str, request: Missio
     return {"experiences": experiences, "projects": projects}
 
 
+@app.post("/cv/{candidate_id}/adapted-json")
+async def generate_adapted_cv_json(candidate_id: str, request: CustomSelectionAdaptRequest):
+    """
+    Builds and adapts the CV JSON for a candidate given a target mission.
+    Supports either automatic semantic retrieval or explicit experience/project index selections.
+    """
+    candidate = merged_candidates_collection.find_one({"candidate_id": ObjectId(candidate_id)})
+    if not candidate:
+        raise HTTPException(status_code=404, detail=f"Candidat non trouvé pour ID='{candidate_id}'")
+
+    # Mode 1 : Sélection personnalisée par l'utilisateur
+    if request.selected_experience_indices is not None or request.selected_project_indices is not None:
+        result = {}
+        STATIC_SECTIONS = [
+            "summary", "skills", "expertise_areas", "functional_skills",
+            "education", "languages", "certifications",
+            "countries_worked", "professional_affiliations",
+        ]
+        for section in STATIC_SECTIONS:
+            if candidate.get(section):
+                result[section] = candidate[section]
+
+        # Récupération et préparation des expériences choisies
+        sel_exp_indices = set(request.selected_experience_indices or [])
+        raw_exp_list = candidate.get("experience") or []
+        selected_exps = []
+        for idx, exp in enumerate(raw_exp_list):
+            if idx in sel_exp_indices:
+                item = dict(exp)
+                item["experience_index"] = idx
+                selected_exps.append(item)
+
+        # Récupération et préparation des projets choisis
+        sel_proj_indices = set(request.selected_project_indices or [])
+        raw_proj_list = candidate.get("projects") or []
+        selected_projs = []
+        for idx, proj in enumerate(raw_proj_list):
+            if idx in sel_proj_indices:
+                item = dict(proj)
+                item["project_index"] = idx
+                selected_projs.append(item)
+
+        # Adaptation via Gemini
+        if selected_exps:
+            adapted_exp_map = adapt_selected_experiences(
+                selected_exps, request.mission_text, request.target_language
+            )
+            for exp in selected_exps:
+                idx = exp["experience_index"]
+                if idx in adapted_exp_map:
+                    if adapted_exp_map[idx].get("description"):
+                        exp["description"] = adapted_exp_map[idx]["description"]
+                    if adapted_exp_map[idx].get("responsibilities"):
+                        exp["responsibilities"] = adapted_exp_map[idx]["responsibilities"]
+
+        if selected_projs:
+            adapted_proj_map = adapt_selected_projects(
+                selected_projs, request.mission_text, request.target_language
+            )
+            for proj in selected_projs:
+                idx = proj["project_index"]
+                if idx in adapted_proj_map and adapted_proj_map[idx].get("description"):
+                    proj["description"] = adapted_proj_map[idx]["description"]
+
+        if selected_exps:
+            result["experience"] = selected_exps
+        if selected_projs:
+            result["projects"] = selected_projs
+
+        return {"candidate_id": candidate_id, "cv_json": result}
+
+    # Mode 2 : Sélection automatique via recherche sémantique
+    query_vec = get_embedder().model.encode(request.mission_text).tolist()
+    cv_json = build_matched_cv_json(
+        get_store(),
+        merged_candidates_collection,
+        candidate_id,
+        query_vec,
+        mission_text=request.mission_text,
+        target_language=request.target_language,
+    )
+    return {"candidate_id": candidate_id, "cv_json": cv_json}
+
+
 # ---------------------------------------------------------------------------
-# 3. CV generation (not implemented yet)
+# 3. CV generation
 # ---------------------------------------------------------------------------
 
 @app.post("/generation/cv")
 async def generate_cv(request: GenerationRequest):
-    """
-    Generate the final CV(s) in template format from the user's confirmed
-    candidate + experience/project selection. NOT YET IMPLEMENTED -- returns
-    a stub response so the front-end can build and test its request format
-    ahead of the real implementation.
-    """
+    """Generate final formatted CV(s)."""
     return generate_cv_from_selection(request.model_dump())

@@ -10,5 +10,6 @@ garder les imports courts côté appelants.
 
 from app.normalize_sections.normalize_languages import normalize_language
 from app.normalize_sections.normalize_countries import normalize_country_name
+from app.normalize_sections.normalize_skills import normalize_skill_list
 
-__all__ = ["normalize_language", "normalize_country_name"]
+__all__ = ["normalize_language", "normalize_country_name", "normalize_skill_list"]

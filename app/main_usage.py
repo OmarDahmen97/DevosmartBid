@@ -4,7 +4,7 @@ app/main_usage.py
 
 Two usage modes:
 
-1. CV + mission proposal  -> extract, store, merge, semantic search, return matched CV JSON.
+1. CV + mission proposal  -> extract, store, merge, semantic search, adapt experiences via LLM, return matched CV JSON.
 2. CV only                -> extract, store, detect + store distinct professional profiles.
 
 Extraction and storage still happen against candidatesV2 (the raw,
@@ -15,7 +15,7 @@ so there is no more per-version indexing loop and no version_number anywhere
 in the matching path.
 
 Usage:
-    python -m app.main_usage --cv path/to/cv.pdf --mission "mission text here"
+    python -m app.main_usage --cv path/to/cv.pdf --mission "mission text here" --language "French"
     python -m app.main_usage --cv path/to/cv.pdf
 """
 
@@ -44,13 +44,6 @@ candidates_collection = db["candidatesV2"]
 merged_candidates_collection = db["merged_candidates"]
 candidate_profiles_collection = db["candidate_profiles"]
 
-# Lazy-loaded: the SBERT model (Embedder) and Chroma (VectorStore) are only
-# needed for matching mode. Profile detection uses Gemini, not the local
-# embedder or Chroma search -- loading SBERT eagerly at import time wasted a
-# few seconds + memory on every profile-only run for nothing.
-# _store stays local to this module -- ChromaDB doesn't have the
-# multi-singleton issue the SBERT model had (only VectorStore() is
-# instantiated here, no other module rolls its own).
 _store = None
 
 
@@ -68,12 +61,6 @@ def get_store():
 
 
 def sync_merged_candidate(candidate_id: str) -> dict:
-    """
-    Rebuild and upsert the consolidated, deduplicated document for one
-    candidate into merged_candidates. Idempotent -- safe to call before
-    every indexing/matching pass regardless of whether the candidate just
-    got a new version or hasn't changed since the last run.
-    """
     print("[merge] Fusion et dédoublonnage des expériences...")
     merged = build_merged_candidate_cv(
         mongo_collection=candidates_collection,
@@ -86,7 +73,6 @@ def sync_merged_candidate(candidate_id: str) -> dict:
 
 
 def index_merged_candidate(merged_candidate: dict) -> None:
-    """(Re)build and index Chroma chunks for one candidate's consolidated (merged) view."""
     embedder = get_embedder()
     store = get_store()
     candidate_id = str(merged_candidate.get("candidate_id") or merged_candidate["_id"])
@@ -102,12 +88,6 @@ def index_merged_candidate(merged_candidate: dict) -> None:
 
 
 def get_candidate(cv_path: str = None, normalized_name: str = None) -> dict:
-    """
-    Resolve the candidate document either by running the full extraction
-    pipeline on a CV file, or by fetching an already-stored candidate
-    directly from MongoDB (skips extraction entirely). Always reads/writes
-    candidatesV2 -- the raw, per-version source of truth.
-    """
     if normalized_name:
         print(f"[source] Lecture directe en base : normalized_name='{normalized_name}'")
         candidate = candidates_collection.find_one({"normalized_name": normalized_name})
@@ -120,12 +100,6 @@ def get_candidate(cv_path: str = None, normalized_name: str = None) -> dict:
 
 
 def find_candidate_id_by_name(name: str) -> str | None:
-    """
-    Resolve a candidate_id from a human-typed name, matching either the
-    top-level "name" field or any version's "structured.name" (case-
-    insensitive, exact match on the full string). Returns None if no
-    candidate matches.
-    """
     candidate = candidates_collection.find_one({
         "$or": [
             {"name": {"$regex": f"^{name}$", "$options": "i"}},
@@ -135,12 +109,9 @@ def find_candidate_id_by_name(name: str) -> str | None:
     return str(candidate["_id"]) if candidate else None
 
 
-def run_matching_for_candidate_id(candidate_id: str, mission_text: str) -> dict:
-    """
-    Match an already-stored candidate (by candidatesV2 _id) against a mission
-    text. Used by the API layer, which already has the candidate_id from a
-    prior upload and shouldn't need a normalized_name or re-upload to match.
-    """
+def run_matching_for_candidate_id(
+    candidate_id: str, mission_text: str, target_language: str = "French"
+) -> dict:
     merged = sync_merged_candidate(candidate_id)
     if not merged:
         return {}
@@ -160,15 +131,24 @@ def run_matching_for_candidate_id(candidate_id: str, mission_text: str) -> dict:
     if not is_relevant:
         return {"is_relevant": False, "avg_score": avg_score, "cv_json": {}}
 
-    print("[matching] Construction du JSON final...")
+    print("[matching] Construction et adaptation du JSON final...")
     cv_json = build_matched_cv_json(
-        get_store(), merged_candidates_collection, candidate_id, query_vec,
+        get_store(),
+        merged_candidates_collection,
+        candidate_id,
+        query_vec,
+        mission_text=mission_text,
+        target_language=target_language,
     )
     return {"is_relevant": True, "avg_score": avg_score, "cv_json": cv_json}
 
 
-def run_matching_mode(cv_path: str = None, mission_text: str = None, normalized_name: str = None) -> dict:
-    """Mode 1: CV + mission -> extract, store, merge, semantic search, return matched CV JSON."""
+def run_matching_mode(
+    cv_path: str = None,
+    mission_text: str = None,
+    normalized_name: str = None,
+    target_language: str = "French",
+) -> dict:
     candidate = get_candidate(cv_path=cv_path, normalized_name=normalized_name)
     candidate_id = str(candidate["_id"])
 
@@ -191,19 +171,18 @@ def run_matching_mode(cv_path: str = None, mission_text: str = None, normalized_
     if not is_relevant:
         return {}
 
-    print("[matching] Construction du JSON final...")
+    print("[matching] Construction et adaptation du JSON final...")
     return build_matched_cv_json(
-        get_store(), merged_candidates_collection, candidate_id, query_vec,
+        get_store(),
+        merged_candidates_collection,
+        candidate_id,
+        query_vec,
+        mission_text=mission_text,
+        target_language=target_language,
     )
 
 
-def run_matching_all(mission_text: str) -> list[dict]:
-    """
-    Mode 3: mission only (no --cv, no --normalized-name) -> scan every stored
-    candidate, merge+index+match each against the mission, return the list
-    of relevant ones with their matched CV JSON. No extraction happens here
-    -- only candidates already in candidatesV2 are considered.
-    """
+def run_matching_all(mission_text: str, target_language: str = "French") -> list[dict]:
     print("[matching-all] Embedding de la mission...")
     query_vec = get_embedder().model.encode(mission_text).tolist()
 
@@ -233,7 +212,12 @@ def run_matching_all(mission_text: str) -> list[dict]:
             continue
 
         cv_json = build_matched_cv_json(
-            get_store(), merged_candidates_collection, candidate_id, query_vec,
+            get_store(),
+            merged_candidates_collection,
+            candidate_id,
+            query_vec,
+            mission_text=mission_text,
+            target_language=target_language,
         )
         relevant_results.append({
             "candidate_id": candidate_id,
@@ -250,11 +234,6 @@ def run_matching_all(mission_text: str) -> list[dict]:
 
 
 def get_relevant_candidate_names(mission_text: str) -> list[str]:
-    """
-    Scan every stored candidate against the mission text using
-    is_candidate_relevant_v2 on their merged, consolidated view. Returns
-    only the names of candidates deemed relevant.
-    """
     print("[matching] Embedding de la mission...")
     query_vec = get_embedder().model.encode(mission_text).tolist()
 
@@ -294,14 +273,6 @@ FLAT_LIST_FIELDS = ["skills", "countries_worked", "professional_affiliations"]
 
 
 def run_mission_matching(mission_text: str) -> list[dict]:
-    """
-    Scan every stored candidate, sync+index each, and return the relevant
-    ones with their id/name/score only -- no cv_json built here. Building
-    the full matched CV JSON for every relevant candidate at scan time is
-    wasteful when the front-end only needs a selectable list first; the
-    per-candidate detail (ranked experiences, etc.) is fetched separately
-    once the user has confirmed their candidate selection.
-    """
     print("[matching] Embedding de la mission...")
     query_vec = get_embedder().model.encode(mission_text).tolist()
 
@@ -345,13 +316,6 @@ def run_mission_matching(mission_text: str) -> list[dict]:
 
 
 def get_candidate_detail(candidate_id: str) -> dict:
-    """
-    Fetch a candidate's full consolidated (merged) document -- static
-    sections + all experiences/projects, no semantic filtering. Used to
-    display a candidate profile directly, or as a fallback when a candidate
-    is added to the selection outside of the mission-matching flow (name
-    search / section filter).
-    """
     candidate = merged_candidates_collection.find_one({"candidate_id": ObjectId(candidate_id)})
     if not candidate:
         return {}
@@ -361,10 +325,6 @@ def get_candidate_detail(candidate_id: str) -> dict:
 
 
 def get_distinct_section_values(section: str) -> list[str]:
-    """
-    Distinct values for a flat-list section, to populate a front-end
-    dropdown filter (e.g. all distinct skills across every candidate).
-    """
     if section not in FLAT_LIST_FIELDS:
         raise ValueError(f"section must be one of {FLAT_LIST_FIELDS}, got '{section}'")
     values = merged_candidates_collection.distinct(section)
@@ -372,12 +332,6 @@ def get_distinct_section_values(section: str) -> list[str]:
 
 
 def search_candidates(name: str = None, section: str = None, values: list[str] = None) -> list[dict]:
-    """
-    Non-semantic candidate search: by name (case-insensitive substring) and/or
-    by exact membership in a flat-list section (e.g. skills contains any of
-    the selected dropdown values). Used to let the user add candidates to
-    their selection outside of the mission-matching flow.
-    """
     query = {}
     if name:
         query["name"] = {"$regex": name, "$options": "i"}
@@ -400,22 +354,8 @@ def search_candidates(name: str = None, section: str = None, values: list[str] =
 
 
 def delete_candidate(candidate_id: str) -> dict:
-    """
-    Delete a candidate entirely, across every store that holds data derived
-    from them:
-      - candidatesV2 (the raw, per-version source document)
-      - merged_candidates (the consolidated view)
-      - Chroma (all indexed chunks)
-      - the mongo_resolver in-memory cache (avoid serving stale data if the
-        same candidate_id is queried again before the process restarts)
-
-    Idempotent -- calling this on an already-deleted or unknown candidate_id
-    just reports deleted_count=0 everywhere, no error.
-    """
-    from bson import ObjectId as _ObjectId  # local import to avoid polluting module-level namespace
-
-    candidates_result = candidates_collection.delete_one({"_id": _ObjectId(candidate_id)})
-    merged_result = merged_candidates_collection.delete_one({"candidate_id": _ObjectId(candidate_id)})
+    candidates_result = candidates_collection.delete_one({"_id": ObjectId(candidate_id)})
+    merged_result = merged_candidates_collection.delete_one({"candidate_id": ObjectId(candidate_id)})
     get_store().delete_candidate_chunks(candidate_id)
     invalidate_candidate_cache(candidate_id)
 
@@ -427,21 +367,6 @@ def delete_candidate(candidate_id: str) -> dict:
 
 
 def generate_cv_from_selection(payload: dict) -> dict:
-    """
-    Stub -- CV generation from templates is not yet implemented. Accepts and
-    echoes back the expected payload shape so the front-end can build and
-    test its request format ahead of the real implementation:
-        {
-            "candidates": [
-                {
-                    "candidate_id": "...",
-                    "selected_experience_indices": [0, 2, 5],
-                    "selected_project_indices": [1],
-                },
-                ...
-            ]
-        }
-    """
     return {
         "status": "not_implemented",
         "message": "La génération de CV à partir de templates n'est pas encore disponible.",
@@ -450,13 +375,6 @@ def generate_cv_from_selection(payload: dict) -> dict:
 
 
 def run_profile_mode(cv_path: str = None, normalized_name: str = None) -> dict:
-    """
-    Mode 2: CV only -> extract, store, detect professional profiles.
-    Unrelated to merged_candidates on purpose: profile detection runs on the
-    raw, per-version candidatesV2 data via Gemini (profile_builder merges
-    static sections across versions itself, independently of the experience
-    dedup pipeline). No Chroma indexing here either.
-    """
     candidate = get_candidate(cv_path=cv_path, normalized_name=normalized_name)
 
     print("[profils] Détection des profils (Gemini)...")
@@ -492,6 +410,7 @@ def main():
         help="Scan every stored candidate against --mission, return only the names of relevant candidates (requires --mission)",
     )
     parser.add_argument("--mission", required=False, help="Mission text. If omitted (and not --all/--names), runs profile detection instead.")
+    parser.add_argument("--language", default="French", help="Language for experience adaptation (default: French)")
     args = parser.parse_args()
 
     if args.names:
@@ -505,12 +424,17 @@ def main():
     if args.all:
         if not args.mission:
             parser.error("--all requires --mission")
-        results = run_matching_all(args.mission)
+        results = run_matching_all(args.mission, target_language=args.language)
         print(json.dumps(results, indent=2, ensure_ascii=False))
         return
 
     if args.mission:
-        result = run_matching_mode(cv_path=args.cv, mission_text=args.mission, normalized_name=args.normalized_name)
+        result = run_matching_mode(
+            cv_path=args.cv,
+            mission_text=args.mission,
+            normalized_name=args.normalized_name,
+            target_language=args.language,
+        )
         if not result:
             print("Candidat non pertinent pour cette mission.")
         else:

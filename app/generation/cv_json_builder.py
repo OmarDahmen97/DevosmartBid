@@ -5,12 +5,17 @@ from app.generation.mongo_resolver import (
     resolve_chunk_to_mongo_source,
     resolve_list_section_matches,
 )
+from app.generation.experience_adapter import (
+    adapt_selected_experiences,
+    adapt_selected_projects,
+)
 
 from rapidfuzz import fuzz
 from bson import ObjectId
 
 
 from app.config import (
+    AUTO_SELECT_EXPERIENCE_THRESHOLD,
     MIN_RELEVANCE_SCORE,
     PASS_A_SECTION_THRESHOLDS,
     SECTION_RICHNESS_THRESHOLD,
@@ -76,12 +81,6 @@ def serialize_project_to_text(project: dict) -> str:
 
 
 def deduplicate_items(items: list[dict], serialize_fn, threshold: float = 90.0) -> list[dict]:
-    """
-    Fuzzy near-duplicate filter, kept as a general-purpose utility. No longer
-    invoked from build_matched_cv_json for experience/project — deduplication
-    across CV versions is now handled upstream at merge time (merged_candidates
-    already holds a single deduplicated experience list per candidate).
-    """
     seen_texts = []
     result = []
     for item in items:
@@ -106,12 +105,6 @@ def is_candidate_relevant_v2(
     min_score: float = MIN_RELEVANCE_SCORE,
     section_thresholds: dict = None,
 ):
-    """
-    Relevance is now judged solely on experience and project chunks -- the
-    only sections that should adapt to a target mission. Static sections
-    (skills, education, summary, etc.) no longer participate in the
-    relevance decision, only in the final matched CV JSON output.
-    """
     if section_thresholds is None:
         section_thresholds = PASS_A_SECTION_THRESHOLDS
 
@@ -136,7 +129,6 @@ def is_candidate_relevant_v2(
     return sections_above >= 1 and avg_score >= (min_score * 0.5), avg_score
 
 
-# Search configuration per section chunk_type, calibrated empirically.
 SEARCH_CONFIG = {
     "summary": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
     "skills": {"distance_threshold": 0.7, "min_results": 1, "max_results": 1},
@@ -144,8 +136,6 @@ SEARCH_CONFIG = {
     "expertise_areas": {"distance_threshold": 0.6, "min_results": 1, "max_results": 1},
     "experience": {"distance_threshold": 0.35, "min_results": 0, "max_results": 1},
     "project": {"distance_threshold": 0.5, "min_results": 0, "max_results": 1},
-
-    # OPTIONNELLES : min_results=0
     "education": {"distance_threshold": 0.7, "min_results": 0, "max_results": 1},
     "languages": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
     "certifications": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
@@ -153,28 +143,14 @@ SEARCH_CONFIG = {
     "professional_affiliations": {"distance_threshold": 0.8, "min_results": 0, "max_results": 1},
 }
 
-# experience et project cherchés SEPAREMENT (pas de liste fusionnée), chacun
-# avec son propre threshold calibré. min_results=1 (pas 0) garantit qu'un
-# candidat jugé pertinent par is_candidate_relevant_v2 renvoie toujours au
-# moins sa meilleure expérience/projet disponible, même si aucun ne passe
-# le seuil strict -- évite un cv_json vide malgré is_relevant=True.
 EXPERIENCE_SEARCH_CONFIG = {"distance_threshold": 0.35, "min_results": 1, "max_results": 6}
 PROJECT_SEARCH_CONFIG = {"distance_threshold": 0.5, "min_results": 1, "max_results": 6}
 
-# chunk_types resolved via exact index (no text-matching needed)
 INDEXED_TYPES = {"experience", "project"}
-
-# chunk_types resolved via text-overlap against a list of Mongo items
 LIST_TYPES = {"expertise_areas", "functional_skills", "education", "languages", "certifications"}
 
 
 def _dedupe_ranked_by_index(raw_results: list[dict], index_field: str) -> list[dict]:
-    """
-    A single experience/project can be split into several chunks
-    (part_index) when its serialized text exceeds max_tokens. Keep only the
-    closest (lowest distance) chunk per index_field so the ranked list has
-    exactly one entry per real experience/project, not one per text chunk.
-    """
     best_by_index: dict[int, dict] = {}
     for r in raw_results:
         idx = r["metadata"][index_field]
@@ -185,16 +161,8 @@ def _dedupe_ranked_by_index(raw_results: list[dict], index_field: str) -> list[d
 
 def get_ranked_experiences(
     store, mongo_collection, candidate_id: str, query_vec: list[float],
-    auto_select_threshold: float = None,
+auto_select_threshold: float = AUTO_SELECT_EXPERIENCE_THRESHOLD,
 ) -> list[dict]:
-    """
-    Return every experience for this candidate, ranked by similarity to the
-    mission, each with its similarity score (0-100%) and an auto_selected
-    flag (True if it would pass the standard retrieval threshold used by
-    build_matched_cv_json). Meant for a review UI: pre-check the
-    auto_selected ones, let the user add/remove the rest, then rebuild the
-    final CV from the confirmed selection.
-    """
     if auto_select_threshold is None:
         auto_select_threshold = EXPERIENCE_SEARCH_CONFIG["distance_threshold"]
 
@@ -219,7 +187,6 @@ def get_ranked_projects(
     store, mongo_collection, candidate_id: str, query_vec: list[float],
     auto_select_threshold: float = None,
 ) -> list[dict]:
-    """Same as get_ranked_experiences, for projects."""
     if auto_select_threshold is None:
         auto_select_threshold = PROJECT_SEARCH_CONFIG["distance_threshold"]
 
@@ -240,23 +207,21 @@ def get_ranked_projects(
     return output
 
 
-def build_matched_cv_json(store, mongo_collection, candidate_id: str, query_vec: list[float]) -> dict:
+def build_matched_cv_json(
+    store,
+    mongo_collection,
+    candidate_id: str,
+    query_vec: list[float],
+    mission_text: str = None,
+    target_language: str = "English",
+) -> dict:
     """
-    Static sections (summary, skills, education, etc.) are included wholesale
-    from Mongo — no semantic filtering. Only experience/project go through
-    Chroma search, since that's the only part of a CV that should adapt to
-    the target mission.
+    Constructs the target CV JSON by searching Chroma for experiences/projects
+    and fetching static sections from MongoDB.
 
-    mongo_collection is expected to be scoped to merged_candidates — each
-    candidate has a single consolidated document (no versions, no version
-    dedup needed here: that's already resolved upstream at merge time).
-
-    NOTE: no relevance gate here on purpose. This function is called both for
-    single-CV-upload flows (user wants a JSON regardless of match quality) and
-    for batch scans across the whole candidate base (where the caller applies
-    is_candidate_relevant_v2 itself beforehand and skips irrelevant candidates).
-    Keeping the gate out of this function keeps both use cases correct without
-    a mode flag.
+    If `mission_text` is provided, selected experiences and projects are
+    dynamically adapted to the mission's vocabulary using Gemini before constructing
+    the final JSON response.
     """
     candidate = mongo_collection.find_one({"candidate_id": ObjectId(candidate_id)})
     if not candidate:
@@ -274,7 +239,7 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, query_vec:
         if value:
             result[section] = value
 
-    # experience + project : recherches séparées, thresholds différents
+    # 1. Selection via recherche vectorielle
     experience_res = store.search_section(
         query_vec, chunk_types="experience", candidate_id=candidate_id,
         **EXPERIENCE_SEARCH_CONFIG
@@ -295,6 +260,8 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, query_vec:
         seen_experience_indices.add(idx)
         item = resolve_chunk_to_mongo_source(mongo_collection, metadata)
         if item:
+            # On conserve explicitement l'index pour permettre l'adaptation
+            item["experience_index"] = idx
             experiences.append(item)
 
     for r in project_res:
@@ -305,8 +272,34 @@ def build_matched_cv_json(store, mongo_collection, candidate_id: str, query_vec:
         seen_project_indices.add(idx)
         item = resolve_chunk_to_mongo_source(mongo_collection, metadata)
         if item:
+            # On conserve explicitement l'index pour permettre l'adaptation
+            item["project_index"] = idx
             projects.append(item)
 
+    # 2. Adaptation dynamique avec le LLM si un texte de mission est fourni
+    if mission_text:
+        if experiences:
+            adapted_exp_map = adapt_selected_experiences(
+                experiences, mission_text, target_language
+            )
+            for exp in experiences:
+                idx = exp["experience_index"]
+                if idx in adapted_exp_map:
+                    if adapted_exp_map[idx].get("description"):
+                        exp["description"] = adapted_exp_map[idx]["description"]
+                    if adapted_exp_map[idx].get("responsibilities"):
+                        exp["responsibilities"] = adapted_exp_map[idx]["responsibilities"]
+
+        if projects:
+            adapted_proj_map = adapt_selected_projects(
+                projects, mission_text, target_language
+            )
+            for proj in projects:
+                idx = proj["project_index"]
+                if idx in adapted_proj_map and adapted_proj_map[idx].get("description"):
+                    proj["description"] = adapted_proj_map[idx]["description"]
+
+    # 3. Assemblage du résultat final
     if experiences:
         result["experience"] = experiences
     if projects:

@@ -68,3 +68,5 @@ PROJECT_SEARCH_CONFIG = {"distance_threshold": 0.5, "min_results": 0, "max_resul
 
 INDEXED_TYPES = {"experience", "project"}
 LIST_TYPES = {"expertise_areas", "functional_skills", "education", "languages", "certifications"}
+
+AUTO_SELECT_EXPERIENCE_THRESHOLD = 0.5

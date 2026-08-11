@@ -17,7 +17,7 @@ from app.extraction.llm_extractor_gemini import extract_structured_sections
 from app.schema import CVSchema
 from app.storage import save_cv, find_existing_by_raw_text
 from app.normalize_sections.normalize_countries import normalize_country_name
-from app.normalize_sections import normalize_language
+from app.normalize_sections import normalize_language, normalize_skill_list
 from langdetect import detect
 import deepl
 
@@ -26,8 +26,8 @@ deepl_key = os.getenv("DEEPL_API_KEY")
 
 def adapt_data_to_schema(data: dict) -> dict:
     """
-    Adapts data extracted by the LLM so that it strictly matches
-    the expectations of the original Pydantic schema.
+    Adapte les données extraites par le LLM pour qu'elles correspondent
+    strictement aux attentes du schéma Pydantic d'origine.
     """
     for field in ["expertise_areas", "functional_skills"]:
         if field in data and isinstance(data[field], list):
@@ -86,7 +86,10 @@ def adapt_data_to_schema(data: dict) -> dict:
             if isinstance(lang, dict) and lang.get("language") is None:
                 lang["language"] = "Langue non spécifiée"
 
-    # 6. Normalize countries_worked 
+    # 6. Normaliser countries_worked vers le nom court ISO 3166 -- évite les
+    # doublons de casse/formulation ("BENIN" vs "Benin" vs "Republic of...")
+    # dès l'entrée, plutôt que de les laisser s'accumuler et devoir les
+    # nettoyer après coup.
     if "countries_worked" in data and isinstance(data["countries_worked"], list):
         seen = set()
         normalized = []
@@ -99,7 +102,11 @@ def adapt_data_to_schema(data: dict) -> dict:
                 normalized.append(canonical)
         data["countries_worked"] = normalized
 
-    # 7. Normalize languages
+    # 7. Normaliser languages[].language vers le nom anglais canonique
+    # ("Anglais"/"Englisch" -> "English"). Si deux entrées se retrouvent sur
+    # la même langue après normalisation, on les fusionne en gardant le
+    # "level" le plus informatif (non vide) -- même logique que le backfill
+    # appliqué à l'historique existant.
     if "languages" in data and isinstance(data["languages"], list):
         by_language: dict[str, dict] = {}
         for entry in data["languages"]:
@@ -115,6 +122,14 @@ def adapt_data_to_schema(data: dict) -> dict:
             elif not existing.get("level") and entry.get("level"):
                 by_language[canonical] = {**entry, "language": canonical}
         data["languages"] = list(by_language.values())
+
+    # 8. Normalize skills: casing normalization within this CV's own list,
+    # then apply confirmed synonyms from MANUAL_ALIASES (see
+    # app/normalize_sections/normalize_skills.py). Cross-document synonym
+    # discovery (embedding-based) is a separate offline review step -- this
+    # only applies what's already been validated.
+    if "skills" in data and isinstance(data["skills"], list):
+        data["skills"] = normalize_skill_list([s for s in data["skills"] if s])
 
     return data
 
@@ -147,22 +162,22 @@ def extract_and_store_cv(path: str, folder_name: str = "", candidates_collection
         from app.storage import candidates as candidates_collection
 
     filename = os.path.basename(path)
-    print(f"[1/7] Format detection: {filename}")
+    print(f"[1/7] Détection du format : {filename}")
     fmt = detect_format(path)  # raises UnsupportedFormatError if not supported
-    print(f"      -> format detected : {fmt}")
+    print(f"      -> format détecté : {fmt}")
 
-    print(f"[2/7] Extraction of raw text ({fmt})...")
+    print(f"[2/7] Extraction du texte brut ({fmt})...")
     text = (
         extract_pdf_text(path) if fmt == "pdf"
         else extract_docx_text(path) if fmt == "docx"
         else extract_pptx_text(path)
     )
-    print(f"      -> {len(text)} characters extracted")
+    print(f"      -> {len(text)} caractères extraits")
 
-    print("[3/7] Duplicate verification (exact raw_text)...")
+    print("[3/7] Vérification de doublon (raw_text exact)...")
     existing_version = find_existing_by_raw_text(text)
     if existing_version is not None:
-        print(f"      -> DUPLICATE detected (version {existing_version} already in database), no LLM re-extraction")
+        print(f"      -> DOUBLON détecté (version {existing_version} déjà en base), pas de ré-extraction LLM")
         candidate = candidates_collection.find_one({"versions.raw_text": text})
         if candidate:
             candidate["_pipeline_status"] = "duplicate"
@@ -171,32 +186,32 @@ def extract_and_store_cv(path: str, folder_name: str = "", candidates_collection
         raise RuntimeError(
             f"find_existing_by_raw_text reported v{existing_version} but no matching candidate found"
         )
-    print("      -> no duplicate found, continuing processing")
+    print("      -> pas de doublon, poursuite du traitement")
 
-    print("[4/7] Language detection...")
+    print("[4/7] Détection de la langue...")
     language = detect(text)
-    print(f"      -> detected language : {language}")
+    print(f"      -> langue détectée : {language}")
     original_text = None
     if language == "fr":
         print("      -> traduction FR -> EN via DeepL...")
         translator = deepl.Translator(deepl_key)
         original_text = text
         text = translator.translate_text(text, target_lang="EN-US").text
-        print("      -> translation completed")
+        print("      -> traduction terminée")
 
-    print("[5/7] Structured extraction (LLM)...")
+    print("[5/7] Extraction structurée (LLM)...")
     data = {**extract_contact_info(text), **extract_structured_sections(text, path, folder_name)}
-    print(f"      -> extracted sections : {list(data.keys())}")
+    print(f"      -> sections extraites : {list(data.keys())}")
 
-    print("[6/7] Schema adaptation + validation...")
+    print("[6/7] Adaptation au schéma + validation...")
     data = adapt_data_to_schema(data)
     if not validate_email_matches_name(data.get("email"), data.get("name", "")):
-        print("      -> email inconsistent with name, set to null")
+        print("      -> email incohérent avec le nom, mis à null")
         data["email"] = None
     cv = CVSchema(**data)
-    print(f"      -> schema valid for : {cv.name}")
+    print(f"      -> schéma validé pour : {cv.name}")
 
-    print("[7/7] MongoDB storage...")
+    print("[7/7] Stockage MongoDB...")
     result = save_cv(cv, text, original_text)
     print(f"      -> {result['status']} — {result['name']} (v{result['version']})")
 
@@ -217,5 +232,5 @@ def extract_and_store_cv(path: str, folder_name: str = "", candidates_collection
     candidate["_pipeline_status"] = result["status"]
     candidate["_pipeline_version"] = result["version"]
 
-    print(f"Extraction pipeline completed for {cv.name}.\n")
+    print(f"Pipeline d'extraction terminé pour {cv.name}.\n")
     return candidate

@@ -1,0 +1,14 @@
+import { ChangeEvent, DragEvent, useRef } from "react";
+import { CloudUpload, FileText, X } from "lucide-react";
+
+export function CVUploader({ files, onFiles, onRemove }: { files: File[]; onFiles: (files: File[]) => void; onRemove: (name: string) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  const add = (next: FileList | null) => onFiles(Array.from(next || []).filter(file => !files.some(item => item.name === file.name)));
+  const choose = (event: ChangeEvent<HTMLInputElement>) => add(event.target.files);
+  const drop = (event: DragEvent<HTMLButtonElement>) => { event.preventDefault(); add(event.dataTransfer.files); };
+  return <section className="panel p-6"><p className="label">Candidate source</p><h2 className="mt-2 text-lg font-bold">Upload CVs</h2><p className="mt-1 text-sm text-slate-500">Import candidate profiles for analysis.</p><button type="button" onClick={() => input.current?.click()} onDragOver={(e) => e.preventDefault()} onDrop={drop} className="mt-5 flex min-h-44 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 transition hover:border-[#C1121F] hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"><CloudUpload className="h-8 w-8 text-[#C1121F]" /><span className="mt-3 text-sm font-semibold">Drop CVs here</span><span className="mt-1 text-xs text-slate-500">or click to browse · PDF, DOCX, TXT</span></button><input ref={input} className="hidden" type="file" multiple accept=".pdf,.docx,.txt" onChange={choose}/>{files.length > 0 && <div className="mt-3 space-y-2">{files.map(file => <div key={file.name} className="flex items-center gap-3 rounded-xl bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800"><FileText className="h-4 w-4 shrink-0"/><span className="min-w-0 flex-1 truncate font-medium">{file.name}</span><span className="text-xs">Uploaded</span><button onClick={() => onRemove(file.name)} aria-label={`Remove ${file.name}`}><X className="h-4 w-4"/></button></div>)}</div>}</section>;
+}
+
+export function JobDescriptionEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return <section className="panel p-6"><p className="label">Option 02</p><h2 className="mt-2 text-lg font-bold">Write Job Description</h2><p className="mt-1 text-sm text-slate-500">Paste the complete role requirements.</p><textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder="Paste or write the complete job description..." rows={6} className="mt-5 min-h-44 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 outline-none transition placeholder:text-slate-400 focus:border-[#C1121F] focus:bg-white focus:ring-4 focus:ring-red-100"/><p className="mt-2 text-right text-xs text-slate-400">{value.length.toLocaleString()} characters</p></section>;
+}
