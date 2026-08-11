@@ -37,3 +37,6 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# chroma
+chroma_data/

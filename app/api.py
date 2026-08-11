@@ -50,6 +50,7 @@ from app.main_usage import (
     get_distinct_section_values,
     search_candidates,
     delete_candidate,
+    delete_candidate_by_name,
     generate_cv_from_selection,
 )
 
@@ -276,6 +277,15 @@ async def get_candidate_cv(candidate_id: str = Path(..., description="MongoDB _i
 async def delete_candidate_endpoint(candidate_id: str):
     try:
         result = delete_candidate(candidate_id)
+    except Exception as e:
+        return {"error": f"{type(e).__name__}: {e}"}
+    return result
+
+
+@app.delete("/candidates/delete-by-name/{name}")
+async def delete_candidate_by_name_endpoint(name: str):
+    try:
+        result = delete_candidate_by_name(name)
     except Exception as e:
         return {"error": f"{type(e).__name__}: {e}"}
     return result

@@ -366,6 +366,22 @@ def delete_candidate(candidate_id: str) -> dict:
     }
 
 
+def delete_candidate_by_name(name: str) -> dict:
+    cursor = candidates_collection.find({
+        "$or": [
+            {"name": {"$regex": f"^{name}$", "$options": "i"}},
+            {"versions.structured.name": {"$regex": f"^{name}$", "$options": "i"}},
+        ]
+    })
+    deleted_ids = []
+    for c in cursor:
+        cid = str(c["_id"])
+        delete_candidate(cid)
+        deleted_ids.append(cid)
+
+    return {"deleted_count": len(deleted_ids), "deleted_ids": deleted_ids}
+
+
 def generate_cv_from_selection(payload: dict) -> dict:
     return {
         "status": "not_implemented",

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, Search, Plus, X } from "lucide-react";
-import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, getCountriesOptions } from "../api";
+import { Sparkles, Loader2, Search, Plus, X, Trash2 } from "lucide-react";
+import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, getCountriesOptions, deleteCandidateByName } from "../api";
 import type { MatchCandidate, CandidateSummary, SelectionEntry } from "../types";
 
 type Tab = "matching" | "name" | "country" | "skill";
@@ -90,6 +90,24 @@ export function MatchingStep({
       setSearchResults(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Search failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteByName = async () => {
+    if (!nameQuery.trim()) return;
+    const ok = window.confirm("Delete all candidates matching this name?");
+    if (!ok) return;
+    setLoading(true);
+    setError("");
+    try {
+      const result = await deleteCandidateByName(nameQuery.trim());
+      setError(`Deleted ${result.deleted_count} candidate(s)`);
+      setNameQuery("");
+      setSearchResults([]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed");
     } finally {
       setLoading(false);
     }
@@ -227,6 +245,9 @@ export function MatchingStep({
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Search className="h-4 w-4" />
                 Search
+              </button>
+              <button onClick={handleDeleteByName} disabled={loading || !nameQuery.trim()} className="p-1 text-slate-300 hover:text-slate-400 disabled:opacity-40">
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
             <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} />

@@ -86,6 +86,12 @@ export async function deleteCandidate(candidateId: string): Promise<{ candidate_
   return handle<{ candidate_id: string; deleted_from_candidatesV2: boolean; deleted_from_merged_candidates: boolean }>(res);
 }
 
+export async function deleteCandidateByName(name: string): Promise<{ deleted_count: number; deleted_ids: string[] }> {
+  const res = await fetch(`${BASE}/candidates/delete-by-name/${encodeURIComponent(name)}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+  return handle<{ deleted_count: number; deleted_ids: string[] }>(res);
+}
+
 export async function getRankedExperiencesAndProjects(candidateId: string, missionText: string): Promise<RankedResponse> {
   const res = await fetch(`${BASE}/cv/${encodeURIComponent(candidateId)}/experiences-ranked`, {
     method: "POST",
