@@ -29,11 +29,14 @@ from dotenv import load_dotenv
 from app.embedding.embedder import get_shared_embedder
 from app.embedding.vector_store import VectorStore
 from app.embedding.embedding_chunker import build_chunks_for_candidate
-from app.generation.cv_json_builder import is_candidate_relevant_v2, build_matched_cv_json
+from app.generation.cv_json_builder import extract_years_of_experience, is_candidate_relevant_v2, build_matched_cv_json , derive_title_from_experiences
 from app.generation.mongo_resolver import invalidate_candidate_cache
 from app.merging.experience_similarity import build_merged_candidate_cv
 from app.profiling.profile_detector_full_cv import detect_profiles_full
 from app.profiling.profile_builder import build_profiles_document, store_candidate_profiles
+from app.generation.experience_adapter import adapt_selected_experiences, adapt_selected_projects
+
+from app.generation.pptx_renderer.template_filler import render_cv_pptx
 
 from app.extraction.pipeline import extract_and_store_cv
 
@@ -391,12 +394,158 @@ def update_candidate_name(candidate_id: str, new_name: str) -> dict:
     return {"candidate_id": candidate_id, "name": new_name}
 
 
+# file: app/generation/cv_json_builder.py
+
+def build_cv_json_from_selection(
+    mongo_collection,
+    candidate_id: str,
+    selected_experience_indices: list[int],
+    selected_project_indices: list[int] = None,
+    mission_text: str = None,
+    target_language: str = "English",
+) -> dict:
+    """
+    Builds the final CV JSON from a user-curated selection.
+
+    IMPORTANT: experience_index / project_index are NOT stored fields on
+    merged_candidates documents -- they are positional (0-based index in the
+    array), assigned at chunking time (see embedding_chunker.py) and echoed
+    back to the front end via chunk metadata in get_ranked_experiences/
+    get_ranked_projects. As long as the merged candidate's experience/projects
+    array order is stable between indexing and this call (true, since re-merge
+    only happens via sync_merged_candidate which is not triggered mid-review),
+    positional indexing here matches what the front end saw.
+    """
+    candidate = mongo_collection.find_one({"candidate_id": ObjectId(candidate_id)})
+    if not candidate:
+        return {}
+
+    selected_experience_indices = selected_experience_indices or []
+    selected_project_indices = selected_project_indices or []
+
+    result = {}
+    STATIC_SECTIONS = [
+        "summary", "skills", "expertise_areas", "functional_skills",
+        "education", "languages", "certifications",
+        "countries_worked", "professional_affiliations",
+    ]
+    for section in STATIC_SECTIONS:
+        value = candidate.get(section)
+        if value:  # skips None, [], ""
+            result[section] = value
+
+    # Identity / contact fields -- all nullable in the source data
+    # (confirmed: email, phone, linkedin, github are frequently null)
+    for field in ("name", "email", "phone", "linkedin", "github"):
+        value = candidate.get(field)
+        if value:
+            result[field] = value
+
+    # 1. Filter to selected items, by array position, preserving requested order
+    all_experiences = list(candidate.get("experience") or [])
+    experiences = []
+    for idx in selected_experience_indices:
+        if 0 <= idx < len(all_experiences):
+            exp = dict(all_experiences[idx])
+            exp["experience_index"] = idx  # needed by adapt_selected_experiences
+            experiences.append(exp)
+
+    all_projects = list(candidate.get("projects") or [])
+    projects = []
+    for idx in selected_project_indices:
+        if 0 <= idx < len(all_projects):
+            proj = dict(all_projects[idx])
+            proj["project_index"] = idx
+            projects.append(proj)
+
+    # Derived fields -- computed once, after selection is known, not stored in Mongo
+    title = derive_title_from_experiences(experiences, all_experiences)
+    if title:
+        result["title"] = title
+
+    years = extract_years_of_experience(candidate.get("summary") or "")
+    if years:
+        result["years_of_experience"] = years
+
+    # 2. Null-safe cleanup on selected items before adaptation/rendering --
+    # "Not specified" / "" dates and empty technologies are common in this
+    # dataset and must not crash the adapter or leave literal junk in the PPTX.
+    for exp in experiences:
+        if not exp.get("dates") or exp["dates"] == "Not specified":
+            exp["dates"] = ""
+        exp["technologies"] = exp.get("technologies") or []
+        exp["responsibilities"] = exp.get("responsibilities") or []
+        exp["deliverables"] = exp.get("deliverables") or []
+        exp["description"] = exp.get("description") or ""
+
+    for proj in projects:
+        proj["technologies"] = proj.get("technologies") or []
+        proj["description"] = proj.get("description") or ""
+
+    # 3. Adapt wording to the mission (skipped if no mission_text)
+    if mission_text:
+        if experiences:
+            adapted_exp_map = adapt_selected_experiences(experiences, mission_text, target_language)
+            for exp in experiences:
+                idx = exp["experience_index"]
+                if idx in adapted_exp_map:
+                    if adapted_exp_map[idx].get("description"):
+                        exp["description"] = adapted_exp_map[idx]["description"]
+                    if adapted_exp_map[idx].get("responsibilities"):
+                        exp["responsibilities"] = adapted_exp_map[idx]["responsibilities"]
+
+        if projects:
+            adapted_proj_map = adapt_selected_projects(projects, mission_text, target_language)
+            for proj in projects:
+                idx = proj["project_index"]
+                if idx in adapted_proj_map and adapted_proj_map[idx].get("description"):
+                    proj["description"] = adapted_proj_map[idx]["description"]
+
+    if experiences:
+        result["experience"] = experiences
+    if projects:
+        result["projects"] = projects
+
+    return result
+GENERATED_CV_DIR = "generated_cvs"
+
+
 def generate_cv_from_selection(payload: dict) -> dict:
-    return {
-        "status": "not_implemented",
-        "message": "La génération de CV à partir de templates n'est pas encore disponible.",
-        "received": payload,
-    }
+    mission_text = payload.get("mission_text")
+    target_language = payload.get("target_language", "French")
+    os.makedirs(GENERATED_CV_DIR, exist_ok=True)
+
+    results = []
+    for entry in payload.get("candidates", []):
+        candidate_id = entry["candidate_id"]
+        cv_json = build_cv_json_from_selection(
+            merged_candidates_collection,
+            candidate_id=candidate_id,
+            selected_experience_indices=entry.get("selected_experience_indices", []),
+            selected_project_indices=entry.get("selected_project_indices", []),
+            mission_text=mission_text,
+            target_language=target_language,
+        )
+        if not cv_json:
+            results.append({"candidate_id": candidate_id, "status": "error",
+                             "message": "Candidat introuvable."})
+            continue
+
+        output_path = os.path.join(GENERATED_CV_DIR, f"{candidate_id}.pptx")
+        try:
+            render_cv_pptx(cv_json, output_path)
+        except Exception as e:
+            results.append({"candidate_id": candidate_id, "status": "error",
+                             "message": f"{type(e).__name__}: {e}"})
+            continue
+
+        results.append({
+            "candidate_id": candidate_id,
+            "status": "ok",
+            "download_url": f"/generation/cv/{candidate_id}/download",
+        })
+
+    return {"results": results}
 
 
 def run_profile_mode(cv_path: str = None, normalized_name: str = None) -> dict:

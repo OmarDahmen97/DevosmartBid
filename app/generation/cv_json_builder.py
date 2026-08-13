@@ -13,6 +13,8 @@ from app.generation.experience_adapter import (
 from rapidfuzz import fuzz
 from bson import ObjectId
 
+import re
+
 
 from app.config import (
     AUTO_SELECT_EXPERIENCE_THRESHOLD,
@@ -306,3 +308,52 @@ def build_matched_cv_json(
         result["projects"] = projects
 
     return result
+
+_WORD_TO_NUM = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
+    "un": 1, "deux": 2, "trois": 3, "quatre": 4, "cinq": 5,
+    "six_fr": 6, "sept": 7, "huit": 8, "neuf": 9, "dix": 10,
+}
+
+_YEARS_PATTERN = re.compile(
+    r"\b(\d{1,2})\s*\+?\s*(?:years?|ans)\b"
+    r"|\b(" + "|".join(_WORD_TO_NUM.keys()) + r")\s+(?:years?|ans)\b",
+    re.IGNORECASE,
+)
+
+
+def extract_years_of_experience(summary: str) -> str:
+    """
+    Best-effort extraction of a "X years of experience" figure from free-text
+    summary. Regex-only (no LLM call) -- covers digit form ("7 years",
+    "10+ years") and spelled-out numbers up to twenty in English/French
+    ("seven years of experience", "sept ans d'expérience"). Returns "" if
+    nothing matches; caller must treat that as "omit from template", not
+    as an error.
+    """
+    if not summary:
+        return ""
+    match = _YEARS_PATTERN.search(summary)
+    if not match:
+        return ""
+    digit_group, word_group = match.group(1), match.group(2)
+    if digit_group:
+        return digit_group
+    return str(_WORD_TO_NUM.get(word_group.lower(), ""))
+
+
+def derive_title_from_experiences(experiences: list[dict], all_experiences_fallback: list[dict]) -> str:
+    """
+    Title = title of the most recent experience. "Most recent" here means
+    array position 0 -- CVs are extracted reverse-chronologically, and
+    `dates` is unreliable/frequently "Not specified" in this dataset, so we
+    can't sort by date. Prefers the user's selection; falls back to the
+    candidate's full experience list if nothing was selected.
+    """
+    source = experiences or all_experiences_fallback
+    if not source:
+        return ""
+    return source[0].get("title") or ""
