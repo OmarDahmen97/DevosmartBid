@@ -1,46 +1,106 @@
 # file: app/generation/pptx_renderer/template_filler.py
 """
-Fills the DVT PPTX template (Templates/Template_CV_format_DVT.pptx) from a
-cv_json produced by cv_json_builder.build_cv_json_from_selection.
+Fills the DVT PPTX template from a cv_json produced by
+cv_json_builder.build_cv_json_from_selection.
 
-Shape IDs below were identified by inspecting the template's raw slide XML
-(ppt/slides/slide1.xml, slide2.xml) -- they are specific to this template file
-and will break if the template's shapes are re-authored (id changes, shapes
-deleted/reordered). If the template changes, re-run the inspection in
-xml_helpers-adjacent scratch code and update SLIDE1_SHAPES/SLIDE2_SHAPES.
+Hybrid approach:
+  - Slide duplication (pagination) is raw XML surgery (see slide_duplication.py)
+    -- python-pptx has no API for it, and it must happen BEFORE the file is
+    opened with python-pptx.
+  - Everything else (text replacement, bullets, photo removal) uses
+    python-pptx's object model for readability. Bullet formatting isn't
+    exposed by python-pptx's high-level API, so add_bullet_format() drops
+    to paragraph._p (the underlying lxml element) for that one attribute --
+    this is the documented, supported way to reach OOXML python-pptx doesn't
+    wrap.
+
+Shape IDs (SLIDE1_SHAPES / SLIDE2_SHAPES) were identified by inspecting the
+template's raw slide XML -- specific to this template file, will break if
+shapes are re-authored (id changes, shapes deleted/reordered).
 """
 
 import shutil
 import zipfile
 from pathlib import Path
 
-from lxml import etree
+from pptx import Presentation
+from pptx.oxml.ns import qn
+from pptx.util import Pt
 
-from .xml_helpers import (
-    _make_run, qn, NS, find_shape_by_id, get_txBody, remove_shape, remove_shape, set_single_run_text,
-    make_bold_paragraph, make_bullet_paragraph, make_spacer_paragraph,
-    clear_paragraphs,
-)
+from .slide_duplication import duplicate_slide2
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 TEMPLATE_PATH = PROJECT_ROOT / "Templates" / "Template_CV_format_DVT.pptx"
 
 SLIDE1_SHAPES = {
-    "name": "869", "summary": "870", "years": "872", "title": "877",
-    "education": "879", "skills": "881", "exp1": "882", "exp2": "887",
+    "name": 869, "summary": 870, "years": 872, "title": 877,
+    "education": 879, "skills": 881, "exp1": 882, "exp2": 887,
+    "photo": 2,
 }
 SLIDE2_SHAPES = {
-    "name": "11", "title": "15", "exp_box_a": "3", "exp_box_b": "5",
+    "name": 11, "title": 15, "exp_box_a": 3, "exp_box_b": 5,
+    "photo": 16,
 }
 
-# Pagination heuristic (agreed approach): first 2 experiences go on slide 1's
-# fixed slots; the rest are split across slide 2's two text boxes, capped at
-# this many per box per page -- beyond that we duplicate slide 2 for a new
-# page rather than risk uncontrolled text overflow. No text-measurement API
-# is used here, so this is a conservative estimate, not a guarantee against
-# overflow on very long descriptions -- visual QA on real output is still needed.
-MAX_EXPERIENCES_PER_BOX = 3
+CHAR_BUDGET_PER_BOX = 650
+CHAR_BUDGET_PER_SLOT = 550
+MAX_BULLETS_PER_EXPERIENCE = 5
+MAX_CHARS_PER_BULLET = 220
 
+
+# ---------------------------------------------------------------------------
+# Shape lookup / low-level helpers
+# ---------------------------------------------------------------------------
+
+def find_shape_by_id(shapes, shape_id: int):
+    """Recurses into groups. Returns None if not found on this slide."""
+    for shape in shapes:
+        if shape.shape_id == shape_id:
+            return shape
+        if shape.shape_type == 6:  # MSO_SHAPE_TYPE.GROUP
+            found = find_shape_by_id(shape.shapes, shape_id)
+            if found is not None:
+                return found
+    return None
+
+
+def set_single_run_text(shape, text: str) -> None:
+    """Replaces the text of a shape meant to hold ONE simple run, keeping
+    the first run's formatting (font/size/bold) untouched."""
+    tf = shape.text_frame
+    first_para = tf.paragraphs[0]
+    if not first_para.runs:
+        first_para.text = text or ""
+        return
+    first_para.runs[0].text = text or ""
+    # Drop any extra runs/paragraphs so leftover template text can't survive
+    # a shorter replacement value.
+    for run in first_para.runs[1:]:
+        run._r.getparent().remove(run._r)
+    for para in tf.paragraphs[1:]:
+        para._p.getparent().remove(para._p)
+
+
+def add_bullet_format(paragraph, char: str = "•", indent_emu: int = 128588) -> None:
+    """python-pptx has no high-level bullet API -- this reaches into the
+    paragraph's underlying XML element (the documented escape hatch) to set
+    marL/indent + buChar, matching the template's existing bullet style."""
+    pPr = paragraph._p.get_or_add_pPr()
+    pPr.set("marL", str(indent_emu))
+    pPr.set("indent", str(-indent_emu))
+    buFont = pPr.makeelement(qn("a:buFont"), {"typeface": "Arial"})
+    buChar = pPr.makeelement(qn("a:buChar"), {"char": char})
+    pPr.append(buFont)
+    pPr.append(buChar)
+
+
+def remove_shape(shape) -> None:
+    shape._element.getparent().remove(shape._element)
+
+
+# ---------------------------------------------------------------------------
+# Experience formatting
+# ---------------------------------------------------------------------------
 
 def _experience_title_line(exp: dict) -> str:
     company = exp.get("company") or ""
@@ -59,180 +119,160 @@ def _experience_bullets(exp: dict) -> list[str]:
             if text:
                 bullets.append(text)
     elif exp.get("description"):
-        # No structured responsibilities -- fall back to the free-text
-        # description as a single bullet rather than fabricating a split.
         bullets.append(exp["description"].strip())
     return bullets
 
 
-def fill_single_experience_shape(sp, exp: dict) -> None:
-    """Fills a slide-1-style shape meant to hold exactly ONE experience."""
-    txBody = get_txBody(sp)
-    clear_paragraphs(txBody)
-    txBody.append(make_spacer_paragraph())
-    txBody.append(make_bold_paragraph(_experience_title_line(exp)))
-    for bullet_text in _experience_bullets(exp):
-        txBody.append(make_bullet_paragraph(bullet_text))
+def _experience_char_count(exp: dict) -> int:
+    return len(_experience_title_line(exp)) + sum(len(b) for b in _experience_bullets(exp))
 
 
-def fill_multi_experience_shape(sp, experiences: list[dict]) -> None:
-    """Fills a slide-2-style box meant to hold SEVERAL experiences stacked
-    as consecutive title+bullets blocks (matches the template's own pattern,
-    e.g. shape id=3 originally held BNP Paribas + UBCI)."""
-    txBody = get_txBody(sp)
-    clear_paragraphs(txBody)
+def _truncate_experience_for_display(exp: dict, char_budget: int) -> dict:
+    exp = dict(exp)
+    bullets = _experience_bullets(exp)[:MAX_BULLETS_PER_EXPERIENCE]
+    bullets = [
+        (b if len(b) <= MAX_CHARS_PER_BULLET else b[:MAX_CHARS_PER_BULLET].rstrip() + "…")
+        for b in bullets
+    ]
+    exp["responsibilities"] = [{"description": b} for b in bullets]
+    exp["description"] = ""
+    return exp
+
+
+def _paginate_by_char_budget(experiences: list[dict], budget_per_box: int) -> list[list[dict]]:
+    boxes: list[list[dict]] = []
+    current: list[dict] = []
+    current_chars = 0
     for exp in experiences:
-        txBody.append(make_bold_paragraph(_experience_title_line(exp)))
+        exp_chars = _experience_char_count(exp)
+        if current and current_chars + exp_chars > budget_per_box:
+            boxes.append(current)
+            current, current_chars = [], 0
+        current.append(exp)
+        current_chars += exp_chars
+    if current:
+        boxes.append(current)
+    return boxes
+
+
+def _write_experiences_into_shape(shape, experiences: list[dict], with_spacer: bool = False) -> None:
+    tf = shape.text_frame
+    tf.clear()  # leaves ONE empty paragraph
+    first = True
+    for exp in experiences:
+        if with_spacer and not first:
+            tf.add_paragraph()  # blank spacer between stacked experiences
+        para = tf.paragraphs[0] if first else tf.add_paragraph()
+        first = False
+        run = para.add_run()
+        run.text = _experience_title_line(exp)
+        run.font.bold = True
+        run.font.size = Pt(8)
+
         for bullet_text in _experience_bullets(exp):
-            txBody.append(make_bullet_paragraph(bullet_text))
+            b_para = tf.add_paragraph()
+            b_run = b_para.add_run()
+            b_run.text = bullet_text
+            b_run.font.size = Pt(8)
+            add_bullet_format(b_para)
 
 
-def fill_skills_shape(sp, skills: list[str]) -> None:
-    """Skills rendered as one flowing line ('Python  •  SQL  •  RAG  •  ...')
-    instead of one bullet per skill -- a per-item bullet list overflows this
-    box past ~10 skills and collides with the sections below it."""
-    txBody = get_txBody(sp)
-    clear_paragraphs(txBody)
+def fill_single_experience_shape(shape, exp: dict) -> None:
+    _write_experiences_into_shape(shape, [exp] if exp else [], with_spacer=False)
+
+
+def fill_multi_experience_shape(shape, experiences: list[dict]) -> None:
+    _write_experiences_into_shape(shape, experiences, with_spacer=True)
+
+
+# ---------------------------------------------------------------------------
+# Static sections
+# ---------------------------------------------------------------------------
+
+def fill_skills_shape(shape, skills: list[str]) -> None:
+    """One flowing line ('Python  •  SQL  •  RAG  •  ...') instead of one
+    bullet per skill -- a per-item bullet list overflows past ~10 skills."""
+    tf = shape.text_frame
+    tf.clear()
     clean = [str(s) for s in skills if s]
-    p = etree.Element(qn("a:p"))
-    p.append(_make_run("  •  ".join(clean), size=800, bold=False))
-    txBody.append(p)
+    run = tf.paragraphs[0].add_run()
+    run.text = "  •  ".join(clean)
+    run.font.size = Pt(8)
 
 
-def fill_education_shape(sp, education: list[dict]) -> None:
-    txBody = get_txBody(sp)
-    clear_paragraphs(txBody)
+def fill_education_shape(shape, education: list[dict]) -> None:
+    tf = shape.text_frame
+    tf.clear()
     if not education:
-        txBody.append(make_bold_paragraph(""))
         return
+    first = True
     for edu in education:
-        parts = [p for p in (
-            edu.get("degree"),
-            edu.get("field_of_study"),
-            edu.get("institution"),
-        ) if p]
+        para = tf.paragraphs[0] if first else tf.add_paragraph()
+        first = False
+        parts = [p for p in (edu.get("degree"), edu.get("field_of_study"), edu.get("institution")) if p]
         line = " - ".join(parts)
-        years = edu.get("years")
-        if years:
-            line = f"{line} ({years})" if line else str(years)
-        if line:
-            txBody.append(make_bold_paragraph(line, size=750))
+        if edu.get("years"):
+            line = f"{line} ({edu['years']})" if line else str(edu["years"])
+        run = para.add_run()
+        run.text = line
+        run.font.size = Pt(7.5)
 
 
-def fill_slide1(root, cv_json: dict) -> None:
-    spTree = root.find(f".//{qn('p:cSld')}/{qn('p:spTree')}")
+# ---------------------------------------------------------------------------
+# Slide-level fill
+# ---------------------------------------------------------------------------
 
-    name_sp = find_shape_by_id(spTree, SLIDE1_SHAPES["name"])
-    set_single_run_text(name_sp, cv_json.get("name") or "")
-
-    title_sp = find_shape_by_id(spTree, SLIDE1_SHAPES["title"])
-    set_single_run_text(title_sp, cv_json.get("title") or "")
+def fill_slide1(slide, cv_json: dict) -> None:
+    shapes = slide.shapes
+    set_single_run_text(find_shape_by_id(shapes, SLIDE1_SHAPES["name"]), cv_json.get("name") or "")
+    set_single_run_text(find_shape_by_id(shapes, SLIDE1_SHAPES["title"]), cv_json.get("title") or "")
 
     years = cv_json.get("years_of_experience")
-    years_sp = find_shape_by_id(spTree, SLIDE1_SHAPES["years"])
-    set_single_run_text(years_sp, f"{years} ans d’expérience" if years else "")
-
-    summary_sp = find_shape_by_id(spTree, SLIDE1_SHAPES["summary"])
-    set_single_run_text(summary_sp, cv_json.get("summary") or "")
-
-    education_sp = find_shape_by_id(spTree, SLIDE1_SHAPES["education"])
-    fill_education_shape(education_sp, cv_json.get("education") or [])
-
-    skills_sp = find_shape_by_id(spTree, SLIDE1_SHAPES["skills"])
-    fill_skills_shape(skills_sp, cv_json.get("skills") or [])
+    set_single_run_text(
+        find_shape_by_id(shapes, SLIDE1_SHAPES["years"]),
+        f"{years} ans d’expérience" if years else "",
+    )
+    set_single_run_text(find_shape_by_id(shapes, SLIDE1_SHAPES["summary"]), cv_json.get("summary") or "")
+    fill_education_shape(find_shape_by_id(shapes, SLIDE1_SHAPES["education"]), cv_json.get("education") or [])
+    fill_skills_shape(find_shape_by_id(shapes, SLIDE1_SHAPES["skills"]), cv_json.get("skills") or [])
 
     experiences = cv_json.get("experience") or []
-    exp1_sp = find_shape_by_id(spTree, SLIDE1_SHAPES["exp1"])
-    exp2_sp = find_shape_by_id(spTree, SLIDE1_SHAPES["exp2"])
-    fill_single_experience_shape(exp1_sp, experiences[0] if len(experiences) > 0 else {})
-    fill_single_experience_shape(exp2_sp, experiences[1] if len(experiences) > 1 else {})
+    exp1 = experiences[0] if len(experiences) > 0 else {}
+    exp2 = experiences[1] if len(experiences) > 1 else {}
+    if exp1 and _experience_char_count(exp1) > CHAR_BUDGET_PER_SLOT:
+        exp1 = _truncate_experience_for_display(exp1, CHAR_BUDGET_PER_SLOT)
+    if exp2 and _experience_char_count(exp2) > CHAR_BUDGET_PER_SLOT:
+        exp2 = _truncate_experience_for_display(exp2, CHAR_BUDGET_PER_SLOT)
+    fill_single_experience_shape(find_shape_by_id(shapes, SLIDE1_SHAPES["exp1"]), exp1)
+    fill_single_experience_shape(find_shape_by_id(shapes, SLIDE1_SHAPES["exp2"]), exp2)
+
+    photo = find_shape_by_id(shapes, SLIDE1_SHAPES["photo"])
+    if photo is not None:
+        remove_shape(photo)
 
 
-def fill_slide2_header(root, cv_json: dict) -> None:
-    spTree = root.find(f".//{qn('p:cSld')}/{qn('p:spTree')}")
-    name_sp = find_shape_by_id(spTree, SLIDE2_SHAPES["name"])
-    set_single_run_text(name_sp, cv_json.get("name") or "")
-    title_sp = find_shape_by_id(spTree, SLIDE2_SHAPES["title"])
-    set_single_run_text(title_sp, cv_json.get("title") or "")
+def fill_slide2_page(slide, cv_json: dict, boxes: list[list[dict]]) -> None:
+    shapes = slide.shapes
+    set_single_run_text(find_shape_by_id(shapes, SLIDE2_SHAPES["name"]), cv_json.get("name") or "")
+    set_single_run_text(find_shape_by_id(shapes, SLIDE2_SHAPES["title"]), cv_json.get("title") or "")
+
+    box_a = find_shape_by_id(shapes, SLIDE2_SHAPES["exp_box_a"])
+    box_b = find_shape_by_id(shapes, SLIDE2_SHAPES["exp_box_b"])
+    fill_multi_experience_shape(box_a, boxes[0] if len(boxes) > 0 else [])
+    fill_multi_experience_shape(box_b, boxes[1] if len(boxes) > 1 else [])
+
+    photo = find_shape_by_id(shapes, SLIDE2_SHAPES["photo"])
+    if photo is not None:
+        remove_shape(photo)
 
 
-def fill_slide2_experiences(root, experiences_page: list[dict]) -> None:
-    spTree = root.find(f".//{qn('p:cSld')}/{qn('p:spTree')}")
-    box_a = find_shape_by_id(spTree, SLIDE2_SHAPES["exp_box_a"])
-    box_b = find_shape_by_id(spTree, SLIDE2_SHAPES["exp_box_b"])
-    split = MAX_EXPERIENCES_PER_BOX
-    fill_multi_experience_shape(box_a, experiences_page[:split])
-    fill_multi_experience_shape(box_b, experiences_page[split:split * 2])
-
-
-def _next_free_slide_number(slides_dir: Path) -> int:
-    existing = [int(p.stem.replace("slide", "")) for p in slides_dir.glob("slide[0-9]*.xml")]
-    return max(existing) + 1
-
-
-def duplicate_slide2(workdir: Path) -> Path:
-    """
-    Duplicates ppt/slides/slide2.xml as a new page, doing every registration
-    step a new slide needs: copy the XML + rels, declare it in
-    [Content_Types].xml, add a relationship + <p:sldId> in presentation.xml.
-    Returns the path to the new slide XML for further content editing.
-    """
-    slides_dir = workdir / "ppt" / "slides"
-    new_num = _next_free_slide_number(slides_dir)
-    new_slide_path = slides_dir / f"slide{new_num}.xml"
-    shutil.copy(slides_dir / "slide2.xml", new_slide_path)
-    shutil.copy(
-        slides_dir / "_rels" / "slide2.xml.rels",
-        slides_dir / "_rels" / f"slide{new_num}.xml.rels",
-    )
-
-    # [Content_Types].xml
-    ct_path = workdir / "[Content_Types].xml"
-    ct_tree = etree.parse(str(ct_path))
-    ct_root = ct_tree.getroot()
-    ct_ns = "http://schemas.openxmlformats.org/package/2006/content-types"
-    override = etree.SubElement(ct_root, f"{{{ct_ns}}}Override")
-    override.set("PartName", f"/ppt/slides/slide{new_num}.xml")
-    override.set(
-        "ContentType",
-        "application/vnd.openxmlformats-officedocument.presentationml.slide+xml",
-    )
-    ct_tree.write(str(ct_path), xml_declaration=True, encoding="UTF-8", standalone=True)
-
-    # ppt/_rels/presentation.xml.rels
-    pres_rels_path = workdir / "ppt" / "_rels" / "presentation.xml.rels"
-    rels_tree = etree.parse(str(pres_rels_path))
-    rels_root = rels_tree.getroot()
-    rel_ns = "http://schemas.openxmlformats.org/package/2006/relationships"
-    existing_ids = [r.get("Id") for r in rels_root]
-    next_rid_num = max(int(rid.replace("rId", "")) for rid in existing_ids) + 1
-    new_rid = f"rId{next_rid_num}"
-    new_rel = etree.SubElement(rels_root, f"{{{rel_ns}}}Relationship")
-    new_rel.set("Id", new_rid)
-    new_rel.set(
-        "Type",
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide",
-    )
-    new_rel.set("Target", f"slides/slide{new_num}.xml")
-    rels_tree.write(str(pres_rels_path), xml_declaration=True, encoding="UTF-8", standalone=True)
-
-    # ppt/presentation.xml -- add <p:sldId> at the end of sldIdLst
-    pres_path = workdir / "ppt" / "presentation.xml"
-    pres_tree = etree.parse(str(pres_path))
-    pres_root = pres_tree.getroot()
-    sldIdLst = pres_root.find(qn("p:sldIdLst"))
-    existing_slide_ids = [int(s.get("id")) for s in sldIdLst]
-    new_slide_id = max(existing_slide_ids) + 1
-    new_sldId = etree.SubElement(sldIdLst, qn("p:sldId"))
-    new_sldId.set("id", str(new_slide_id))
-    new_sldId.set(f"{{{NS['r']}}}id", new_rid)
-    pres_tree.write(str(pres_path), xml_declaration=True, encoding="UTF-8", standalone=True)
-
-    return new_slide_path
-
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 
 def render_cv_pptx(cv_json: dict, output_path: str) -> str:
-    workdir = Path("/tmp") / f"pptx_render_{id(cv_json)}"
+    import uuid
+    workdir = Path("/tmp") / f"pptx_render_{uuid.uuid4().hex}"
     if workdir.exists():
         shutil.rmtree(workdir)
     workdir.mkdir(parents=True)
@@ -240,44 +280,33 @@ def render_cv_pptx(cv_json: dict, output_path: str) -> str:
     with zipfile.ZipFile(TEMPLATE_PATH) as z:
         z.extractall(workdir)
 
-    slides_dir = workdir / "ppt" / "slides"
-    parser = etree.XMLParser(remove_blank_text=False)
-
-    # --- Slide 1 ---
-    slide1_tree = etree.parse(str(slides_dir / "slide1.xml"), parser)
-    fill_slide1(slide1_tree.getroot(), cv_json)
-    spTree1 = slide1_tree.getroot().find(f".//{qn('p:cSld')}/{qn('p:spTree')}")
-    remove_shape(spTree1, "2")
-    slide1_tree.write(str(slides_dir / "slide1.xml"), xml_declaration=True, encoding="UTF-8", standalone=True)
-
-    # --- Slide 2 + overflow pages ---
+    # 1. Compute pagination BEFORE touching python-pptx.
     experiences = cv_json.get("experience") or []
-    remaining = experiences[2:]  # first 2 already placed on slide 1
-    per_page = MAX_EXPERIENCES_PER_BOX * 2
-    pages = [remaining[i:i + per_page] for i in range(0, len(remaining), per_page)] or [[]]
+    remaining = experiences[2:]
+    boxes = _paginate_by_char_budget(remaining, CHAR_BUDGET_PER_BOX)
+    pages = [boxes[i:i + 2] for i in range(0, len(boxes), 2)] or [[]]
 
-    slide2_tree = etree.parse(str(slides_dir / "slide2.xml"), parser)
-    fill_slide2_header(slide2_tree.getroot(), cv_json)
-    spTree2 = slide2_tree.getroot().find(f".//{qn('p:cSld')}/{qn('p:spTree')}")
-    remove_shape(spTree2, "16")
-    fill_slide2_experiences(slide2_tree.getroot(), pages[0])
-    slide2_tree.write(str(slides_dir / "slide2.xml"), xml_declaration=True, encoding="UTF-8", standalone=True)
+    # 2. Duplicate slide 2 (raw XML) for every extra page needed.
+    extra_slide_paths = [duplicate_slide2(workdir) for _ in pages[1:]]
 
-    for extra_page in pages[1:]:
-        new_slide_path = duplicate_slide2(workdir)
-        page_tree = etree.parse(str(new_slide_path), parser)
-        fill_slide2_header(page_tree.getroot(), cv_json)
-        fill_slide2_experiences(page_tree.getroot(), extra_page)
-        page_tree.write(str(new_slide_path), xml_declaration=True, encoding="UTF-8", standalone=True)
-
-    # --- Repack ---
-    output_path = str(output_path)
-    if Path(output_path).exists():
-        Path(output_path).unlink()
-    with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zf:
+    # 3. Rezip into an intermediate file, then open it with python-pptx.
+    intermediate_path = workdir.parent / f"{workdir.name}_intermediate.pptx"
+    with zipfile.ZipFile(intermediate_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for file in workdir.rglob("*"):
             if file.is_file():
                 zf.write(file, file.relative_to(workdir))
 
+    prs = Presentation(str(intermediate_path))
+
+    # slides[0] = slide1, slides[1] = slide2, slides[2:] = duplicated pages,
+    # in the same order they were added to sldIdLst.
+    fill_slide1(prs.slides[0], cv_json)
+    fill_slide2_page(prs.slides[1], cv_json, pages[0])
+    for i, page in enumerate(pages[1:], start=2):
+        fill_slide2_page(prs.slides[i], cv_json, page)
+
+    prs.save(output_path)
+
     shutil.rmtree(workdir)
+    intermediate_path.unlink()
     return output_path
