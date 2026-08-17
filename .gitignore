@@ -40,3 +40,6 @@ Thumbs.db
 
 # chroma
 chroma_data/
+
+# generation
+generated_cvs

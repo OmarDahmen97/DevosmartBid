@@ -25,7 +25,7 @@ from app.extraction.prompt_builder import (
 load_dotenv()
 Groq_key = os.getenv("GROQ_API_KEY2")
 client = Groq(api_key=Groq_key)
-
+model_name="openai/gpt-oss-120b"
 
 def _parse_response(response, key: str | None = None) -> dict:
     """Robustly parses the JSON response from the Groq model.
@@ -111,7 +111,7 @@ def split_missions_block(raw_text: str) -> list[str]:
 def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = "") -> dict:
     prompt_general = build_prompt_tech6_general(raw_text, folder_name)
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model=model_name,
         messages=[{"role": "user", "content": prompt_general}],
         response_format={"type": "json_object"},
         max_tokens=2000
@@ -125,7 +125,7 @@ def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = 
     for chunk in mission_chunks:
         prompt_missions = build_prompt_tech6_missions(chunk)
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=model_name,
             messages=[{"role": "user", "content": prompt_missions}],
             response_format={"type": "json_object"},
             max_tokens=4000
@@ -192,7 +192,7 @@ def split_d2c_missions(raw_text: str, chunk_size: int = 1) -> list[str]:
 def extract_structured_sections_d2c_chunked(raw_text: str, folder_name: str = "") -> dict:
     prompt_general = build_prompt_D2C_general(raw_text, folder_name)
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model=model_name,
         messages=[{"role": "user", "content": prompt_general}],
         response_format={"type": "json_object"},
         max_tokens=3000
@@ -205,7 +205,7 @@ def extract_structured_sections_d2c_chunked(raw_text: str, folder_name: str = ""
     for chunk in mission_chunks:
         prompt_missions = build_prompt_D2C_missions(chunk)
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=model_name,
             messages=[{"role": "user", "content": prompt_missions}],
             response_format={"type": "json_object"},
             max_tokens=4000
@@ -316,7 +316,7 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
         
         try:
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=model_name,
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
                 max_tokens=1500  
@@ -364,7 +364,7 @@ def extract_structured_sections(raw_text: str,file_path, folder_name: str = "", 
         try:
             prompt = build_prompt(raw_text, folder_name,file_path)
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=model_name,
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
                 max_tokens=16000

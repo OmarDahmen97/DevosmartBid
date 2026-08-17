@@ -138,10 +138,10 @@ if MERGE_ONLY:
 
 SAMPLES_DIR = "data/samples"
 # --- D2C ---
-results = find_cv_files('data/D2C Pôle Consulting-20260708T092849Z-3-001')
+#results = find_cv_files('data/D2C Pôle Consulting-20260708T092849Z-3-001')
 
 # --- CV Externe (TECH-6, générique) ---
-#results = [(path, "") for path in find_cv_files_external('data/CV-20260708T092409Z-3-001/CV/CV Externe')]
+results = [(path, "") for path in find_cv_files_external('data/CV-20260708T092409Z-3-001/CV/CV Externe')]
 i=0
 for path, folder_name in results:
     """if i>=1:

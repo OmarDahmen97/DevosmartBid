@@ -290,6 +290,13 @@ def fill_slide2_page(slide, cv_json: dict, boxes: list[list[dict]]) -> None:
         remove_shape(photo)
 
 
+#Remove Extra Slide
+def _remove_slide(prs, index: int) -> None:    
+    xml_slides = prs.slides._sldIdLst
+    slides = list(xml_slides)
+    xml_slides.remove(slides[index])
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -308,9 +315,9 @@ def render_cv_pptx(cv_json: dict, output_path: str, target_language: str = "Fren
     experiences = cv_json.get("experience") or []
     remaining = experiences[2:]
     boxes = _paginate_by_char_budget(remaining, CHAR_BUDGET_PER_BOX)
-    pages = [boxes[i:i + 2] for i in range(0, len(boxes), 2)] or [[]]
+    # No "or [[]]" fallback -- an empty pages list means slide 2 isn't needed at all.
+    pages = [boxes[i:i + 2] for i in range(0, len(boxes), 2)]
 
-    # 2. Duplicate slide 2 (raw XML) for every extra page needed.
     extra_slide_paths = [duplicate_slide2(workdir) for _ in pages[1:]]
 
     # 3. Rezip into an intermediate file, then open it with python-pptx.
@@ -324,13 +331,18 @@ def render_cv_pptx(cv_json: dict, output_path: str, target_language: str = "Fren
 
     # slides[0] = slide1, slides[1] = slide2, slides[2:] = duplicated pages,
     # in the same order they were added to sldIdLst.
-    fill_slide1(prs.slides[0], cv_json,target_language)
-    fill_slide2_page(prs.slides[1], cv_json, pages[0])
-    for i, page in enumerate(pages[1:], start=2):
-        fill_slide2_page(prs.slides[i], cv_json, page)
+    fill_slide1(prs.slides[0], cv_json, target_language)
+
+    if pages:
+        fill_slide2_page(prs.slides[1], cv_json, pages[0])
+        for i, page in enumerate(pages[1:], start=2):
+            fill_slide2_page(prs.slides[i], cv_json, page)
+    else:
+        _remove_slide(prs, index=1)
 
     prs.save(output_path)
 
     shutil.rmtree(workdir)
     intermediate_path.unlink()
     return output_path
+

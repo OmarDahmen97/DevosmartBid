@@ -17,13 +17,13 @@ from app.extraction.prompt_builder import (
     build_prompt_generic_chunk,
     is_tech6_format
 )
-#from app.config import get_groq_api_key
+
 
 
 load_dotenv()
 Gemini_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=Gemini_key)
-
+model_name="gemini-3.1-flash-lite"
 
 
 CHUNKING_THRESHOLD = 5000
@@ -149,7 +149,7 @@ def split_missions_block(raw_text: str) -> list[str]:
 def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = "") -> dict:
     prompt_general = build_prompt_tech6_general(raw_text, folder_name)
     response = client.models.generate_content(
-    model="gemini-3.1-flash-lite",
+    model=model_name,
     contents=prompt_general,
     config={
         "response_mime_type": "application/json",
@@ -165,7 +165,7 @@ def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = 
     for chunk in mission_chunks:
         prompt_missions = build_prompt_tech6_missions(chunk)
         response = client.models.generate_content(
-        model="gemini-3.1-flash-lite",
+        model=model_name,
         contents=prompt_missions,
         config={
             "response_mime_type": "application/json",
@@ -235,7 +235,7 @@ def split_d2c_missions(raw_text: str, chunk_size: int = 1) -> list[str]:
 def extract_structured_sections_d2c_chunked(raw_text: str, folder_name: str = "") -> dict:
     prompt_general = build_prompt_D2C_general(raw_text, folder_name)
     response = client.models.generate_content(
-    model="gemini-3.1-flash-lite",
+    model=model_name,
     contents=prompt_general,
     config={
         "response_mime_type": "application/json",
@@ -250,7 +250,7 @@ def extract_structured_sections_d2c_chunked(raw_text: str, folder_name: str = ""
     for chunk in mission_chunks:
         prompt_missions = build_prompt_D2C_missions(chunk)
         response = client.models.generate_content(
-    model="gemini-3.1-flash-lite",
+    model=model_name,
     contents=prompt_missions,
     config={
         "response_mime_type": "application/json",
@@ -363,7 +363,7 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
         
         try:
             response = client.models.generate_content(
-    model="gemini-3.1-flash-lite",
+    model=model_name,
     contents=prompt,
     config={
         "response_mime_type": "application/json",
@@ -378,7 +378,7 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
             print(f"   Failed to extract from chunk {i+1}: {e}")
         
         # Pause of 5 seconds to allow the TPM/RPM quota to reset
-        time.sleep(3.0)
+        time.sleep(5.0)
 
     final_data = merge_generic_chunks(extracted_chunks_json)
     final_data["name"] = resolve_candidate_name(final_data.get("name", ""), folder_name)
@@ -413,7 +413,7 @@ def extract_structured_sections(raw_text: str,file_path, folder_name: str = "", 
         try:
             prompt = build_prompt(raw_text, folder_name,file_path)
             response = client.models.generate_content(
-    model="gemini-3.1-flash-lite",
+    model=model_name,
     contents=prompt,
     config={
         "response_mime_type": "application/json",
