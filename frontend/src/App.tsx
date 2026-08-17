@@ -60,10 +60,10 @@ export default function App() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-content-center rounded-lg bg-[#C1121F] text-sm font-black text-white">M</div>
-            <span className="font-bold tracking-tight">Matchwise</span>
+            <div className="grid h-8 w-8 place-content-center rounded-lg bg-[#C1121F] text-sm font-black text-white">D</div>
+            <span className="font-bold tracking-tight">Devosmart-Bid</span>
           </div>
-          <span className="hidden text-sm text-slate-500 sm:block">AI recruitment intelligence</span>
+          <span className="hidden text-sm text-slate-500 sm:block">Smart CV Matching</span>
         </div>
       </header>
 
@@ -115,7 +115,7 @@ export default function App() {
               onChange={(e) => setMissionText(e.target.value)}
               placeholder="Paste or write the mission description..."
               rows={4}
-              className="mt-1 field w-full resize-y"
+              className="mt-1 field w-full min-h-[240px] resize-y"
             />
           </div>
         )}

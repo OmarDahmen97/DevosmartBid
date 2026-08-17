@@ -25,6 +25,8 @@ import os
 from bson import ObjectId
 from pymongo import MongoClient
 from dotenv import load_dotenv
+import zipfile
+import uuid
 
 from app.embedding.embedder import get_shared_embedder
 from app.embedding.vector_store import VectorStore
@@ -34,9 +36,10 @@ from app.generation.mongo_resolver import invalidate_candidate_cache
 from app.merging.experience_similarity import build_merged_candidate_cv
 from app.profiling.profile_detector_full_cv import detect_profiles_full
 from app.profiling.profile_builder import build_profiles_document, store_candidate_profiles
-from app.generation.experience_adapter import adapt_selected_experiences, adapt_selected_projects
+from app.generation.experience_adapter import adapt_selected_experiences, adapt_selected_projects,translate_summary,translate_selected_experiences
 
 from app.generation.pptx_renderer.template_filler import render_cv_pptx
+from app.generation.pptx_renderer.deck_merger import merge_pptx_files
 
 from app.extraction.pipeline import extract_and_store_cv
 
@@ -394,7 +397,7 @@ def update_candidate_name(candidate_id: str, new_name: str) -> dict:
     return {"candidate_id": candidate_id, "name": new_name}
 
 
-# file: app/generation/cv_json_builder.py
+
 
 def build_cv_json_from_selection(
     mongo_collection,
@@ -434,8 +437,13 @@ def build_cv_json_from_selection(
         if value:  # skips None, [], ""
             result[section] = value
 
+    # Translate the summary into target_language -- ALWAYS, independent of
+    # mission_text. Mission alignment (below) rewrites experiences/projects
+    # for relevance; this is a separate, unconditional language pass.
+    if result.get("summary"):
+        result["summary"] = translate_summary(result["summary"], target_language)
+
     # Identity / contact fields -- all nullable in the source data
-    # (confirmed: email, phone, linkedin, github are frequently null)
     for field in ("name", "email", "phone", "linkedin", "github"):
         value = candidate.get(field)
         if value:
@@ -447,7 +455,7 @@ def build_cv_json_from_selection(
     for idx in selected_experience_indices:
         if 0 <= idx < len(all_experiences):
             exp = dict(all_experiences[idx])
-            exp["experience_index"] = idx  # needed by adapt_selected_experiences
+            exp["experience_index"] = idx
             experiences.append(exp)
 
     all_projects = list(candidate.get("projects") or [])
@@ -458,7 +466,6 @@ def build_cv_json_from_selection(
             proj["project_index"] = idx
             projects.append(proj)
 
-    # Derived fields -- computed once, after selection is known, not stored in Mongo
     title = derive_title_from_experiences(experiences, all_experiences)
     if title:
         result["title"] = title
@@ -467,9 +474,6 @@ def build_cv_json_from_selection(
     if years:
         result["years_of_experience"] = years
 
-    # 2. Null-safe cleanup on selected items before adaptation/rendering --
-    # "Not specified" / "" dates and empty technologies are common in this
-    # dataset and must not crash the adapter or leave literal junk in the PPTX.
     for exp in experiences:
         if not exp.get("dates") or exp["dates"] == "Not specified":
             exp["dates"] = ""
@@ -482,19 +486,23 @@ def build_cv_json_from_selection(
         proj["technologies"] = proj.get("technologies") or []
         proj["description"] = proj.get("description") or ""
 
-    # 3. Adapt wording to the mission (skipped if no mission_text)
-    if mission_text:
-        if experiences:
+    # 3. Adapt wording -- mission-aligned rewrite if a mission is given,
+    # otherwise a straight translation so target_language is still honored.
+    if experiences:
+        if mission_text:
             adapted_exp_map = adapt_selected_experiences(experiences, mission_text, target_language)
-            for exp in experiences:
-                idx = exp["experience_index"]
-                if idx in adapted_exp_map:
-                    if adapted_exp_map[idx].get("description"):
-                        exp["description"] = adapted_exp_map[idx]["description"]
-                    if adapted_exp_map[idx].get("responsibilities"):
-                        exp["responsibilities"] = adapted_exp_map[idx]["responsibilities"]
+        else:
+            adapted_exp_map = translate_selected_experiences(experiences, target_language)
+        for exp in experiences:
+            idx = exp["experience_index"]
+            if idx in adapted_exp_map:
+                if adapted_exp_map[idx].get("description"):
+                    exp["description"] = adapted_exp_map[idx]["description"]
+                if adapted_exp_map[idx].get("responsibilities"):
+                    exp["responsibilities"] = adapted_exp_map[idx]["responsibilities"]
 
-        if projects:
+    if projects:
+        if mission_text:
             adapted_proj_map = adapt_selected_projects(projects, mission_text, target_language)
             for proj in projects:
                 idx = proj["project_index"]
@@ -513,9 +521,12 @@ GENERATED_CV_DIR = "generated_cvs"
 def generate_cv_from_selection(payload: dict) -> dict:
     mission_text = payload.get("mission_text")
     target_language = payload.get("target_language", "French")
+    merge_into_one_document = payload.get("merge_into_one_document", False)
     os.makedirs(GENERATED_CV_DIR, exist_ok=True)
 
     results = []
+    generated_paths = []  # (candidate_id, path) for successfully generated files
+
     for entry in payload.get("candidates", []):
         candidate_id = entry["candidate_id"]
         cv_json = build_cv_json_from_selection(
@@ -533,19 +544,42 @@ def generate_cv_from_selection(payload: dict) -> dict:
 
         output_path = os.path.join(GENERATED_CV_DIR, f"{candidate_id}.pptx")
         try:
-            render_cv_pptx(cv_json, output_path)
+            render_cv_pptx(cv_json, output_path, target_language=target_language)
         except Exception as e:
             results.append({"candidate_id": candidate_id, "status": "error",
                              "message": f"{type(e).__name__}: {e}"})
             continue
 
+        generated_paths.append((candidate_id, output_path))
         results.append({
             "candidate_id": candidate_id,
             "status": "ok",
             "download_url": f"/generation/cv/{candidate_id}/download",
         })
 
-    return {"results": results}
+    response = {"results": results}
+
+    if generated_paths:
+        # Zip of all individual files -- always offered when >1 file exists.
+        if len(generated_paths) > 1:
+            batch_id = uuid.uuid4().hex
+            zip_path = os.path.join(GENERATED_CV_DIR, f"batch_{batch_id}.zip")
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                for candidate_id, path in generated_paths:
+                    zf.write(path, arcname=f"CV_{candidate_id}.pptx")
+            response["zip_download_url"] = f"/generation/download/batch_{batch_id}.zip"
+
+        # Single merged document, only if explicitly requested.
+        if merge_into_one_document and len(generated_paths) > 1:
+            merged_id = uuid.uuid4().hex
+            merged_path = os.path.join(GENERATED_CV_DIR, f"merged_{merged_id}.pptx")
+            try:
+                merge_pptx_files([p for _, p in generated_paths], merged_path)
+                response["merged_download_url"] = f"/generation/download/merged_{merged_id}.pptx"
+            except Exception as e:
+                response["merge_error"] = f"{type(e).__name__}: {e}"
+
+    return response
 
 
 def run_profile_mode(cv_path: str = None, normalized_name: str = None) -> dict:

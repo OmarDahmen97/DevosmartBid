@@ -8,6 +8,8 @@ from app.generation.mongo_resolver import (
 from app.generation.experience_adapter import (
     adapt_selected_experiences,
     adapt_selected_projects,
+    translate_summary,
+    translate_selected_experiences,
 )
 
 from rapidfuzz import fuzz
@@ -240,6 +242,8 @@ def build_matched_cv_json(
         value = candidate.get(section)
         if value:
             result[section] = value
+    if  result.get("summary"):
+        result["summary"] = translate_summary(result["summary"], target_language)        
 
     # 1. Selection via recherche vectorielle
     experience_res = store.search_section(
@@ -279,23 +283,22 @@ def build_matched_cv_json(
             projects.append(item)
 
     # 2. Adaptation dynamique avec le LLM si un texte de mission est fourni
-    if mission_text:
-        if experiences:
-            adapted_exp_map = adapt_selected_experiences(
-                experiences, mission_text, target_language
-            )
-            for exp in experiences:
-                idx = exp["experience_index"]
-                if idx in adapted_exp_map:
-                    if adapted_exp_map[idx].get("description"):
-                        exp["description"] = adapted_exp_map[idx]["description"]
-                    if adapted_exp_map[idx].get("responsibilities"):
-                        exp["responsibilities"] = adapted_exp_map[idx]["responsibilities"]
+    if experiences:
+        if mission_text:
+            adapted_exp_map = adapt_selected_experiences(experiences, mission_text, target_language)
+        else:
+            adapted_exp_map = translate_selected_experiences(experiences, target_language)
+        for exp in experiences:
+            idx = exp["experience_index"]
+            if idx in adapted_exp_map:
+                if adapted_exp_map[idx].get("description"):
+                    exp["description"] = adapted_exp_map[idx]["description"]
+                if adapted_exp_map[idx].get("responsibilities"):
+                    exp["responsibilities"] = adapted_exp_map[idx]["responsibilities"]
 
-        if projects:
-            adapted_proj_map = adapt_selected_projects(
-                projects, mission_text, target_language
-            )
+    if projects:
+        if mission_text:
+            adapted_proj_map = adapt_selected_projects(projects, mission_text, target_language)
             for proj in projects:
                 idx = proj["project_index"]
                 if idx in adapted_proj_map and adapted_proj_map[idx].get("description"):

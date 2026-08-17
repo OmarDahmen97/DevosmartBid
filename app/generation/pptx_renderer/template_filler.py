@@ -29,6 +29,13 @@ from pptx.util import Pt
 
 from .slide_duplication import duplicate_slide2
 
+YEARS_LABEL = {
+    "French": "ans d'expérience",
+    "English": "years of experience",
+    "Spanish": "años de experiencia",
+    "German": "Jahre Erfahrung",
+}
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 TEMPLATE_PATH = PROJECT_ROOT / "Templates" / "Template_CV_format_DVT.pptx"
 
@@ -222,15 +229,16 @@ def fill_education_shape(shape, education: list[dict]) -> None:
 # Slide-level fill
 # ---------------------------------------------------------------------------
 
-def fill_slide1(slide, cv_json: dict) -> None:
+def fill_slide1(slide, cv_json: dict, target_language: str = "French"   ) -> None:
     shapes = slide.shapes
     set_single_run_text(find_shape_by_id(shapes, SLIDE1_SHAPES["name"]), cv_json.get("name") or "")
     set_single_run_text(find_shape_by_id(shapes, SLIDE1_SHAPES["title"]), cv_json.get("title") or "")
 
     years = cv_json.get("years_of_experience")
+    label = YEARS_LABEL.get(target_language, YEARS_LABEL["French"])
     set_single_run_text(
         find_shape_by_id(shapes, SLIDE1_SHAPES["years"]),
-        f"{years} ans d’expérience" if years else "",
+        f"{years} {label}" if years else "",
     )
     set_single_run_text(find_shape_by_id(shapes, SLIDE1_SHAPES["summary"]), cv_json.get("summary") or "")
     fill_education_shape(find_shape_by_id(shapes, SLIDE1_SHAPES["education"]), cv_json.get("education") or [])
@@ -270,7 +278,7 @@ def fill_slide2_page(slide, cv_json: dict, boxes: list[list[dict]]) -> None:
 # Entry point
 # ---------------------------------------------------------------------------
 
-def render_cv_pptx(cv_json: dict, output_path: str) -> str:
+def render_cv_pptx(cv_json: dict, output_path: str, target_language: str = "French") -> str:
     import uuid
     workdir = Path("/tmp") / f"pptx_render_{uuid.uuid4().hex}"
     if workdir.exists():
@@ -300,7 +308,7 @@ def render_cv_pptx(cv_json: dict, output_path: str) -> str:
 
     # slides[0] = slide1, slides[1] = slide2, slides[2:] = duplicated pages,
     # in the same order they were added to sldIdLst.
-    fill_slide1(prs.slides[0], cv_json)
+    fill_slide1(prs.slides[0], cv_json,target_language)
     fill_slide2_page(prs.slides[1], cv_json, pages[0])
     for i, page in enumerate(pages[1:], start=2):
         fill_slide2_page(prs.slides[i], cv_json, page)

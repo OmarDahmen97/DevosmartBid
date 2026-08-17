@@ -58,26 +58,9 @@ from app.main_usage import (
 )
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("[startup] Chargement du modèle SBERT et de ChromaDB...")
-    get_embedder()
-    get_store()
-    print("[startup] Prêt.")
-    yield
 
 
-app = FastAPI(title="CV Platform API", lifespan=lifespan)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-candidate_service = CandidateService(merged_candidates_collection)
 
 
 # ---------------------------------------------------------------------------
@@ -124,6 +107,44 @@ class AdvancedSearchRequest(BaseModel):
     degree: Optional[str] = None
     page: int = 1
     limit: int = 20
+
+class GenerationRequest(BaseModel):
+    mission_text: Optional[str] = None
+    target_language: str = "French"
+    candidates: list[SelectedCandidate]
+    merge_into_one_document: bool = False    
+
+
+#Health check endpoint
+_backend_ready = False
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("[startup] Chargement du modèle SBERT et de ChromaDB...")
+    get_embedder()
+    get_store()
+    global _backend_ready
+    _backend_ready = True
+    print("[startup] Prêt.")
+    yield
+
+
+
+
+app = FastAPI(title="CV Platform API", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+candidate_service = CandidateService(merged_candidates_collection)
+@app.get("/health")
+async def health():
+    return {"ready": _backend_ready}
 
 
 # ---------------------------------------------------------------------------
@@ -435,3 +456,18 @@ async def download_generated_cv(candidate_id: str):
         media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
         filename=f"CV_{candidate_id}.pptx",
     )
+
+@app.get("/generation/download/{filename}")
+async def download_generated_file(filename: str):
+    # filename is server-generated (batch_<uuid>.zip / merged_<uuid>.pptx) --
+    # no user input reaches the filesystem path beyond this basename check.
+    if "/" in filename or "\\" in filename or ".." in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename.")
+    path = os.path.join(GENERATED_CV_DIR, filename)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Fichier introuvable ou expiré.")
+    media_type = (
+        "application/zip" if filename.endswith(".zip")
+        else "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    )
+    return FileResponse(path, media_type=media_type, filename=filename)

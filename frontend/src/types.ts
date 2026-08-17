@@ -71,6 +71,9 @@ export type GenerationResultItem =
 
 export type GenerationResponse = {
   results: GenerationResultItem[];
+  zip_download_url?: string;
+  merged_download_url?: string;
+  merge_error?: string;
 };
 
 export type CandidateDetail = Record<string, unknown>;

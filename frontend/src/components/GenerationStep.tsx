@@ -20,6 +20,7 @@ export function GenerationStep({
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GenerationResponse | null>(null);
   const [error, setError] = useState("");
+  const [mergeIntoOne, setMergeIntoOne] = useState(false);
 
   const nameFor = (candidateId: string) =>
     selection.find((s) => s.candidate_id === candidateId)?.name || candidateId;
@@ -36,7 +37,7 @@ export function GenerationStep({
           selected_experience_indices: reviewSelections[s.candidate_id].selected_experience_indices,
           selected_project_indices: reviewSelections[s.candidate_id].selected_project_indices,
         }));
-      const data = await generateAdaptedCV(missionText, targetLanguage, candidates);
+      const data = await generateAdaptedCV(missionText, targetLanguage, candidates, mergeIntoOne);
       setResult(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Generation failed");
@@ -66,6 +67,19 @@ export function GenerationStep({
             <option>Spanish</option>
             <option>German</option>
           </select>
+
+          {selection.length > 1 && (
+            <label className="mt-3 flex items-center gap-2 text-sm text-slate-600">
+              <input
+                type="checkbox"
+                checked={mergeIntoOne}
+                onChange={(e) => setMergeIntoOne(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-[#C1121F] focus:ring-[#C1121F]"
+              />
+              Merge all candidates into one document
+            </label>
+          )}
+
           <button
             onClick={generate}
             disabled={loading}
@@ -87,6 +101,37 @@ export function GenerationStep({
 
       {result && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 space-y-3">
+          {(result.zip_download_url || result.merged_download_url) && (
+            <div className="flex flex-wrap gap-2 border-b border-slate-100 pb-4">
+              {result.merged_download_url && (
+                <a
+                  href={result.merged_download_url}
+                  download
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800"
+                >
+                  <Download className="h-4 w-4" />
+                  Download Merged Document
+                </a>
+              )}
+              {result.zip_download_url && (
+                <a
+                  href={result.zip_download_url}
+                  download
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                >
+                  <Download className="h-4 w-4" />
+                  Download All (.zip)
+                </a>
+              )}
+            </div>
+          )}
+
+          {result.merge_error && (
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              Merge failed: {result.merge_error} — individual files are still available below.
+            </p>
+          )}
+
           {result.results.map((r) => (
             <div
               key={r.candidate_id}
@@ -107,7 +152,6 @@ export function GenerationStep({
               </div>
               {r.status === "ok" && (
                 <a
-                
                   href={r.download_url}
                   download
                   className="inline-flex items-center gap-2 rounded-xl bg-[#C1121F] px-3 py-2 text-xs font-bold text-white hover:bg-[#A30F1A]"
