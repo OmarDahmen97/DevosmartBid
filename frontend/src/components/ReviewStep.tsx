@@ -11,15 +11,21 @@ function Section({
   items,
   selected,
   onToggle,
+  onToggleAll,
   renderItem,
 }: {
   title: string;
   items: (ExperienceItem | ProjectItem)[];
   selected: Set<number>;
   onToggle: (idx: number) => void;
+  onToggleAll: (allSelected: boolean) => void;
   renderItem: (item: ExperienceItem | ProjectItem) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(true);
+  const allSelected = items.length > 0 && items.every((item) =>
+    selected.has("experience_index" in item ? item.experience_index : item.project_index)
+  );
+
   return (
     <div className="rounded-xl border border-slate-200 bg-white">
       <button
@@ -35,14 +41,24 @@ function Section({
       {open && (
         <div className="p-3 space-y-2">
           {items.length === 0 && <p className="text-sm text-slate-500">No items.</p>}
+          {items.length > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleAll(allSelected);
+              }}
+              className="text-xs font-semibold text-[#C1121F] hover:underline"
+            >
+              {allSelected ? "Deselect All" : "Select All"}
+            </button>
+          )}
           {items.map((item) => (
             <label
               key={("experience_index" in item ? item.experience_index : item.project_index).toString()}
-              className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition ${
-                selected.has("experience_index" in item ? item.experience_index : item.project_index)
+              className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition ${selected.has("experience_index" in item ? item.experience_index : item.project_index)
                   ? "border-red-200 bg-red-50"
                   : "border-slate-200 bg-white hover:border-slate-300"
-              }`}
+                }`}
             >
               <input
                 type="checkbox"
@@ -53,9 +69,8 @@ function Section({
               <div className="min-w-0 flex-1">
                 {renderItem(item)}
                 <span
-                  className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                    item.auto_selected ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
-                  }`}
+                  className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${item.auto_selected ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
+                    }`}
                 >
                   {item.score.toFixed(1)} {item.auto_selected ? "(auto)" : ""}
                 </span>
@@ -148,6 +163,25 @@ export function ReviewStep({
     }
   }, [selection]);
 
+  const toggleAllIdx = useCallback(
+    (candidateId: string, kind: "experience" | "project", items: (ExperienceItem | ProjectItem)[], currentlyAllSelected: boolean) => {
+      setSelections((prev) => {
+        const next = { ...prev };
+        const current = next[candidateId] || { selected_experience_indices: [], selected_project_indices: [] };
+        const key = kind === "experience" ? "selected_experience_indices" : "selected_project_indices";
+        const allIndices = items.map((item) =>
+          "experience_index" in item ? item.experience_index : item.project_index
+        );
+        next[candidateId] = {
+          ...current,
+          [key]: currentlyAllSelected ? [] : allIndices,
+        };
+        return next;
+      });
+    },
+    []
+  );
+
   const toggleIdx = useCallback(
     (candidateId: string, kind: "experience" | "project", idx: number) => {
       setSelections((prev) => {
@@ -197,11 +231,10 @@ export function ReviewStep({
           <button
             key={s.candidate_id}
             onClick={() => loadForCandidate(s.candidate_id)}
-            className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-              activeId === s.candidate_id
+            className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${activeId === s.candidate_id
                 ? "border-[#C1121F] bg-red-50 text-[#C1121F]"
                 : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-            }`}
+              }`}
           >
             {s.name}
           </button>
@@ -230,6 +263,7 @@ export function ReviewStep({
               items={activeData.experiences}
               selected={new Set((selections[activeId]?.selected_experience_indices || []))}
               onToggle={(idx) => toggleIdx(activeId, "experience", idx)}
+              onToggleAll={(allSelected) => toggleAllIdx(activeId, "experience", activeData.experiences, allSelected)}
               renderItem={renderExp}
             />
             <Section
@@ -237,6 +271,7 @@ export function ReviewStep({
               items={activeData.projects}
               selected={new Set((selections[activeId]?.selected_project_indices || []))}
               onToggle={(idx) => toggleIdx(activeId, "project", idx)}
+              onToggleAll={(allSelected) => toggleAllIdx(activeId, "project", activeData.projects, allSelected)}
               renderItem={renderProj}
             />
           </div>
