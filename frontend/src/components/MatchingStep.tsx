@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Search, Plus, X } from "lucide-react";
-import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, getCountriesOptions, deleteCandidate ,scoreCandidateForMission} from "../api";
+import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, suggestCertifications, getCountriesOptions, deleteCandidate, scoreCandidateForMission } from "../api";
 import type { MatchCandidate, CandidateSummary, SelectionEntry } from "../types";
 
-type Tab = "matching" | "name" | "country" | "skill";
+type Tab = "matching" | "name" | "country" | "skill" | "certification";
 
 export function MatchingStep({
   missionText,
@@ -33,6 +33,39 @@ export function MatchingStep({
   const [skillSearched, setSkillSearched] = useState(false);
 
   const selectedList = useMemo(() => Array.from(selected.values()), [selected]);
+
+  const [certQuery, setCertQuery] = useState("");
+  const [certTags, setCertTags] = useState<string[]>([]);
+  const [certSuggestions, setCertSuggestions] = useState<string[]>([]);
+  const [certSearched, setCertSearched] = useState(false);
+
+  const addCertTag = (value: string) => {
+    const clean = value.trim();
+    if (!clean || certTags.includes(clean)) return;
+    setCertTags((prev) => [...prev, clean]);
+    setCertQuery("");
+    setCertSuggestions([]);
+  };
+
+  const removeCertTag = (value: string) => {
+    setCertTags((prev) => prev.filter((t) => t !== value));
+  };
+
+  const runCertSearch = async () => {
+    const tags = certQuery.trim() ? [...certTags, certQuery.trim()] : certTags;
+    if (tags.length === 0) return;
+    setLoading(true);
+    setError("");
+    setCertSearched(true);
+    try {
+      const data = await advancedSearch({ certifications: tags, limit: 50 });
+      setSearchResults(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Search failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const emit = useCallback(
     (next: Map<string, SelectionEntry>) => {
@@ -164,7 +197,7 @@ export function MatchingStep({
   };
 
   useEffect(() => {
-    getCountriesOptions().then(setCountries).catch(() => {});
+    getCountriesOptions().then(setCountries).catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -172,8 +205,7 @@ export function MatchingStep({
   }, []);
 
   const tabClass = (t: Tab) =>
-    `px-4 py-2 text-sm font-semibold rounded-lg transition ${
-      tab === t ? "bg-[#C1121F] text-white" : "text-slate-600 hover:bg-slate-100"
+    `px-4 py-2 text-sm font-semibold rounded-lg transition ${tab === t ? "bg-[#C1121F] text-white" : "text-slate-600 hover:bg-slate-100"
     }`;
 
   return (
@@ -184,7 +216,7 @@ export function MatchingStep({
         Run semantic matching, or search by name / country / skill to add candidates.
       </p>
 
-      
+
 
       <div className="mt-4 flex flex-wrap gap-2">
         <button onClick={() => setTab("matching")} className={tabClass("matching")}>
@@ -198,6 +230,9 @@ export function MatchingStep({
         </button>
         <button onClick={() => setTab("skill")} className={tabClass("skill")}>
           By Skill
+        </button>
+        <button onClick={() => setTab("certification")} className={tabClass("certification")}>
+          By Certification
         </button>
       </div>
 
@@ -238,9 +273,8 @@ export function MatchingStep({
                   <motion.div
                     key={c.candidate_id}
                     layout
-                    className={`flex items-center gap-4 rounded-xl border p-4 ${
-                      isSelected ? "border-red-200 bg-red-50" : "border-slate-200 bg-white"
-                    }`}
+                    className={`flex items-center gap-4 rounded-xl border p-4 ${isSelected ? "border-red-200 bg-red-50" : "border-slate-200 bg-white"
+                      }`}
                   >
                     <input
                       type="checkbox"
@@ -314,7 +348,7 @@ export function MatchingStep({
                 onChange={(e) => {
                   setSkillQuery(e.target.value);
                   if (e.target.value.length >= 2) {
-                    suggestSkills(e.target.value).then(setSuggestions).catch(() => {});
+                    suggestSkills(e.target.value).then(setSuggestions).catch(() => { });
                   }
                 }}
                 onKeyDown={(e) => e.key === "Enter" && runSkillSearch()}
@@ -322,17 +356,65 @@ export function MatchingStep({
                 className="field flex-1"
                 list="skill-suggestions"
               />
-               <datalist id="skill-suggestions">
-                 {suggestions.map((s) => (
-                   <option key={s} value={s} />
-                 ))}
-               </datalist>
-               <button onClick={runSkillSearch} disabled={loading || !skillQuery.trim()}               className="inline-flex items-center gap-2 rounded-xl bg-[#C1121F] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-70">
-                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                 Search
-               </button>
-             </div>
-             <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={skillSearched} missionText={missionText} />
+              <datalist id="skill-suggestions">
+                {suggestions.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+              <button onClick={runSkillSearch} disabled={loading || !skillQuery.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#C1121F] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-70">
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                Search
+              </button>
+            </div>
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={skillSearched} missionText={missionText} />
+          </div>
+        )}
+        {tab === "certification" && (
+          <div>
+            <div className="flex gap-2">
+              <input
+                value={certQuery}
+                onChange={(e) => {
+                  setCertQuery(e.target.value);
+                  if (e.target.value.length >= 1) {
+                    suggestCertifications(e.target.value).then(setCertSuggestions).catch(() => { });
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addCertTag(certQuery);
+                  }
+                }}
+                placeholder="Type a certification, press Enter to add..."
+                className="field flex-1"
+                list="certification-suggestions"
+              />
+              <datalist id="certification-suggestions">
+                {certSuggestions.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+              <button onClick={runCertSearch} disabled={loading || (certTags.length === 0 && !certQuery.trim())} className="inline-flex items-center gap-2 rounded-xl bg-[#C1121F] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-70">
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                Search
+              </button>
+            </div>
+
+            {certTags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {certTags.map((tag) => (
+                  <span key={tag} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium">
+                    {tag}
+                    <button onClick={() => removeCertTag(tag)} className="text-slate-400 hover:text-[#C1121F]">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={certSearched} missionText={missionText} />
           </div>
         )}
       </div>

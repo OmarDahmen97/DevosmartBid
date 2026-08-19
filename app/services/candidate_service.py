@@ -1,9 +1,11 @@
 # file: app/services/candidate_service.py
 
 import re
+from sys import prefix
 from typing import List, Dict, Any, Optional
 from bson import ObjectId
 from pymongo.collection import Collection
+from sympy import limit
 
 
 class CandidateService:
@@ -87,12 +89,11 @@ class CandidateService:
         # Certifications
         if certifications:
             cert_conditions = [
-                {"certifications": {"$regex": f"^{cert.strip()}$", "$options": "i"}}
+                {"certifications.name": {"$regex": f"^{re.escape(cert.strip())}$", "$options": "i"}}
                 for cert in certifications if cert and cert.strip()
             ]
             if cert_conditions:
                 conditions.append({"$or": cert_conditions})
-
         # Languages (matching 'languages.language' in array of objects)
         if languages:
             lang_conditions = [
@@ -230,9 +231,11 @@ class CandidateService:
 
     def get_distinct_certifications(self) -> List[str]:
         """
-        Returns a sorted, unique list of certifications from 'certifications'.
+        Returns a sorted, unique list of certification names from
+        'certifications.name' (certifications is a list of {name, issuer, year}
+        objects, not plain strings).
         """
-        certs = self.collection.distinct("certifications")
+        certs = self.collection.distinct("certifications.name")
         return sorted([c.strip() for c in certs if isinstance(c, str) and c.strip()])
 
     def get_distinct_degrees(self) -> List[str]:
@@ -380,3 +383,31 @@ class CandidateService:
         }
 
         return sorted(list(unique_matches), key=lambda c: c.lower())[:limit]
+    
+    def suggest_certifications(self, prefix: str, limit: int = 10) -> List[str]:
+        """
+        Suggère des noms de certifications commençant par le préfixe saisi.
+        certifications is a list of {name, issuer, year} objects, not plain
+        strings -- match on certifications.name.
+        """
+        if not prefix or not prefix.strip():
+            return []
+
+        clean_prefix = prefix.strip()
+        regex_pattern = f"^{re.escape(clean_prefix)}"
+
+        pipeline = [
+            {"$match": {"certifications.name": {"$regex": regex_pattern, "$options": "i"}}},
+            {"$unwind": "$certifications"},
+            {"$match": {"certifications.name": {"$regex": regex_pattern, "$options": "i"}}},
+            {"$group": {"_id": "$certifications.name"}},
+            {"$limit": limit * 2}
+        ]
+
+        results = list(self.collection.aggregate(pipeline))
+        unique_matches = {
+            doc["_id"].strip() for doc in results
+            if isinstance(doc["_id"], str) and doc["_id"].strip()
+        }
+
+        return sorted(list(unique_matches), key=lambda c: c.lower())[:limit] 

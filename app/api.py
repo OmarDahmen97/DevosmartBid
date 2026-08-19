@@ -252,6 +252,14 @@ async def get_all_filter_options():
 async def get_skills_options():
     return {"skills": candidate_service.get_distinct_skills()}
 
+@app.get("/candidates/suggest/certifications")
+async def suggest_certifications(
+    q: str = Query(..., min_length=1, description="Préfixe recherché"),
+    limit: int = Query(10, ge=1, le=50)
+):
+    suggestions = candidate_service.suggest_certifications(prefix=q, limit=limit)
+    return {"query": q, "suggestions": suggestions}
+
 
 @app.get("/candidates/options/countries")
 async def get_countries_options():

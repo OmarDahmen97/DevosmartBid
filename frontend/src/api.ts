@@ -136,4 +136,11 @@ export async function scoreCandidateForMission(candidateId: string, missionText:
   return handle<ScoreResponse>(res);
 }
 
+export async function suggestCertifications(q: string, limit = 10): Promise<string[]> {
+  const res = await fetch(`${BASE}candidates/suggest/certifications?q=${encodeURIComponent(q)}&limit=${limit}`);
+  if (!res.ok) throw new Error(`Suggest failed: ${res.status}`);
+  const data = await handle<SuggestResponse>(res);
+  return data.suggestions;
+}
+
 
