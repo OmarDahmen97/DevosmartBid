@@ -14,12 +14,15 @@ def is_tech6_format(raw_text: str) -> bool:
     """Detects the TECH-6 format."""
     text = re.sub(r"\s+", " ", raw_text.lower())
 
-    tech6_markers = [
+    """tech6_markers = [
         "tech-6",
         "références professionnelles pertinentes pour la mission",
         "nom de l'employeur, titre professionnel/poste",
         "tech 6",
         "résumé des activités réalisées en rapport avec la mission"
+    ]"""
+    tech6_markers = [
+        "aszezd"
     ]
 
     return any(marker.lower().strip() in text for marker in tech6_markers)

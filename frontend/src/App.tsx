@@ -61,7 +61,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-slate-50">
       <CandidateSidebar currentStep={step} onStepChange={setStep} />
       <main className="min-h-screen flex-1 pb-16">
         <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">

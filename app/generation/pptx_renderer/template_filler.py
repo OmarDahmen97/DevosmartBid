@@ -26,8 +26,24 @@ from pathlib import Path
 from pptx import Presentation
 from pptx.oxml.ns import qn
 from pptx.util import Pt
+from sympy import exp
+
+import ast
 
 from .slide_duplication import duplicate_slide2
+
+INVALID_VALUES = {
+    "",
+    "n/a",
+    "na",
+    "not specified",
+    "not available",
+    "unknown",
+    "none",
+    "-",
+    "--",
+}
+
 
 YEARS_LABEL = {
     "French": "ans d'expérience",
@@ -55,6 +71,18 @@ MAX_BULLETS_PER_EXPERIENCE = 5
 MAX_CHARS_PER_BULLET = 220
 SKILLS_CHAR_BUDGET = 500
 
+#clean text:
+def clean_value(value):
+    if value is None:
+        return ""
+
+    text = str(value).strip()
+
+    if text.lower() in INVALID_VALUES:
+        return ""
+
+    return text 
+
 
 # ---------------------------------------------------------------------------
 # Shape lookup / low-level helpers
@@ -62,6 +90,7 @@ SKILLS_CHAR_BUDGET = 500
 
 def find_shape_by_id(shapes, shape_id: int):
     """Recurses into groups. Returns None if not found on this slide."""
+    
     for shape in shapes:
         if shape.shape_id == shape_id:
             return shape
@@ -75,6 +104,7 @@ def find_shape_by_id(shapes, shape_id: int):
 def set_single_run_text(shape, text: str) -> None:
     """Replaces the text of a shape meant to hold ONE simple run, keeping
     the first run's formatting (font/size/bold) untouched."""
+    text=clean_value(text)
     tf = shape.text_frame
     first_para = tf.paragraphs[0]
     if not first_para.runs:
@@ -111,23 +141,39 @@ def remove_shape(shape) -> None:
 # ---------------------------------------------------------------------------
 
 def _experience_title_line(exp: dict) -> str:
-    company = exp.get("company") or ""
-    title = exp.get("title") or ""
+    company = clean_value(exp.get("company"))
+    title = clean_value(exp.get("title"))
     if company and title:
         return f"{company} | {title} :"
     return company or title or ""
 
 
 def _experience_bullets(exp: dict) -> list[str]:
+    print("EXP TYPE:", type(exp))
+    print("EXP VALUE:", exp)
     bullets = []
+
     responsibilities = exp.get("responsibilities") or []
+
     if responsibilities:
         for r in responsibilities:
-            text = (r.get("description") or r.get("category") or "").strip()
+            print("RESP TYPE:", type(r))
+            print("RESP VALUE:", r)
+            if isinstance(r, dict):
+                text = clean_value(
+                    r.get("description") or r.get("category")
+                )
+            else:
+                text = clean_value(r)
+
             if text:
                 bullets.append(text)
+
     elif exp.get("description"):
-        bullets.append(exp["description"].strip())
+        text = clean_value(exp.get("description"))
+        if text:
+            bullets.append(text)
+
     return bullets
 
 
@@ -203,7 +249,8 @@ def fill_skills_shape(shape, skills: list[str]) -> None:
     Formation section below it (observed empirically, no auto-fit available)."""
     tf = shape.text_frame
     tf.clear()
-    clean = [str(s) for s in skills if s]
+    clean = [clean_value(s) for s in skills]
+    clean = [s for s in clean if s]
 
     kept = []
     running_len = 0
@@ -224,18 +271,42 @@ def fill_skills_shape(shape, skills: list[str]) -> None:
 
 
 def fill_education_shape(shape, education: list[dict]) -> None:
+    education = [clean_value(e) for e in education if clean_value(e)]
+
     tf = shape.text_frame
     tf.clear()
+
     if not education:
         return
+
     first = True
+
     for edu in education:
+        if isinstance(edu, str):
+            try:
+                edu = ast.literal_eval(edu)
+            except Exception:
+                continue
+
         para = tf.paragraphs[0] if first else tf.add_paragraph()
         first = False
-        parts = [p for p in (edu.get("degree"), edu.get("field_of_study"), edu.get("institution")) if p]
+
+        parts = [
+            p
+            for p in (
+                clean_value(edu.get("degree")),
+                clean_value(edu.get("field_of_study")),
+                clean_value(edu.get("institution")),
+            )
+            if p
+        ]
+
         line = " - ".join(parts)
-        if edu.get("years"):
-            line = f"{line} ({edu['years']})" if line else str(edu["years"])
+
+        years = clean_value(edu.get("years"))
+        if years:
+            line = f"{line} ({years})" if line else years
+
         run = para.add_run()
         run.text = line
         run.font.size = Pt(7.5)
