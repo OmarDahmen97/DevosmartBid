@@ -355,13 +355,7 @@ Expected JSON Template Structure:
       "technologies": ["Tech 1", "Tech 2"]
     }}
   ],
-  "projects": [
-    {{
-      "name": "Project Name", 
-      "description": "Project description", 
-      "technologies": ["Tech 1"]
-    }}
-  ]
+
 }}
 
 Rules:
@@ -376,6 +370,8 @@ Rules:
    - Inside any string, if you need to use an apostrophe (like d'évaluation) or quotes, do NOT break the string wrapping. 
    - Absolutely NEVER mix single quotes (') and double quotes (") to open/close JSON keys or values.
    - Replace any raw line breaks inside string descriptions with a space.
+IMPORTANT: All professional missions, projects, assignments, and consulting engagements must be included in "experiences". For each one, put the available details in "description". Never omit a mission or project because it is listed under another CV section.
+
 CV Text Chunk:
 {raw_text}"""
 #=====
@@ -402,7 +398,7 @@ def build_prompt_generic(raw_text: str, folder_name: str) -> str:
     "deliverables": [],
     "technologies": []
   }}],
-  "projects": [{{"name": "...", "description": "...", "technologies": []}}]
+  
 }}
 
 This CV has NO fixed template — its structure and section order can vary freely. Extract each field based on its meaning and content, not on assumed position or exact keywords, since headers vary widely by author and language (French or English).
@@ -415,11 +411,10 @@ Guidelines:
 - "certifications": any professional certification explicitly named, separate from formal education.
 - "languages": each spoken language mentioned, with proficiency level if stated.
 - "experience": one entry per job/role held, in reverse chronological order if apparent. If the CV describes distinct assignments/missions in detail (client, context, responsibilities, deliverables, technologies used), extract those details into "responsibilities", "deliverables", "technologies" for that entry. If a role has no further detail, leave those sub-fields empty.
-- "projects": distinct personal, academic, or professional projects that are NOT tied to a formal employment entry (e.g. side projects, academic projects, freelance work not listed as a job).
 - "countries_worked" / "professional_affiliations": only fill if explicitly mentioned; otherwise leave empty — do not infer these from job locations unless the CV states them as a dedicated list.
 - If a year value equals 1111, treat it as a placeholder for missing data and omit it (do not include it as a valid date)
 IMPORTANT: only extract information that is actually present in the text. Do not invent, assume, or fill in plausible-sounding values for missing information — use null or an empty list instead.
-
+IMPORTANT: All professional missions, projects, assignments, and consulting engagements must be included in "experiences". For each one, put the available details in "description". Never omit a mission or project because it is listed under another CV section.
 IMPORTANT for name: if the name found in the CV text is missing or reduced to initials/an abbreviation, use this name instead, taken from the folder this file was found in: "{folder_name}"
 
 CV text:
