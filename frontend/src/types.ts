@@ -97,7 +97,7 @@ export type CandidateSelection = SelectionEntry & {
   selected_project_indices: Set<number>;
 };
 
-export type Step = "upload" | "matching" | "review" | "generation";
+export type Step = "cv_management" | "matching" | "review" | "generation";
 
 export type Candidate = {
   id: string;
