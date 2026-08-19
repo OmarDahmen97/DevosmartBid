@@ -3,15 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Search, Plus, X } from "lucide-react";
 import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, suggestCertifications, getCountriesOptions, deleteCandidate, scoreCandidateForMission } from "../api";
 import type { MatchCandidate, CandidateSummary, SelectionEntry } from "../types";
+import { Eye } from "lucide-react";
 
 type Tab = "matching" | "name" | "country" | "skill" | "certification";
 
 export function MatchingStep({
   missionText,
   onSelectionChange,
+  onViewCandidate,
 }: {
   missionText: string;
   onSelectionChange: (selection: SelectionEntry[]) => void;
+  onViewCandidate: (candidateId: string, name: string) => void;
 }) {
   const [tab, setTab] = useState<Tab>("matching");
   const [loading, setLoading] = useState(false);
@@ -81,6 +84,29 @@ export function MatchingStep({
       const entry: SelectionEntry = { candidate_id: c.candidate_id, name: c.name, email: c.email, source: "matching" };
       if (next.has(c.candidate_id)) next.delete(c.candidate_id);
       else next.set(c.candidate_id, entry);
+      emit(next);
+    },
+    [selected, emit]
+  );
+
+  const removeMany = useCallback(
+    (ids: string[]) => {
+      const next = new Map(selected);
+      ids.forEach((id) => next.delete(id));
+      emit(next);
+    },
+    [selected, emit]
+  );
+
+
+  const addSearchResultsMany = useCallback(
+    (candidates: CandidateSummary[]) => {
+      const next = new Map(selected);
+      candidates.forEach((c) => {
+        if (!next.has(c.candidate_id)) {
+          next.set(c.candidate_id, { candidate_id: c.candidate_id, name: c.name, email: c.email, source: "search" });
+        }
+      });
       emit(next);
     },
     [selected, emit]
@@ -267,6 +293,35 @@ export function MatchingStep({
               <p className="mt-4 text-sm text-slate-500">No candidates matched yet. Run semantic matching to see results.</p>
             )}
             <div className="mt-4 grid gap-3">
+              {matched.length > 0 && (
+                <div className="mb-3 flex items-center justify-between">
+                  <button
+                    onClick={() => {
+                      const allSelected = matched.every((c) => selected.has(c.candidate_id));
+                      const next = new Map(selected);
+                      if (allSelected) {
+                        matched.forEach((c) => next.delete(c.candidate_id));
+                      } else {
+                        matched.forEach((c) => {
+                          if (!next.has(c.candidate_id)) {
+                            next.set(c.candidate_id, {
+                              candidate_id: c.candidate_id,
+                              name: c.name,
+                              email: c.email,
+                              source: "matching",
+                            });
+                          }
+                        });
+                      }
+                      emit(next);
+                    }}
+                    className="text-xs font-semibold text-[#C1121F] hover:underline"
+                  >
+                    {matched.every((c) => selected.has(c.candidate_id)) ? "Deselect All" : "Select All"}
+                  </button>
+                  <span className="text-xs text-slate-400">{matched.length} result(s)</span>
+                </div>
+              )}
               {matched.map((c) => {
                 const isSelected = selected.has(c.candidate_id);
                 return (
@@ -289,6 +344,13 @@ export function MatchingStep({
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
                       {c.avg_score.toFixed(1)}
                     </span>
+                    <button
+                      onClick={() => onViewCandidate(c.candidate_id, c.name)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      View
+                    </button>
                   </motion.div>
                 );
               })}
@@ -312,8 +374,7 @@ export function MatchingStep({
                 Search
               </button>
             </div>
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={nameSearched} missionText={missionText} />
-          </div>
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} onAddMany={addSearchResultsMany} onRemoveMany={removeMany} hasSearched={nameSearched} missionText={missionText} onView={onViewCandidate} />          </div>
         )}
 
         {tab === "country" && (
@@ -336,8 +397,7 @@ export function MatchingStep({
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               Search by Country
             </button>
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={countrySearched} missionText={missionText} />
-          </div>
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} onAddMany={addSearchResultsMany} onRemoveMany={removeMany} hasSearched={nameSearched} missionText={missionText} onView={onViewCandidate} />          </div>
         )}
 
         {tab === "skill" && (
@@ -366,8 +426,7 @@ export function MatchingStep({
                 Search
               </button>
             </div>
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={skillSearched} missionText={missionText} />
-          </div>
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} onAddMany={addSearchResultsMany} onRemoveMany={removeMany} hasSearched={nameSearched} missionText={missionText} onView={onViewCandidate} />         </div>
         )}
         {tab === "certification" && (
           <div>
@@ -414,7 +473,7 @@ export function MatchingStep({
               </div>
             )}
 
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={certSearched} missionText={missionText} />
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} onAddMany={addSearchResultsMany} onRemoveMany={removeMany} hasSearched={nameSearched} missionText={missionText} onView={onViewCandidate} />
           </div>
         )}
       </div>
@@ -442,14 +501,20 @@ function ResultList({
   results,
   selectedIds,
   onAdd,
+  onAddMany,
+  onRemoveMany,
   hasSearched,
   missionText,
+  onView,
 }: {
   results: CandidateSummary[];
   selectedIds: Set<string>;
   onAdd: (c: CandidateSummary) => void;
+  onAddMany: (candidates: CandidateSummary[]) => void;
+  onRemoveMany: (ids: string[]) => void;
   hasSearched?: boolean;
   missionText: string;
+  onView: (candidateId: string, name: string) => void;
 }) {
   const [scores, setScores] = useState<Record<string, { value: number; loading: boolean; error?: string }>>({});
 
@@ -494,40 +559,67 @@ function ResultList({
     );
   }
 
+  const allSelected = results.length > 0 && results.every((c) => selectedIds.has(c.candidate_id));
+
   return (
-    <div className="mt-4 grid gap-2">
-      {results.map((c) => {
-        const scoreState = scores[c.candidate_id];
-        return (
-          <div key={c.candidate_id} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">{c.name}</p>
-              <p className="truncate text-xs text-slate-500">{c.email}</p>
+    <div className="mt-4">
+      {results.length > 0 && (
+        <div className="mb-2 flex items-center justify-between">
+          <button
+            onClick={() => {
+              if (allSelected) {
+                onRemoveMany(results.map((c) => c.candidate_id));
+              } else {
+                onAddMany(results.filter((c) => !selectedIds.has(c.candidate_id)));
+              }
+            }}
+            className="text-xs font-semibold text-[#C1121F] hover:underline"
+          >
+            {allSelected ? "Deselect All" : "Select All"}
+          </button>
+          <span className="text-xs text-slate-400">{results.length} result(s)</span>
+        </div>
+      )}
+      <div className="grid gap-2">
+        {results.map((c) => {
+          const scoreState = scores[c.candidate_id];
+          return (
+            <div key={c.candidate_id} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">{c.name}</p>
+                <p className="truncate text-xs text-slate-500">{c.email}</p>
+              </div>
+
+              {!missionText.trim() ? (
+                <span className="text-xs text-slate-400">No mission set</span>
+              ) : scoreState?.loading || !scoreState ? (
+                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+              ) : scoreState.error ? (
+                <span className="text-xs text-red-500">{scoreState.error}</span>
+              ) : (
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
+                  {scoreState.value.toFixed(1)}
+                </span>
+              )}
+              <button
+                onClick={() => onView(c.candidate_id, c.name)}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                View
+              </button>
+              <button
+                onClick={() => onAdd(c)}
+                disabled={selectedIds.has(c.candidate_id)}
+                className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add
+              </button>
             </div>
-
-            {!missionText.trim() ? (
-              <span className="text-xs text-slate-400">No mission set</span>
-            ) : scoreState?.loading || !scoreState ? (
-              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-            ) : scoreState.error ? (
-              <span className="text-xs text-red-500">{scoreState.error}</span>
-            ) : (
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
-                {scoreState.value.toFixed(1)}
-              </span>
-            )}
-
-            <button
-              onClick={() => onAdd(c)}
-              disabled={selectedIds.has(c.candidate_id)}
-              className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add
-            </button>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

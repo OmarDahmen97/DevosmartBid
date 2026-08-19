@@ -91,13 +91,7 @@ export default function App() {
               </span>
             </div>
 
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="ml-2 inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-[#C1121F]"
-            >
-              <Trash2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Manage Candidates</span>
-            </button>
+
           </div>
         </header>
 
@@ -143,6 +137,7 @@ export default function App() {
                       setSelection(sel);
                       showToast(`${sel.length} candidate(s) selected`);
                     }}
+                    onViewCandidate={(candidateId, name) => setDetailCandidate({ candidateId, name })}
                   />
                   {selection.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
