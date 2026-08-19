@@ -109,14 +109,21 @@ export default function App() {
           {step !== "generation" && step !== "cv_management" && (
             <div className="mx-auto max-w-2xl">
               <label className="block text-sm font-semibold text-slate-700">
-                Mission Description <span className="text-xs font-normal text-slate-500">(shared across steps)</span>
+                Mission Description{" "}
+                <span className="text-xs font-normal text-slate-500">
+                  (shared across steps)
+                </span>
               </label>
+
               <textarea
                 value={missionText}
                 onChange={(e) => setMissionText(e.target.value)}
                 placeholder="Paste or write the mission description..."
                 rows={4}
-                className="mt-1 field w-full min-h-[240px] resize-y"
+                className={`mt-1 field w-full min-h-[240px] resize-y ${missionText.trim()
+                    ? "border-2 border-emerald-500 focus:border-emerald-500 focus:ring-emerald-100"
+                    : ""
+                  }`}
               />
             </div>
           )}

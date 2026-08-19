@@ -78,7 +78,7 @@ export function CandidateDetailModal({
           {items.map((raw, i) => (
             <div key={i} className="rounded-lg border border-slate-100 bg-white p-3">
               <p className="text-sm font-semibold">{String(raw.category || "")}</p>
-              {raw.description ? <p className="mt-1 text-xs text-slate-600">{String(raw.description)}</p> : null}
+              {raw.description ? <p className="mt-1 text-xs text-slate-600 ">{String(raw.description)}</p> : null}
             </div>
           ))}
         </div>
@@ -180,7 +180,7 @@ export function CandidateDetailModal({
              const deliverables = (raw.deliverables as string[]) || [];
              const technologies = (raw.technologies as string[]) || [];
              return (
-               <div key={i} className="rounded-lg border border-slate-100 bg-white p-3">
+               <div key={i} className="rounded-lg border border-slate-200   bg-white p-3">
                  <div className="flex items-center justify-between">
                    <p className="text-sm font-semibold">{String(raw.title || "")}</p>
                    {raw.dates ? <span className="text-xs text-slate-500">{String(raw.dates)}</span> : null}
