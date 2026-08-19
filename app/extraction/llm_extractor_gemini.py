@@ -204,7 +204,7 @@ def extract_structured_sections_tech6_chunked(raw_text: str, folder_name: str = 
                 "technologies": []
             })
 
-    time.sleep(2)
+    time.sleep(5)
 
     general_data["experience"] = all_projects 
     general_data["projects"] = []

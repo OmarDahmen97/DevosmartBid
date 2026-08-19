@@ -1,3 +1,10 @@
+export type ScoreResponse = {
+  candidate_id: string;
+  avg_score: number;
+  is_relevant: boolean;
+};
+
+
 export type UploadResultItem = {
   filename: string;
   candidate_id: string;

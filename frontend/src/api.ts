@@ -12,6 +12,7 @@ import type {
   ExperienceItem,
   ProjectItem,
   GenerationResponse,
+  ScoreResponse,
 } from "./types";
 
 const BASE = "/";
@@ -124,6 +125,15 @@ export async function generateAdaptedCV(
   });
   if (!res.ok) throw new Error(`Generation failed: ${res.status}`);
   return handle<GenerationResponse>(res);
+}
+export async function scoreCandidateForMission(candidateId: string, missionText: string): Promise<ScoreResponse> {
+  const res = await fetch(`${BASE}candidates/${encodeURIComponent(candidateId)}/score`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mission_text: missionText }),
+  });
+  if (!res.ok) throw new Error(`Score failed: ${res.status}`);
+  return handle<ScoreResponse>(res);
 }
 
 

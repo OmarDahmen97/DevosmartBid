@@ -67,6 +67,7 @@ export default function App() {
               src="https://pbs.twimg.com/profile_images/1465734821402005512/drXcIBUn_400x400.jpg"
               alt="Devoteam"
               className="h-12 w-auto object-contain"
+              href="http://localhost:5173/"
             />
 
             <div>

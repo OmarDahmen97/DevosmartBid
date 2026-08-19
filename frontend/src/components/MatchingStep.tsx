@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Search, Plus, X } from "lucide-react";
-import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, getCountriesOptions, deleteCandidate } from "../api";
+import { matchMission, searchCandidatesByName, advancedSearch, suggestSkills, getCountriesOptions, deleteCandidate ,scoreCandidateForMission} from "../api";
 import type { MatchCandidate, CandidateSummary, SelectionEntry } from "../types";
 
 type Tab = "matching" | "name" | "country" | "skill";
@@ -278,7 +278,7 @@ export function MatchingStep({
                 Search
               </button>
             </div>
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={nameSearched} />
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={nameSearched} missionText={missionText} />
           </div>
         )}
 
@@ -302,7 +302,7 @@ export function MatchingStep({
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               Search by Country
             </button>
-            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={countrySearched} />
+            <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={countrySearched} missionText={missionText} />
           </div>
         )}
 
@@ -332,7 +332,7 @@ export function MatchingStep({
                  Search
                </button>
              </div>
-             <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={skillSearched} />
+             <ResultList results={searchResults} selectedIds={new Set(selected.keys())} onAdd={addSearchResult} hasSearched={skillSearched} missionText={missionText} />
           </div>
         )}
       </div>
@@ -361,35 +361,91 @@ function ResultList({
   selectedIds,
   onAdd,
   hasSearched,
+  missionText,
 }: {
   results: CandidateSummary[];
   selectedIds: Set<string>;
   onAdd: (c: CandidateSummary) => void;
   hasSearched?: boolean;
+  missionText: string;
 }) {
+  const [scores, setScores] = useState<Record<string, { value: number; loading: boolean; error?: string }>>({});
+
+  useEffect(() => {
+    if (!missionText.trim()) return;
+
+    results.forEach((c) => {
+      // Skip candidates we've already scored or are currently scoring --
+      // avoids re-firing on every unrelated re-render of the parent.
+      setScores((prev) => {
+        if (prev[c.candidate_id]) return prev;
+        return { ...prev, [c.candidate_id]: { value: 0, loading: true } };
+      });
+    });
+
+    results.forEach(async (c) => {
+      // Re-check right before the call -- the setScores above is async,
+      // so a second effect run could still race past the skip check.
+      let alreadyHandled = false;
+      setScores((prev) => {
+        alreadyHandled = prev[c.candidate_id] !== undefined && !prev[c.candidate_id].loading;
+        return prev;
+      });
+      if (alreadyHandled) return;
+
+      try {
+        const res = await scoreCandidateForMission(c.candidate_id, missionText);
+        setScores((prev) => ({ ...prev, [c.candidate_id]: { value: res.avg_score, loading: false } }));
+      } catch (e) {
+        setScores((prev) => ({
+          ...prev,
+          [c.candidate_id]: { value: 0, loading: false, error: e instanceof Error ? e.message : "Failed" },
+        }));
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results, missionText]);
+
   if (results.length === 0 && hasSearched) {
     return (
       <p className="mt-4 text-sm text-slate-500">No results found. Try a different query.</p>
     );
   }
+
   return (
     <div className="mt-4 grid gap-2">
-      {results.map((c) => (
-        <div key={c.candidate_id} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">{c.name}</p>
-            <p className="truncate text-xs text-slate-500">{c.email}</p>
+      {results.map((c) => {
+        const scoreState = scores[c.candidate_id];
+        return (
+          <div key={c.candidate_id} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{c.name}</p>
+              <p className="truncate text-xs text-slate-500">{c.email}</p>
+            </div>
+
+            {!missionText.trim() ? (
+              <span className="text-xs text-slate-400">No mission set</span>
+            ) : scoreState?.loading || !scoreState ? (
+              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            ) : scoreState.error ? (
+              <span className="text-xs text-red-500">{scoreState.error}</span>
+            ) : (
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
+                {scoreState.value.toFixed(1)}
+              </span>
+            )}
+
+            <button
+              onClick={() => onAdd(c)}
+              disabled={selectedIds.has(c.candidate_id)}
+              className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add
+            </button>
           </div>
-          <button
-            onClick={() => onAdd(c)}
-            disabled={selectedIds.has(c.candidate_id)}
-            className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add
-          </button>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

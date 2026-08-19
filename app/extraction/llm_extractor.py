@@ -23,7 +23,7 @@ from app.extraction.prompt_builder import (
 
 
 load_dotenv()
-Groq_key = os.getenv("GROQ_API_KEY2")
+Groq_key = os.getenv("GROQ_API_KEY3")
 client = Groq(api_key=Groq_key)
 model_name="openai/gpt-oss-120b"
 

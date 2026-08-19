@@ -55,6 +55,7 @@ from app.main_usage import (
     update_candidate_name,
     generate_cv_from_selection,
     GENERATED_CV_DIR,
+    run_matching_for_candidate_id,
 )
 
 
@@ -114,6 +115,9 @@ class GenerationRequest(BaseModel):
     candidates: list[SelectedCandidate]
     merge_into_one_document: bool = False    
 
+
+class ScoreRequest(BaseModel):
+    mission_text: str
 
 #Health check endpoint
 _backend_ready = False
@@ -342,6 +346,21 @@ async def get_ranked_experiences_and_projects(candidate_id: str, request: Missio
     projects = get_ranked_projects(store, merged_candidates_collection, candidate_id, query_vec)
 
     return {"experiences": experiences, "projects": projects}
+
+
+@app.post("/candidates/{candidate_id}/score")
+async def score_candidate_for_mission(candidate_id: str, request: ScoreRequest):
+    """Computes a single candidate's relevance score against a mission --
+    used by the 'View Score' button on non-semantic search results."""
+    result = run_matching_for_candidate_id(candidate_id, request.mission_text)
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Candidat introuvable pour ID='{candidate_id}'")
+    return {
+        "candidate_id": candidate_id,
+        "avg_score": result.get("avg_score", 0.0),
+        "is_relevant": result.get("is_relevant", False),
+    }
+
 
 
 @app.post("/cv/{candidate_id}/adapted-json")
