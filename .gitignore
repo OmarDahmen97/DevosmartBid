@@ -9,9 +9,19 @@ __pycache__/
 # Config
 app/app.config
 
+# test
+tests.py
+test_full_pipeline.py
+export_candidates_to_excel.py
+
 # Data
 data/
 chroma_data/
+candidats.xlsx
+dump/
+
+# Notes
+notes.md
 
 # Generated files
 *.yaml
@@ -43,3 +53,6 @@ chroma_data/
 
 # generation
 generated_cvs
+
+# Agent
+.kilo/
