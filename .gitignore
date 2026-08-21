@@ -13,6 +13,7 @@ app/app.config
 tests.py
 test_full_pipeline.py
 export_candidates_to_excel.py
+check_groups.py
 
 # Data
 data/

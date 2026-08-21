@@ -121,8 +121,8 @@ export default function App() {
                 placeholder="Paste or write the mission description..."
                 rows={4}
                 className={`mt-1 field w-full min-h-[240px] resize-y ${missionText.trim()
-                    ? "border-2 border-emerald-500 focus:border-emerald-500 focus:ring-emerald-100"
-                    : ""
+                    ? "!border-2 !border-emerald-500"
+                    : "!border-2 !border-[#C1121F]"
                   }`}
               />
             </div>

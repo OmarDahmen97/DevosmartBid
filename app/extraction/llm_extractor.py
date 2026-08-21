@@ -6,6 +6,7 @@ import json
 import re
 import os
 from dotenv import load_dotenv
+from torch import chunk
 from app.extraction.chunker import split_raw_text_into_chunks
 from app.extraction.llm_extractor_gemini import _extract_first_json
 from app.extraction.prompt_builder import (
@@ -327,6 +328,7 @@ def extract_structured_sections_generic_chunked(raw_text: str, folder_name: str 
             
         except Exception as e:
             print(f"  Failed to extract from chunk {i+1}: {e}")
+            print(f"  [DEBUG] chunk {i+1} content (first 300 chars): {chunk_text[:300]!r}")
         
         
         time.sleep(3.0)
