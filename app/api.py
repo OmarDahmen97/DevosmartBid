@@ -57,6 +57,8 @@ from app.main_usage import (
     GENERATED_CV_DIR,
     run_matching_for_candidate_id,
 )
+from app.matching.run_mission_matching import run_mission_matching_v2
+from app.matching.gemini_client import get_gemini_mission_client
 
 
 
@@ -208,8 +210,15 @@ async def upload_cv(files: list[UploadFile] = File(...)):
 
 @app.post("/candidates/match")
 async def match_mission(request: MissionRequest):
-    """Scan stored candidates against mission text and rank them."""
-    relevant = run_mission_matching(request.mission_text)
+    """
+    Multi-criteria matching: experience similarity (SBERT, unchanged) +
+    skills coverage + certifications coverage, combined into global_score.
+    """
+    relevant = run_mission_matching_v2(
+        request.mission_text,
+        get_gemini_mission_client(),
+        candidate_service,
+    )
     return {"candidates": relevant}
 
 
