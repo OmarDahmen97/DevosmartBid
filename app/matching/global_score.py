@@ -26,9 +26,9 @@ from pydantic import BaseModel
 # seniority=10, domain=10. Only implemented criteria are listed here --
 # add "seniority": 10 and "domain": 10 once those modules exist.
 BASE_WEIGHTS: dict[str, float] = {
-    "experience": 45,
-    "skills": 20,
-    "certifications": 15,
+    "experience": 70,
+    "skills": 10,
+    "certifications": 20,
 }
 
 
